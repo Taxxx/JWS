@@ -1,0 +1,2469 @@
+import org.apache.axis.client.Call;
+import org.apache.axis.client.Service;
+import org.apache.axis.encoding.XMLType;
+import javax.xml.rpc.ParameterMode;
+
+import edu.umsa.oracle.connOracle;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.JTable;
+
+public class AdquiWS{
+
+  private Map[] ret;
+          
+  private Map[] Consulta(String sql) throws Exception {
+    connOracle conexion = new connOracle();
+    ResultSet sentencia = null;
+    System.out.println(sql);
+    try {  conexion.setDataBase("ADQUI");
+	   conexion.setUsr("adquisiciones","4dqu1_c3n72al");
+           //conexion.setUsr("adquisiciones","adqui2010");
+
+           //=======================
+           //  si conexion.setIpServ esta comentado, toma por defecto el localhost
+           //=======================
+	   //conexion.setIpServ("192.168.181.128");
+
+	   conexion.connection();            
+           sentencia = conexion.executeQuery(sql);
+           ResultSetMetaData rsmd = sentencia.getMetaData();
+           int columnCount = rsmd.getColumnCount();
+           ArrayList maps = new ArrayList();
+           while ( sentencia.next() ) {
+                  Map map = new HashMap();
+                  for ( int i = 1; i <= columnCount ; i++ ) {
+                        String str = sentencia.getString(i);
+                        if(str == null) str = "";
+                        str = str.trim();
+                        String colname = rsmd.getColumnName(i);
+                        map.put(colname,  str);
+                  }
+                  maps.add(map);
+           }   
+           if (maps.size() == 0){ ret=null; }
+           else { ret = new Map[maps.size()];
+                  for (int i = 0; i < ret.length; i++)
+                      ret[i] = (Map) maps.get(i);
+           }
+    
+        } 
+    catch(ClassNotFoundException e) { ret=null;} 
+    catch(SQLException e) { ret=null; } 
+    finally {
+              try {conexion.close();
+                   if(sentencia != null) 
+                        sentencia.close();
+              } catch(SQLException e){}
+    }
+    return ret;
+  }
+    
+  /* ==============================================================
+   * ================================================================
+   *
+   *        INGRESO A SISTEMA
+   *
+   * ================================================================
+   * ================================================================*/
+  
+  //Verifica usuario
+  public Map[] getUsuario(String apodo,String clave) throws Exception {
+    String sql=" select distinct t1.cod_usuario,t1.usuario,(CASE WHEN t3.cod_almacen is null THEN 0 ELSE t3.cod_almacen END) as cod_almacen" +
+                " from adquisiciones.adm_usuario t1 left join adquisiciones.adm_usr_apert t2 on t1.cod_usuario=t2.cod_usuario" +
+                " left join adquisiciones.programatic_apert t3 on t3.cod_apert=t2.cod_apert" +                
+                " WHERE apodo = '"+apodo+"' AND clave = '"+clave+"' AND t1.estado='V' order by usuario ";            
+    return Consulta(sql);
+  }
+
+  public Map[] getUsuario2(String apodo,String clave) throws Exception {
+    String sql=" select distinct t1.cod_usuario,t1.usuario,(CASE WHEN t2.cod_almacen is null THEN 0 ELSE t2.cod_almacen END) as cod_almacen"
+              +" from adquisiciones.adm_usuario t1 left join adquisiciones.adm_usr_almacen t2 on t1.cod_usuario=t2.cod_usuario"
+              +" WHERE apodo = '"+apodo+"' AND clave = '"+clave+"' AND t1.estado='V' order by usuario";            
+    return Consulta(sql);
+  }
+
+  // enlaces
+  public Map[] getFechaServ() throws Exception {
+    String sql="SELECT to_char (sysdate,'YYYY-MM-DD') as hoy from dual";
+    return Consulta(sql);
+  }
+
+  // roles del usuario
+  public Map[] getUsuarioRol(int cod_usuario) throws Exception {
+    String sql="SELECT T1.USUARIO,T2.COD_ROL,T3.ROL " +
+                "FROM ADQUISICIONES.ADM_USUARIO T1 INNER JOIN ADQUISICIONES.ADM_USR_ROL T2 ON T1.COD_USUARIO=T2.COD_USUARIO " +
+                "INNER JOIN ADQUISICIONES.ADM_ROL T3 ON T3.COD_ROL=T2.COD_ROL " +
+                "WHERE T1.COD_USUARIO="+cod_usuario;
+    return Consulta(sql);
+  }
+
+  // enlaces
+  public Map[] getEnlaces(int cod_rol) throws Exception {
+    String sql="SELECT t1.enlace " +
+                "FROM adquisiciones.adm_enlace t1 INNER JOIN adquisiciones.adm_menu t2 ON t1.cod_enlace = t2.cod_enlace " +
+                "where t2.cod_rol="+cod_rol;
+    return Consulta(sql);
+  }
+
+  // verifica password
+  public Map[] getPasswordUsr(String tran,int cod_usuario,String pswant, String pswnue) throws Exception {
+    if ("SET-upDaTeUsr".equals(tran)) {
+        String sql="select password("+cod_usuario+",'"+pswant+"','"+pswnue+"') as nro";
+        return Consulta(sql);
+    }
+    else return null;
+  }
+
+  public Map[] getVerifPassw(int cod_usuario,String pswant) throws Exception {
+        String sql="SELECT t1.cod_usuario FROM adquisiciones.adm_usuario t1 "
+                + " where t1.estado='V' and t1.clave='"+pswant+"' and t1.cod_usuario="+cod_usuario;              
+        return Consulta(sql);
+  }
+
+    public Map[] getPasswordUsr(String tran,int cod_usuario,String pswnue) throws Exception {
+        if ("SET-upDaTeUsr".equals(tran)) {
+            String sql="update adquisiciones.adm_usuario set clave='"+pswnue+"' where cod_usuario="+cod_usuario;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] getGestion(int gestion) throws Exception {
+        String sql="SELECT gestion from adquisiciones.gestion where gestion="+gestion;
+        return Consulta(sql);
+    }
+
+  /* ================================================================
+   * ================================================================
+   *
+   *                        MAESTROS
+   *
+   * ================================================================
+   * ================================================================*/
+
+    public Map[] getAlmacen(int gestion) throws Exception {        
+        String sql="select cod_almacen,almacen,facultad,cod_fac from adquisiciones.almacen "
+                + " where estado='V' and gestion="+gestion;
+        return Consulta(sql);        
+    }
+
+    public Map[] setAlmacen(String tran, String almacen,String facultad,String cod_fac,int gestion) throws Exception {
+        if ("SET-insDataAlm".equals(tran)) {
+            String sql="insert into adquisiciones.almacen(cod_almacen,almacen,facultad,cod_fac,gestion)"+
+                        " values (ADQUISICIONES.SEC_COD_ALMACEN.NEXTVAL,'"+almacen+"','"+facultad+"','"+cod_fac+"',"+gestion+")";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] setAlmacenModif(String tran, int cod_almacen,String almacen,String facultad,String cod_fac,int gestion) throws Exception {
+        if ("SET-updDataAlm".equals(tran)) {
+            String sql="update adquisiciones.almacen set almacen='"+almacen+"', facultad='"+facultad+"',cod_fac='"+cod_fac+"' where cod_almacen="+cod_almacen+" and gestion="+gestion;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] setAlmacenDel(String tran, int cod_almacen,int gestion) throws Exception {
+        if ("SET-delDataAlm".equals(tran)) {
+            String sql="update adquisiciones.almacen set estado='X' where cod_almacen="+cod_almacen+" and gestion="+gestion;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] getDa(int gestion) throws Exception {        
+        String sql="select cod_faculty,da,cod_da from adquisiciones.unidad_ejecutora "
+                + " where estado='V' and gestion="+gestion;
+        return Consulta(sql);        
+    }
+
+    public Map[] getUsuario() throws Exception {        
+        String sql="select cod_usuario,usuario,nombre_resumen from adquisiciones.adm_usuario "
+                + " where estado='V'";
+        return Consulta(sql);        
+    }
+
+    public Map[] getUsuariox(int gestion, int cod_almacen) throws Exception {        
+        String sql="select distinct t1.COD_USUARIO, t1.USUARIO, t1.NOMBRE_RESUMEN, t3.COD_FACULTY"
+                  +" from ADM_USUARIO t1 inner join ADM_USR_APERT t2 on t1.COD_USUARIO=t2.COD_USUARIO"
+                  +" inner join PROGRAMATIC_APERT t3 on t2.COD_APERT=t3.COD_APERT and t3.ESTADO='V'"
+                  +" where t2.GESTION="+gestion+" and t1.ESTADO='V' and t3.COD_ALMACEN="+cod_almacen;
+        return Consulta(sql);        
+    }
+
+    public Map[] getUsuariox2(int gestion, int cod_almacen) throws Exception {        
+        String sql="select t1.COD_USUARIO, t1.USUARIO, t1.NOMBRE_RESUMEN"
+                  +" from ADM_USUARIO t1 inner join  adm_usr_almacen t2 on t1.COD_USUARIO=t2.COD_USUARIO"
+                  +" where t1.ESTADO='V' and t2.COD_ALMACEN="+cod_almacen;
+        return Consulta(sql);        
+    }
+
+    public Map[] setUsuario(String tran, String apodo,String clave,String usuario,String nombre_resumen) throws Exception {
+        if ("SET-insDataUsr".equals(tran)) {
+            String sql="insert into adquisiciones.adm_usuario(cod_usuario,apodo,clave,usuario,nombre_resumen)"+
+                        " values (ADQUISICIONES.SEC_COD_USUARIO.NEXTVAL,'"+apodo+"','"+clave+"','"+usuario+"','"+nombre_resumen+"')";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public int SecCodUsuario() throws Exception {
+        String sql = "select ADQUISICIONES.SEC_COD_USUARIO.NEXTVAL from dual";
+        Map[] datos = Consulta(sql);
+        return Integer.parseInt(datos[0].get("NEXTVAL").toString());
+    }
+
+    public Map[] setUsuariox(String tran, int cod_usuario, String apodo,String clave,String usuario,String nombre_resumen) throws Exception {
+        if ("SET-insDataUsr".equals(tran)) {
+            String sql="insert into adquisiciones.adm_usuario(cod_usuario,apodo,clave,usuario,nombre_resumen)"+
+                        " values ("+cod_usuario+",'"+apodo+"','"+clave+"','"+usuario+"','"+nombre_resumen+"')";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] addUserApert(String tran, int cod_usuario, String cod_apert, int gestion) throws Exception {
+        if ("SET-addUserApert".equals(tran)) {
+            String sql="insert into ADM_USR_APERT (cod_usuario,cod_apert,gestion)"+
+                        " values ("+cod_usuario+",'"+cod_apert+"',"+gestion+")";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] setUsuarioModif(String tran, int cod_usuario, String usuario,String nombre_resumen) throws Exception {
+        if ("SET-updDataUsr".equals(tran)) {
+            String sql="update adquisiciones.adm_usuario set usuario='"+usuario+"',nombre_resumen='"+nombre_resumen+"' where cod_usuario="+cod_usuario;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] setUsuarioDel(String tran, int cod_usuario) throws Exception {
+        if ("SET-delDataUsr".equals(tran)) {
+            String sql="update adquisiciones.adm_usuario set estado='X' where cod_usuario="+cod_usuario;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] getUnidadEjecutora(int gestion) throws Exception {        
+        String sql="select t1.cod_apert,t1.detalle,t1.apertura, t2.almacen ,(apertura||' - '||detalle) as ue,t3.da"
+                + " from adquisiciones.programatic_apert t1 inner join adquisiciones.almacen t2 on t1.cod_almacen=t2.cod_almacen inner join adquisiciones.unidad_ejecutora t3 on t1.cod_faculty=t3.cod_faculty"
+                + " where t1.estado='V' and t1.gestion="+gestion+" order by t1.apertura";
+        return Consulta(sql);        
+    }
+
+    public Map[] getUnidadEjecutora2(int gestion, int cod_almacen) throws Exception {        
+        String sql="select t1.cod_apert,t1.detalle,t1.apertura, t2.almacen ,(apertura||' - '||detalle) as ue,t2.COD_ALMACEN,t3.DA"
+                  +" from adquisiciones.programatic_apert t1 inner join adquisiciones.almacen t2 on t1.COD_FACULTY=t2.FACULTAD"
+                  +" inner join adquisiciones.unidad_ejecutora t3 on t2.FACULTAD=t3.cod_faculty"
+                  +" where t1.GESTION="+gestion+" and t1.ESTADO='V' and t2.COD_ALMACEN="+cod_almacen;
+        return Consulta(sql);        
+    }
+
+    public Map[] setUnidadEjecutora(String tran, String cod_apert,String unidad_ejecutora,String apertura, int cod_almacen,String cod_da,int gestion) throws Exception {
+        if ("SET-insDataUE".equals(tran)) {
+            String sql="insert into adquisiciones.programatic_apert(cod_apert,cod_faculty,cod_almacen,detalle,apertura,gestion)"+
+                        " values ('"+cod_apert+"','"+cod_da+"',"+cod_almacen+",'"+unidad_ejecutora+"','"+apertura+"',"+gestion+")";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] setUnidadEjecutoraModif(String tran, String cod_apert,String unidad_ejecutora,String apertura, int cod_almacen,String cod_da,int gestion) throws Exception {
+        if ("SET-updDataUE".equals(tran)) {
+            String sql="update adquisiciones.programatic_apert set detalle='"+unidad_ejecutora+"',apertura='"+apertura+"',cod_almacen="+cod_almacen+",cod_faculty='"+cod_da+"',gestion="+gestion+" where cod_apert='"+cod_apert+"'";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] setUnidadEjecutoraDel(String tran, String cod_apert) throws Exception {
+        if ("SET-delDataUE".equals(tran)) {
+            String sql="update adquisiciones.programatic_apert set estado='X' where cod_apert='"+cod_apert+"'";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] getItemsABM(int gestion,int partida) throws Exception {        
+        String sql="select t1.cod_item,t1.partida,t1.articulo,t1.unidad_medida,t1.gestion,t2.detalle as tipo_item "
+                + " from adquisiciones.clasificador_item t1 inner join adquisiciones.tipo_item t2 on t1.cod_tipo_item=t2.cod_tipo_item"
+                + " where t1.estado='V' and t1.partida="+partida+" and t1.gestion="+gestion;
+        return Consulta(sql);        
+    }
+    
+    public Map[] setItems(String tran, int partida,String articulo,String unidad_medida, int gestion,String estado,int cod_tipo_item) throws Exception {
+        if ("SET-insDataItm".equals(tran)) {
+            String sql="insert into adquisiciones.clasificador_item(cod_item,partida,articulo,unidad_medida,gestion,estado,cod_tipo_item)"+
+                        " values (ADQUISICIONES.SEC_COD_CLA_ITEM.NEXTVAL,"+partida+",'"+articulo+"','"+unidad_medida+"',"+gestion+",'"+estado+"',"+cod_tipo_item+")";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] setItemsModif(String tran, int cod_item,String articulo, String unidad_medida,int cod_tipo_item,int gestion) throws Exception {
+        if ("SET-updDataItm".equals(tran)) {
+            String sql="update adquisiciones.clasificador_item set cod_tipo_item="+cod_tipo_item+",articulo='"+articulo+"',unidad_medida='"+unidad_medida+"' where cod_item="+cod_item+" and gestion="+gestion;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] setItemsDel(String tran, int cod_item) throws Exception {
+        if ("SET-delDataItm".equals(tran)) {
+            String sql="update adquisiciones.clasificador_item set estado='X' where cod_item="+cod_item;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] getGrupoItem() throws Exception {        
+        String sql="select distinct detalle from ADQUISICIONES.CLASIFICADOR_ITEM";
+        return Consulta(sql);        
+    }
+    
+    public Map[] getSubGrupoItem(String grupo) throws Exception {        
+        String sql="select distinct detalle_sub_rubro from ADQUISICIONES.CLASIFICADOR_ITEM where detalle ='"+grupo+"'";
+        return Consulta(sql);        
+    }
+
+    public Map[] getGestion() throws Exception {        
+        String sql="select cod_gestion,gestion from adquisiciones.gestion";
+        return Consulta(sql);        
+    }
+
+    public Map[] setGestion(String tran,int gestion) throws Exception {
+        if ("SET-insDataGes".equals(tran)) {
+            String sql="insert into adquisiciones.gestion(cod_gestion,gestion)"+
+                        " values (ADQUISICIONES.SEC_COD_GESTION.NEXTVAL,"+gestion+")";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] setGestionModif(String tran,int cod_gestion, int gestion) throws Exception {
+        if ("SET-insDataGes".equals(tran)) {
+            String sql="update adquisiciones.gestion set gestion="+gestion+" where cod_gestion="+cod_gestion;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] getTipoItem() throws Exception {        
+        String sql="select cod_tipo_item,detalle from adquisiciones.tipo_item";
+        return Consulta(sql);        
+    }
+    
+   public Map[] getPartida(int gestion) throws Exception {        
+        String sql="select cod_partida,partida,detalle,tipo,gestion,estado from adquisiciones.partidas where tipo='t' and estado='V' and gestion="+gestion+" order by partida";
+        return Consulta(sql);        
+    }
+  /* ================================================================
+   * ================================================================
+   *
+   *                        RELACIONADORES
+   *
+   * ================================================================
+   * ================================================================*/
+
+    public Map[] getUsrRol() throws Exception {
+        String sql="select t1.cod_rol,t1.rol,t2.cod_usuario,t2.usuario " +
+                " from adquisiciones.adm_rol t1, adquisiciones.adm_usuario t2, adquisiciones.adm_usr_rol t3 " +
+                " where t1.cod_rol=t3.cod_rol and t2.cod_usuario=t3.cod_usuario " +
+                " and t2.estado='V' order by t2.usuario ";
+        return Consulta(sql);
+    }
+
+    public Map[] getUsrRol2(int cod_almacen) throws Exception {
+        String sql="select t1.cod_rol,t1.rol,t3.cod_usuario,t3.usuario"
+                 +" from adquisiciones.adm_rol t1 inner join adquisiciones.adm_usr_rol t2 on t1.COD_ROL=t2.COD_ROL"
+                 +" inner join adquisiciones.adm_usuario t3 on  t2.COD_USUARIO=t3.COD_USUARIO"
+                 +" inner join ADM_USR_ALMACEN t4 on t3.COD_USUARIO=t4.COD_USUARIO"
+                 +" where t3.ESTADO='V' and t4.COD_ALMACEN="+cod_almacen+" order by t3.USUARIO";
+        return Consulta(sql);
+    }
+
+    public Map[] getRoles() throws Exception {
+        String sql="select cod_rol,rol " +
+               " from adquisiciones.adm_rol order by cod_rol";
+        return Consulta(sql);
+    }
+
+    public Map[] setUsrRol(String tran, int cod_usuario,int cod_rol) throws Exception {
+        if ("SET-insDataUsr".equals(tran)) {
+            String sql="insert into adquisiciones.adm_usr_rol(cod_usuario,cod_rol) values ("+cod_usuario+","+cod_rol+")";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] setUsrRolDel(String tran,int cod_usuario,int cod_rol) throws Exception {
+        if ("SET-delDataUsr".equals(tran)) {
+            String sql="delete from adquisiciones.adm_usr_rol where cod_usuario="+cod_usuario+" and cod_rol="+cod_rol;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] getUsrUnidad(int gestion) throws Exception {
+        String sql="select t1.cod_apert,t1.detalle,t2.cod_usuario,t2.usuario " +
+                " from adquisiciones.programatic_apert t1, adquisiciones.adm_usuario t2, adquisiciones.adm_usr_apert t3 " +
+                " where t1.cod_apert=t3.cod_apert and t2.cod_usuario=t3.cod_usuario and t3.gestion="+gestion+" and t2.estado='V' "+ 
+                " order by t2.usuario ";
+        return Consulta(sql);
+    }
+
+    public Map[] setUsrUnidad(String tran, int cod_usuario,String cod_unidad,int gestion) throws Exception {
+        if ("SET-insDataUsr".equals(tran)) {
+            String sql="select cod_apert from adquisiciones.programatic_apert  " +
+                "where apertura='"+cod_unidad+"' and gestion="+gestion;
+            Map[] datos=Consulta(sql);
+            String cod_apert="";
+            for (int c=0;c<datos.length;c++){
+                 cod_apert= datos[c].get("COD_APERT").toString();
+            }
+            
+            sql="insert into adquisiciones.adm_usr_apert(cod_usuario,cod_apert,gestion) values ("+cod_usuario+",'"+cod_apert+"',"+gestion+")";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] setUsrUnidadDel(String tran,int cod_usuario,String cod_unidad, int gestion) throws Exception {
+        if ("SET-delDataUsr".equals(tran)) {
+            String sql="select cod_apert from adquisiciones.programatic_apert  " +
+                "where apertura='"+cod_unidad+"'";
+            Map[] datos=Consulta(sql);
+            String cod_apert="";
+            for (int c=0;c<datos.length;c++){
+                 cod_apert= datos[c].get("COD_APERT").toString();
+            }
+            
+            sql="delete from adquisiciones.adm_usr_apert where cod_usuario="+cod_usuario+" and cod_apert='"+cod_apert+"' and gestion="+gestion;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+  public Map[] getUsrWorkflow() throws Exception {
+    String sql="select t2.cod_usuario,t2.cod_w,t2.codigo,t1.usuario,t3.detalle,t4.estado " +
+            " from adquisiciones.adm_usuario t1,adquisiciones.adm_workflow_usr t2, adquisiciones.adm_workflow t3, adquisiciones.estados t4 " +
+            " where t1.cod_usuario=t2.cod_usuario and t2.cod_w=t3.cod_w and t2.codigo=t4.codigo " +
+            " order by cod_usuario,cod_w ";
+    return Consulta(sql);
+  }
+
+  public Map[] getUsrWorkflow2(int cod_almacen) throws Exception {
+    String sql="select t2.cod_usuario,t2.cod_w,t2.codigo,t1.usuario,t3.detalle,t4.estado"
+             +" from adquisiciones.adm_usuario t1 inner join adquisiciones.adm_workflow_usr t2 on t1.COD_USUARIO=t2.COD_USUARIO"
+             +" inner join adquisiciones.adm_workflow t3 on t2.COD_W=t3.COD_W"
+             +" inner join adquisiciones.estados t4 on t2.CODIGO=t4.CODIGO"
+             +" inner join adquisiciones.adm_usr_almacen t5 on t1.COD_USUARIO=t5.COD_USUARIO"
+             +" where t5.COD_ALMACEN="+cod_almacen;
+    return Consulta(sql);
+  }
+
+  public Map[] getWorkflowDetalle() throws Exception {
+    String sql="select cod_w,detalle from adquisiciones.adm_workflow order by cod_w";
+    return Consulta(sql);
+  }
+
+  public Map[] getEstadosWorkflow(int cod_w) throws Exception {
+    String sql="select t1.origen,t2.estado from adquisiciones.adm_workflow_estados t1, adquisiciones.estados t2 where t1.origen=t2.codigo and cod_w="+cod_w;
+    return Consulta(sql);
+  }
+
+  public Map[] setUsrWorkflow(int cod_usuario,int cod_w,String cod_estado) throws Exception {
+    String sql="insert into adquisiciones.adm_workflow_usr(cod_usuario,cod_w,codigo) values ("+cod_usuario+","+cod_w+",'"+cod_estado+"')";
+    return Consulta(sql);
+  }
+
+  public Map[] setUsrWorkflowDel(int cod_usuario,int cod_w,String cod_estado) throws Exception {
+    String sql="delete from adquisiciones.adm_workflow_usr where cod_usuario="+cod_usuario+" and cod_w="+cod_w+" and codigo='"+cod_estado+"'";
+    return Consulta(sql);
+  }
+
+  /* ==============================================================
+   * ================================================================
+   *
+   *                    BANCO DE PROVEEDORES
+   *
+   * ================================================================
+   * ================================================================*/
+
+    public Map[] setProveedorCrea(String tran, String casa_comercial,String servicio,String direccion,String partida,String telefono,String fax,String web,String nit,String gran_act,String razon_soc) throws Exception {
+        if ("SET-upDateNewProveedor".equals(tran)) {                     
+            String sql="insert into adquisiciones.proveedores(cod_proveedor,partida,casa_comercial,servicio,direccion,telefono,fax,web,nit,gran_actividad_nit,razon_social_nit) "+
+                        "values (ADQUISICIONES.SEC_COD_PROVEEDOR.NEXTVAL,"+partida+","+casa_comercial+","+servicio+","+direccion+","+telefono+","+fax+","+web+","+nit+","+gran_act+","+razon_soc+")";
+            Map[] datos=Consulta(sql);
+            sql="select MAX(cod_proveedor) as cod_proveedor "+
+                " from adquisiciones.proveedores";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    
+    public Map[] setProveedorActualiza(String tran, int cod_proveedor,String casa_comercial,String servicio,String direccion,String partida,String telefono,String fax,String web,String nit,String gran_act,String razon_soc,String estado) throws Exception {
+        if ("SET-upDateNewProveedor".equals(tran)) {                     
+            String sql="update adquisiciones.proveedores set "
+                    +" partida="+partida+",casa_comercial="+casa_comercial+",servicio="+servicio+",direccion="+direccion
+                    +",telefono="+telefono+",fax="+fax+",web="+web+",nit="+nit+",gran_actividad_nit="+gran_act
+                    +",razon_social_nit="+razon_soc+",estado='"+estado+"' where cod_proveedor="+cod_proveedor;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    
+    public Map[] setProveedorElimina(String tran, int cod_proveedor) throws Exception {
+        if ("SET-upDateNewProveedor".equals(tran)) {                     
+            String sql="update adquisiciones.proveedores set estado='X' where cod_proveedor="+cod_proveedor;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+        
+    public Map[] getProveedores() throws Exception {
+        String sql="select t1.cod_proveedor,t1.partida,t1.casa_comercial,t1.servicio,t1.direccion,t1.telefono,t1.nit,t1.estado as cod_estado,t2.estado,t1.fax,t1.web,t1.gran_actividad_nit,T1.RAZON_SOCIAL_NIT"+
+                   " from adquisiciones.proveedores t1 inner join ADQUISICIONES.ESTADOS t2 on t1.estado=t2.codigo where t1.estado!='X' order by t1.casa_comercial";
+        return Consulta(sql);
+    }
+    
+    public Map[] getProveedoresBusqueda(String partida,String casa,String servicio,String nit) throws Exception {
+        String sql="select t1.cod_proveedor,t1.partida,t1.casa_comercial,t1.servicio,t1.telefono,t1.nit,t1.estado as cod_estado,t2.estado "+
+                   " from adquisiciones.proveedores t1 inner join ADQUISICIONES.ESTADOS t2 on t1.estado=t2.codigo "+
+                   " where t1.estado!='X' and (t1.partida="+partida+" or UPPER(t1.casa_comercial) like "+casa+" or UPPER(t1.servicio) like "+servicio+" or t1.nit="+nit+" )";
+        return Consulta(sql);
+    }
+    
+    public Map[] getSansiones(int cod_proveedor) throws Exception {
+        String sql="select cod_prov_sansion,to_char(fec_ini,'DD-MM-YYYY') as fec_ini,to_char(fec_fin,'DD-MM-YYYY') as fec_fin,obs "+
+                   " from adquisiciones.proveedores_sansion where cod_proveedor="+cod_proveedor;
+        return Consulta(sql);
+    }
+
+    public Map[] setProveedorSansion(String tran, int cod_proveedor,String fec_ini,String fec_fin,String obs) throws Exception {
+        if ("SET-upDatePrevSansion".equals(tran)) {
+            String sql="insert into adquisiciones.proveedores_sansion(cod_prov_sansion,cod_proveedor,fec_ini,fec_fin,obs) "+
+                        "values (ADQUISICIONES.SEC_COD_PROV_SANSION.NEXTVAL,"+cod_proveedor+",TO_DATE('"+fec_ini+"','DD/MM/YYYY'),TO_DATE('"+fec_fin+"','DD/MM/YYYY'),'"+obs+"')";
+            return Consulta(sql); 
+        }
+        else return null;
+    }
+
+    public Map[] setProveedorSansionMod(String tran, int cod_prov_sansion,String fec_ini,String fec_fin,String obs) throws Exception {
+        if ("SET-upDatePrevSansionMod".equals(tran)) {
+            String sql="update adquisiciones.proveedores_sansion set fec_ini='"+fec_ini+"',fec_fin='"+fec_fin+"',obs='"+obs+"'"+
+                        " where cod_prov_sansion="+cod_prov_sansion;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] setProveedorSansionElim(String tran, int cod_prov_sansion) throws Exception {
+        if ("SET-upDatePrevSansionElim".equals(tran)) {
+            String sql="delete from adquisiciones.proveedores_sansion where cod_prov_sansion="+cod_prov_sansion;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    
+
+    /* ==============================================================
+   * ================================================================
+   *
+   *                        TRANSACCIONES
+   *
+   * ================================================================
+   * ================================================================*/
+    // Bandeja de tipo tramite
+    public Map[] getTramite(int cod_tramite) throws Exception {
+        String sql="select tipo_reporte from adquisiciones.tramites where cod_tramite="+cod_tramite;
+        return Consulta(sql);
+    }
+    
+    // tramites
+    public Map[] getTramites() throws Exception {
+        String sql="select cod_tramite, tipo_reporte from adquisiciones.tramites ";
+        return Consulta(sql);
+    }
+
+    // Bandeja de transacciones
+    public Map[] getTransaccionBandeja(int gestion,int cod_almacen,int cod_usuario,int cod_w,String cod_estado,int cod_tramite) throws Exception {
+    /*String sql="select distinct t1.cod_transaccion,t1.cod_trans_detalle,t1.unidad_sol,t1.unidad_des,t1.cod_estado,t1.cod_w,t1.detalle,t4.tipo_reporte as tipo_tramite,t3.nro as nro_tramite,t5.estado,null as cod_trans_nro,t1.cuantia,t1.del,t1.hasta "
+                    + "from (select distinct t1.cod_transaccion,t2.cod_trans_detalle,t1.gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha,t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t2.estado as cod_estado,t1.cod_w,t1.detalle,t3.cuantia,t3.del,t3.hasta "
+                    + "        from adquisiciones.transaccion t1 inner join ADQUISICIONES.TRANSACCION_DETALLE t2 on t1.cod_transaccion=t2.cod_transaccion "
+                    + "        inner join ADQUISICIONES.CUANTIA t3 on t3.cod_cuantia=t1.cod_cuantia "
+                    + "        where t1.cod_almacen="+cod_almacen+" and t1.gestion="+gestion+" and (t2.estado='ALM' or t2.estado='PPTO' or t2.estado='JUR') )  t1 "
+                    + "inner join adquisiciones.adm_workflow_usr t2 on T1.cod_estado=T2.CODIGO --inner join adquisiciones.transaccion_nro t3 on t3.cod_transaccion=t1.cod_transaccion "
+                    + "inner join ADQUISICIONES.TRANSACCION_DETALLE_NRO t6 on T6.COD_TRANS_DETALLE=t1.cod_Trans_detalle "
+                    + "inner join adquisiciones.transaccion_nro t3 on t3.cod_trans_nro=t6.cod_trans_nro "
+                    + "inner join adquisiciones.tramites t4 on t4.cod_tramite=t3.cod_tramite "
+                    + "inner join adquisiciones.estados t5 on t5.codigo=t1.cod_estado "
+                    + "where t2.cod_usuario="+cod_usuario+" and t3.cod_tramite="+cod_tramite+" --and t2.cod_w="+cod_w+" and t1.cod_estado='"+cod_estado+"' ";
+        */
+       String sql ="select distinct t1.cod_transaccion,t1.unidad_sol,t1.unidad_des,t1.cod_estado,t1.cod_w,t1.detalle,t1.cuantia,t1.del,t1.hasta,t4.estado,t3.nro as nro_tramite,t5.tipo_reporte as tipo_tramite,t3.cod_trans_nro  "
+                + "from  ( "
+                + "        select distinct t1.cod_transaccion,t2.cod_trans_detalle,t1.gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha,t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t2.estado as cod_estado,t1.cod_w,t1.detalle,t3.cuantia,t3.del,t3.hasta "
+                + "        from adquisiciones.transaccion t1 inner join ADQUISICIONES.TRANSACCION_DETALLE t2 on t1.cod_transaccion=t2.cod_transaccion "
+                + "        inner join ADQUISICIONES.CUANTIA t3 on t3.cod_cuantia=t1.cod_cuantia "
+                + "        where t1.cod_almacen="+cod_almacen+" and t1.gestion="+gestion+" and t2.estado<>'ALM1' and t1.tipo_sol=1"
+                + "        )  t1 "
+                + "inner join "
+                + "        (select cod_usuario,cod_w,codigo from adquisiciones.adm_workflow_usr t1 where cod_usuario="+cod_usuario+") t2 "
+                + "on t1.cod_estado=t2.codigo  and t1.cod_w=t2.cod_w "
+                + "inner join ( "
+                + "        select distinct t1.cod_tramite,t1.cod_trans_nro,t1.nro,t2.cod_Trans_detalle from adquisiciones.transaccion_nro t1 "
+                + "        inner join adquisiciones.transaccion_detalle_nro t2 "
+                + "        on t1.cod_trans_nro=t2.cod_trans_nro "
+                + "        where t1.cod_tramite="+cod_tramite
+                + "        union "
+                + "        select distinct t1.cod_tramite,t1.cod_trans_nro,t1.nro,t2.cod_Trans_detalle from adquisiciones.transaccion_nro t1 "
+                + "        inner join adquisiciones.transaccion_detalle_nro t2 "
+                + "        on t1.cod_trans_nro=t2.cod_trans_nro "
+                + "        where t1.cod_tramite=2 or t1.cod_tramite=4"
+                + "        ) t3 "
+                + "on t3.cod_trans_detalle=t1.cod_trans_detalle "
+                + "inner join adquisiciones.estados t4 on t4.codigo=t1.cod_estado "
+                + "inner join adquisiciones.tramites t5 on t5.cod_tramite=t3.cod_tramite order by nro_tramite";            
+        return Consulta(sql);
+    }
+
+    // Para unir transaccion y nros de solicitudes
+    public Map[] getTransaccionBandejaUnion(int gestion,int cod_almacen,int cod_tramite,int cod_usuario) throws Exception {
+       String sql= "select distinct t5.cod_transaccion,T5.DE as unidad_sol,T5.A as unidad_des,t1.estado  as cod_estado,t5.cod_w,t5.detalle,t4.tipo_reporte as tipo_tramite,t3.nro as nro_tramite,t6.estado,T3.COD_TRANS_NRO,t8.cuantia,t8.del,t8.hasta,t9.nro  "
+                    + "from ADQUISICIONES.TRANSACCION_DETALLE t1 inner join ADQUISICIONES.TRANSACCION_DETALLE_NRO t2 on t1.cod_trans_detalle=t2.cod_trans_detalle "
+                    + "inner join adquisiciones.transaccion_nro t3 on T3.COD_TRANS_NRO=T2.COD_TRANS_NRO "
+                    + "inner join adquisiciones.transaccion_nro t9 on t9.COD_TRANS_NRO=t3.COD_TRANS_NRO_ANT "
+                    + "inner join ADQUISICIONES.TRAMITES t4 on T3.COD_TRAMITE=t4.cod_tramite "
+                    + "inner join ADQUISICIONES.transaccion t5 on t1.cod_transaccion=t5.cod_transaccion "
+                    + "inner join ADQUISICIONES.ESTADOS t6 on t1.estado=T6.CODIGO "
+                    + "inner join ADQUISICIONES.ADM_WORKFLOW_USR t7 on T1.ESTADO=T7.CODIGO "
+                    + "inner join ADQUISICIONES.CUANTIA t8 on T8.cod_cuantia=T5.cod_cuantia "
+                    + "where T7.COD_USUARIO="+cod_usuario+" and T5.COD_ALMACEN="+cod_almacen+" and T3.COD_TRAMITE="+cod_tramite+" and t5.gestion="+gestion
+                    + " order by t9.nro desc";
+        return Consulta(sql);
+    }
+
+    
+
+    // Bandeja de transacciones adquisiciones
+    public Map[] getTransaccionesBuscaAdquisicion(int cod_almacen,int cod_usuario,int cod_tramite,int gestion,String solicitud,String hoja_ruta,String preventivo) throws Exception {
+        String sql="select distinct t1.cod_transaccion,t1.cod_cuantia,t5.tipo_reporte as tipo_tramite,t4.cod_trans_nro,t4.nro as nro_tramite,t1.gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha,t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t2.estado as cod_estado,t7.estado,t1.cod_w,t1.detalle"
+                    + " from adquisiciones.transaccion t1  "
+                    + " inner join adquisiciones.transaccion_detalle t2 on t1.cod_transaccion=t2.cod_transaccion"
+                    + " inner join adquisiciones.transaccion_detalle_nro t3 on t2.cod_trans_detalle=t3.cod_trans_detalle"
+                    + " inner join adquisiciones.transaccion_nro t4 on t3.cod_trans_nro=t4.cod_trans_nro"
+                    + " inner join adquisiciones.tramites t5 on t4.cod_tramite=t5.cod_tramite"
+                    + " inner join adquisiciones.adm_workflow_usr t6 on t2.estado=T6.CODIGO"
+                    + " inner join adquisiciones.estados t7 on T2.ESTADO=t7.codigo"
+                    + " where t1.cod_almacen="+cod_almacen+" and t6.cod_usuario="+cod_usuario+" and t1.gestion="+gestion+" and (t4.nro="+solicitud+" or t1.hoja_ruta="+hoja_ruta+" or t1.cbte="+preventivo+" ) and and t4.COD_TRAMITE="+cod_tramite;                
+        return Consulta(sql);
+    }
+    public Map[] getTransaccionesBuscaAdquisicionTODO(int cod_almacen,int cod_usuario,int cod_tramite,int gestion) throws Exception {
+        String sql="select distinct t1.cod_transaccion,t1.cod_cuantia,t5.tipo_reporte as tipo_tramite,t4.cod_trans_nro,t4.nro as nro_tramite,t1.gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha,t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t2.estado as cod_estado,t7.estado,t1.cod_w,t1.detalle"
+                    + " from adquisiciones.transaccion t1  "
+                    + " inner join adquisiciones.transaccion_detalle t2 on t1.cod_transaccion=t2.cod_transaccion"
+                    + " inner join adquisiciones.transaccion_detalle_nro t3 on t2.cod_trans_detalle=t3.cod_trans_detalle"
+                    + " inner join adquisiciones.transaccion_nro t4 on t3.cod_trans_nro=t4.cod_trans_nro"
+                    + " inner join adquisiciones.tramites t5 on t4.cod_tramite=t5.cod_tramite"
+                    + " inner join adquisiciones.adm_workflow_usr t6 on t2.estado=T6.CODIGO"
+                    + " inner join adquisiciones.estados t7 on T2.ESTADO=t7.codigo"
+                    + " where t1.cod_almacen="+cod_almacen+" and t6.cod_usuario="+cod_usuario+" and t1.gestion="+gestion+" and t4.COD_TRAMITE="+cod_tramite
+                    + " and t1.COD_TRANSACCION in("
+                    + " select t1.COD_TRANSACCION"
+                    + " from adquisiciones.transaccion_detalle t1" 
+                    + " inner join ADQUISICIONES.CLASIFICADOR_ITEM t3 on t3.cod_item=t1.cod_item" 
+                    + " inner join adquisiciones.tipo_item t4 on t4.cod_tipo_item=t3.cod_tipo_item"
+                    + " inner join TRANSACCION_DETALLE_NRO t5 on t1.COD_TRANS_DETALLE=t5.COD_TRANS_DETALLE"
+                    + " inner join TRANSACCION_NRO t6 on t5.COD_TRANS_NRO=t6.COD_TRANS_NRO"
+                    + " where t1.COD_TRANS_DETALLE not in ("
+                    + " select t1.COD_TRANS_DETALLE"
+                    + " from TRANSACCION_DETALLE t1"
+                    + " inner join TRANSACCION_DETALLE_NRO t2 on t1.COD_TRANS_DETALLE=t2.COD_TRANS_DETALLE"
+                    + " inner join TRANSACCION_NRO t3 on t2.COD_TRANS_NRO=t3.COD_TRANS_NRO"
+                    + " where t3.COD_TRAMITE=2"
+                    + "))";                
+        return Consulta(sql);
+    }
+    public Map[] getTransaccionesBuscaAdquisicionTODO2(int cod_almacen,int cod_usuario,int cod_tramite,int gestion) throws Exception {
+        String sql="select distinct t1.cod_transaccion,t1.cod_cuantia,t5.tipo_reporte as tipo_tramite,t4.cod_trans_nro,t4.nro as nro_tramite,t1.gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha,t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t2.estado as cod_estado,t7.estado,t1.cod_w,t1.detalle"
+                    + " from adquisiciones.transaccion t1  "
+                    + " inner join adquisiciones.transaccion_detalle t2 on t1.cod_transaccion=t2.cod_transaccion"
+                    + " inner join adquisiciones.transaccion_detalle_nro t3 on t2.cod_trans_detalle=t3.cod_trans_detalle"
+                    + " inner join adquisiciones.transaccion_nro t4 on t3.cod_trans_nro=t4.cod_trans_nro"
+                    + " inner join adquisiciones.tramites t5 on t4.cod_tramite=t5.cod_tramite"
+                    + " inner join adquisiciones.adm_workflow_usr t6 on t2.estado=T6.CODIGO"
+                    + " inner join adquisiciones.estados t7 on T2.ESTADO=t7.codigo"
+                    + " inner join TRANSACCION_NRO t8 on t1.COD_TRANSACCION <> t8.COD_TRANSACCION and t8.COD_TRAMITE=2" 
+                    + " where t1.cod_almacen="+cod_almacen+" and t6.cod_usuario="+cod_usuario+" and t1.gestion="+gestion+" and t4.COD_TRAMITE="+cod_tramite+" and t1.ESTADO = 'V'";                
+        return Consulta(sql);
+    }
+
+    // Estado de las transacciones
+    public Map[] getTransaccionEstado(int cod_almacen,int cod_tramite,int gestion,int inicio,int fin) throws Exception {
+        String sql="select * from ( "
+                    + " select row_number() over(order by t1.nro desc) linenum,t1.* from ("
+                    + " select distinct t4.cod_trans_nro,t1.cod_transaccion,t7.codigo as cod_estado,t5.cod_tramite,t5.tipo_reporte as tramite,t4.nro,t1.de as unidad_sol,t1.a as unidad_des,t7.estado,t1.detalle "
+                    + " from adquisiciones.transaccion t1"
+                    + " inner join adquisiciones.transaccion_detalle t2 on t1.cod_transaccion=t2.cod_transaccion"
+                    + " inner join adquisiciones.transaccion_detalle_nro t3 on t2.cod_trans_detalle=t3.cod_trans_detalle"
+                    + " inner join adquisiciones.transaccion_nro t4 on t3.cod_trans_nro=t4.cod_trans_nro"
+                    + " inner join adquisiciones.tramites t5 on t4.cod_tramite=t5.cod_tramite"
+                    + " inner join adquisiciones.estados t7 on T2.ESTADO=t7.codigo"
+                    + " where t4.nro is not null and t1.gestion="+gestion+" and t1.cod_almacen="+cod_almacen+" and (t5.cod_tramite="+cod_tramite+") ) t1 )"
+                    + " where linenum BETWEEN "+inicio+" AND "+fin;
+        return Consulta(sql);
+    }    
+
+    // Bandeja adquisiciones
+    public Map[] getTransaccionBandejaAdqui(int gestion,int cod_almacen,int cod_usuario,int cod_tramite) throws Exception {
+        String sql ="select distinct T3.COD_TRANS_NRO,t4.tipo_reporte as tipo_tramite,t3.nro as nro_tramite,T5.DE as unidad_sol,T5.A as unidad_des,t1.estado  as cod_estado,t6.estado,t5.cod_w,t5.detalle,t8.cuantia,t8.del,t8.hasta "
+                    + " from ADQUISICIONES.TRANSACCION_DETALLE t1 inner join ADQUISICIONES.TRANSACCION_DETALLE_NRO t2 on t1.cod_trans_detalle=t2.cod_trans_detalle"
+                    + " inner join adquisiciones.transaccion_nro t3 on T3.COD_TRANS_NRO=T2.COD_TRANS_NRO"
+                    + " inner join ADQUISICIONES.TRAMITES t4 on T3.COD_TRAMITE=t4.cod_tramite"
+                    + " inner join ADQUISICIONES.transaccion t5 on t1.cod_transaccion=t5.cod_transaccion"
+                    + " inner join ADQUISICIONES.ESTADOS t6 on t1.estado=T6.CODIGO"
+                    + " inner join ADQUISICIONES.ADM_WORKFLOW_USR t7 on T1.ESTADO=T7.CODIGO"
+                    + " inner join ADQUISICIONES.cuantia t8 on T8.cod_cuantia=T5.cod_cuantia"
+                    + " where T7.COD_USUARIO="+cod_usuario+" and T5.COD_ALMACEN="+cod_almacen+" and T3.COD_TRAMITE="+cod_tramite+" and t5.gestion="+gestion;
+        return Consulta(sql);
+    }
+    
+    // Busqueda Orden de compra
+    public Map[]  busquedaAdquiOrdenC(int gestion,int cod_almacen,int cod_tramite, String nro, String hoja_ruta) throws Exception {
+        String sql ="select distinct t4.cod_trans_nro,t1.cod_transaccion,t7.codigo as cod_estado,t5.cod_tramite,t5.tipo_reporte as tramite,t4.nro,t1.de as unidad_sol,t1.a as unidad_des,t7.estado,t1.detalle,t1.HOJA_RUTA " 
+                   + " from adquisiciones.transaccion t1"
+                   + " inner join adquisiciones.transaccion_detalle t2 on t1.cod_transaccion=t2.cod_transaccion"
+                   + " inner join adquisiciones.transaccion_detalle_nro t3 on t2.cod_trans_detalle=t3.cod_trans_detalle"
+                   + " inner join adquisiciones.transaccion_nro t4 on t3.cod_trans_nro=t4.cod_trans_nro"
+                   + " inner join adquisiciones.tramites t5 on t4.cod_tramite=t5.cod_tramite"
+                   + " inner join adquisiciones.estados t7 on T2.ESTADO=t7.codigo"
+                   + " where (t4.nro like '"+nro+"' and t1.HOJA_RUTA like '"+hoja_ruta+"' ) and t1.gestion="+gestion+" and t1.cod_almacen="+cod_almacen+" and (t5.cod_tramite="+cod_tramite+")";
+        return Consulta(sql);
+    }
+
+    // Nro de transaccion creadas
+    public Map[] getNroTransacciones(int gestion,int cod_tramite,int cod_almacen) throws Exception {
+        String sql="select max(linenum) as linenum from ( "
+                    + " select row_number() over(order by t1.nro desc) linenum,t1.* from ("
+                    + " select distinct t4.cod_trans_nro,t1.cod_transaccion,t7.codigo as cod_estado,t5.cod_tramite,t5.tipo_reporte as tramite,t4.nro,t1.de as unidad_sol,t1.a as unidad_des,t7.estado,t1.detalle "
+                    + " from adquisiciones.transaccion t1"
+                    + " inner join adquisiciones.transaccion_detalle t2 on t1.cod_transaccion=t2.cod_transaccion"
+                    + " inner join adquisiciones.transaccion_detalle_nro t3 on t2.cod_trans_detalle=t3.cod_trans_detalle"
+                    + " inner join adquisiciones.transaccion_nro t4 on t3.cod_trans_nro=t4.cod_trans_nro"
+                    + " inner join adquisiciones.tramites t5 on t4.cod_tramite=t5.cod_tramite"
+                    + " inner join adquisiciones.estados t7 on T2.ESTADO=t7.codigo"
+                    + " where t1.gestion="+gestion+" and t1.cod_almacen="+cod_almacen+" and (t5.cod_tramite="+cod_tramite+") ) t1 )";
+        return Consulta(sql);
+    }
+    
+    public Map[] getTieneTipoTramite(int cod_tramite,int cod_trans_detalle) throws Exception {        
+            String sql="select count(t1.cod_trans_detalle) as cantidad from adquisiciones.transaccion_detalle_nro t1 "+
+                    "inner join adquisiciones.transaccion_nro t2 on t1.cod_trans_nro=t2.cod_trans_nro "+
+                    "where t2.cod_tramite="+cod_tramite+" and t1.cod_trans_detalle="+cod_trans_detalle; 
+            return Consulta(sql);            
+    }
+    // Get Nro Orden de Compra
+    public Map[] getNroOrdenCompra(int cod_transaccion) throws Exception {         
+        String sql="select t1.COD_TRANS_NRO, t1.nro from TRANSACCION_NRO t1 where t1.COD_TRANSACCION="+cod_transaccion+" and t1.COD_TRAMITE=2";
+        return Consulta(sql);              
+    }
+
+    public Map[] setCreaNroTramite(String tran,int cod_transaccion,int cod_almacen,int cod_tramite,int gestion,int cod_trans_nro, int cod_usuario) throws Exception {
+        if ("SET-upDateGeneraTramite".equals(tran)) {                     
+            String sql="select (CASE WHEN MAX(t2.nro) is not null THEN MAX(t2.nro) ELSE 0 END )as nro "+
+                    "from adquisiciones.transaccion t1 inner join adquisiciones.transaccion_nro t2 on t1.cod_transaccion=t2.cod_transaccion "+
+                    "where t2.cod_tramite="+cod_tramite+" and t1.gestion="+gestion+" and t1.cod_almacen="+cod_almacen;
+            Map[] datos=Consulta(sql);
+            int nro_tramite= Integer.parseInt(datos[0].get("NRO").toString());
+            nro_tramite++;                        
+
+            sql = "insert into adquisiciones.transaccion_nro(cod_trans_nro,cod_transaccion,cod_tramite,nro,fecha,cod_trans_nro_ant,cod_usuario) "+
+                "values (ADQUISICIONES.SEC_COD_TRANS_NRO.NEXTVAL,"+cod_transaccion+","+cod_tramite+","+nro_tramite+",sysdate,"+cod_trans_nro+","+cod_usuario+")";
+            datos= Consulta(sql);           
+
+            sql="select MAX(t2.cod_trans_nro) as cod_trans_nro "+
+                "from adquisiciones.transaccion t1 inner join adquisiciones.transaccion_nro t2 on t1.cod_transaccion=t2.cod_transaccion "+
+                "where t2.cod_tramite="+cod_tramite+" and t1.gestion="+gestion+" and t1.cod_almacen="+cod_almacen;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+     public Map[] setCreaNroTramiteDos(String tran,int cod_transaccion,int cod_almacen,int cod_tramite,int gestion,int cod_trans_nro, int cod_usuario) throws Exception {
+        if ("SET-upDateGeneraTramite".equals(tran)) {   
+
+            String sql = "insert into adquisiciones.transaccion_nro(cod_trans_nro,cod_transaccion,cod_tramite,fecha,cod_trans_nro_ant,cod_usuario) "+
+                "values (ADQUISICIONES.SEC_COD_TRANS_NRO.NEXTVAL,"+cod_transaccion+","+cod_tramite+",sysdate,"+cod_trans_nro+","+cod_usuario+")";
+            Map[] datos= Consulta(sql);           
+
+            sql="select MAX(t2.cod_trans_nro) as cod_trans_nro "+
+                "from adquisiciones.transaccion t1 inner join adquisiciones.transaccion_nro t2 on t1.cod_transaccion=t2.cod_transaccion "+
+                "where t2.cod_tramite="+cod_tramite+" and t1.gestion="+gestion+" and t1.cod_almacen="+cod_almacen;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] setCreaNroTramiteTres(String tran,int cod_transaccion,int cod_almacen,int cod_tramite,int gestion,int cod_trans_nro, int cod_usuario) throws Exception {
+        if ("SET-upDateGeneraTramite".equals(tran)) {                     
+                                 
+             String sql="select (CASE WHEN MAX(t2.nro) is not null THEN MAX(t2.nro) ELSE 0 END )as nro "+
+                    "from adquisiciones.transaccion t1 inner join adquisiciones.transaccion_nro t2 on t1.cod_transaccion=t2.cod_transaccion "+
+                    "where t2.cod_tramite="+cod_tramite+" and t1.gestion="+gestion+" and t1.cod_almacen="+cod_almacen;
+            Map[] datos=Consulta(sql);
+            int nro_tramite= Integer.parseInt(datos[0].get("NRO").toString());
+            nro_tramite++;                        
+
+            sql = "insert into adquisiciones.transaccion_nro(cod_trans_nro,cod_transaccion,cod_tramite,nro,fecha,cod_trans_nro_ant,cod_usuario) "+
+                "values (ADQUISICIONES.SEC_COD_TRANS_NRO.NEXTVAL,"+cod_transaccion+","+cod_tramite+","+nro_tramite+",sysdate,"+cod_trans_nro+","+cod_usuario+")";
+            datos= Consulta(sql);
+
+            sql="select (CASE WHEN MAX(t2.nro) is not null THEN MAX(t2.nro) ELSE 0 END )as nro "+
+                    "from adquisiciones.transaccion t1 inner join adquisiciones.transaccion_nro t2 on t1.cod_transaccion=t2.cod_transaccion "+
+                    "where t2.cod_tramite=3 and t1.gestion="+gestion+" and t1.cod_almacen="+cod_almacen;
+            datos=Consulta(sql);
+            int nro_ing_alm= Integer.parseInt(datos[0].get("NRO").toString());
+            nro_ing_alm++;
+
+            sql="update adquisiciones.transaccion_nro "
+                + " set nro ="+nro_ing_alm
+                + " where cod_tramite = 3 and cod_trans_nro="+cod_trans_nro;
+            Consulta(sql);
+
+            sql="select MAX(t2.cod_trans_nro) as cod_trans_nro "+
+                "from adquisiciones.transaccion t1 inner join adquisiciones.transaccion_nro t2 on t1.cod_transaccion=t2.cod_transaccion "+
+                "where t2.cod_tramite="+cod_tramite+" and t1.gestion="+gestion+" and t1.cod_almacen="+cod_almacen;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    // Retorna num_ingreso __
+    public Map[] setNumIngreso(String tran,int cod_trans_nro) throws Exception {
+        if ("SET-setNumIngreso".equals(tran)) {
+            String sql="update adquisiciones.transaccion_nro "+
+                "set nro = ADQUISICIONES.SEC_INGA.NEXTVAL where cod_tramite = 3 and cod_trans_nro="+cod_trans_nro;
+            return Consulta(sql);
+        }
+        else return null;        
+    }
+
+    //guarda guarda relacion nro de tramite con los items 
+    public Map[] setTransaccionDetalleNro(String tran,int cod_trans_detalle,int cod_trans_nro) throws Exception {
+        if ("SET-upDateTransDetNro".equals(tran)) {
+            String sql="insert into adquisiciones.transaccion_detalle_nro(cod_trans_detalle,cod_trans_nro) "+
+                       "values ("+cod_trans_detalle+","+cod_trans_nro+") ";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+ 
+    // Avanza la transaccion
+    public String setTransaccionesDestino(String tran,int cod_trans_detalle,int cod_w,String origen) throws Exception {
+        String sql="";
+        if ("SET-upDateDestino".equals(tran)) {
+            sql="select t1.destino from adquisiciones.adm_workflow_estados t1 " +
+                "where t1.cod_w="+cod_w+" and origen='"+origen+"'";
+            Map[] datos=Consulta(sql);
+            String destino="";
+            for (int c=0;c<datos.length;c++){
+                 destino= datos[c].get("DESTINO").toString();
+            }
+            sql="update adquisiciones.transaccion_detalle "+
+                "set estado='"+destino+"' where cod_trans_detalle="+cod_trans_detalle;
+            datos=Consulta(sql);
+            return destino;
+        }
+        else return null;
+    }
+    
+    // Retorna la transaccion
+    public Map[] setTransaccionesOrigen(String tran,int cod_trans_detalle,int cod_w,String destino) throws Exception {
+        String sql="";
+        if ("SET-upDateOrig".equals(tran)) {
+            sql="select t1.origen from adquisiciones.adm_workflow_estados t1 " +
+                "where t1.cod_w="+cod_w+" and destino='"+destino+"'";
+            Map[] datos=Consulta(sql);
+            String origen="";
+            for (int c=0;c<datos.length;c++){
+                 origen= datos[c].get("ORIGEN").toString();
+            }
+            sql="update adquisiciones.transaccion_detalle "+
+                "set estado='"+origen+"' where cod_trans_detalle="+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    // Retorna transaccion de ppto directo a unidad
+    public Map[] setTransaccionesPptoUnidad(String tran,int cod_trans_detalle,String origen) throws Exception {
+        if ("SET-upDateTransPptoUnidad".equals(tran)) {
+            String sql="update adquisiciones.transaccion_detalle "+
+                "set estado='"+origen+"' where cod_trans_detalle="+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;        
+    }
+
+    // Reporte de pedidos de materiales
+    public Map[] getReporteSolicitud(int cod_transaccion,String estado,int cod_tramite) throws Exception {         
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,to_char(t2.fecha_envio,'YYYY-MM-DD') as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.tipo_item,t3.articulo,t4.detalle_solicitud,t4.cod_complemento,t2.nro as nro_transaccion,t3.cod_trans_detalle,t1.user_maker"
+                        + " from adquisiciones.transaccion t1"
+                        + " inner join (select distinct t1.cod_transaccion,t1.nro,t2.estado,t2.fecha_envio from adquisiciones.transaccion_nro t1 "
+                        + "            inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
+                        + "            inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+                        + "            where t2.estado='"+estado+"' and t1.cod_tramite="+cod_tramite+") t2 on t1.cod_transaccion=t2.cod_transaccion"
+                        + " inner join (select t1.cod_transaccion,t1.cod_trans_detalle,t1.unidad_medida,t1.cantidad_pedido,t3.articulo,t4.detalle as tipo_item,t1.precio_unit "
+                        + "             from adquisiciones.transaccion_detalle t1 "                        
+                        + "             inner join ADQUISICIONES.CLASIFICADOR_ITEM t3 on t1.cod_item=t3.cod_item"
+                        + "             inner join adquisiciones.tipo_item t4 on t3.cod_tipo_item=t4.cod_tipo_item) t3 on t3.cod_transaccion=t1.cod_transaccion"
+                        + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"                        
+                        + " where t1.cod_transaccion="+cod_transaccion+" order by t3.tipo_item,t3.articulo,t4.cod_complemento";
+          //String sql="select * from dual;
+        return Consulta(sql);              
+    }
+    // Reporte de pedidos de materiales
+    public Map[] getReporteSolicitudx(int cod_transaccion,String estado,int cod_tramite) throws Exception {         
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,to_char(t2.fecha_envio,'YYYY-MM-DD') as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,t4.detalle_solicitud,t4.cod_complemento,t2.nro as nro_transaccion,t3.cod_trans_detalle,t1.user_maker"
+                        + " from adquisiciones.transaccion t1"
+                        + " inner join (select distinct t1.cod_transaccion,t1.nro,t2.estado,t2.fecha_envio from adquisiciones.transaccion_nro t1 "
+                        + "            inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
+                        + "            inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+                        + "            where t2.estado='"+estado+"' and t1.cod_tramite="+cod_tramite+") t2 on t1.cod_transaccion=t2.cod_transaccion"
+                        + " inner join (select t1.cod_transaccion,t1.cod_trans_detalle,t2.DETALLE as unidad_medida,t1.cantidad_pedido,t1.detalle as articulo,t1.precio_unit"
+                        + "             from adquisiciones.transaccion_detalle t1 inner join UNIDAD_MEDIDA t2 on t1.COD_UNIDAD_MEDIDA=t2.COD_UNIDAD_MEDIDA and t1.cod_unidad_medida <> 0 "
+                        + "             ) t3 on t3.cod_transaccion=t1.cod_transaccion"                        
+                        + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"                        
+                        + " where t1.cod_transaccion="+cod_transaccion+" order by t3.cod_trans_detalle,t4.cod_complemento";
+          //String sql="select * from dual;
+        return Consulta(sql);              
+    }
+    //Reporte Solicitud Borrador
+    public Map[] getReporteSolicitudBorrador(int cod_transaccion) throws Exception {         
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion, 'SIN ENVIAR' as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.tipo_item,t3.articulo,t4.detalle_solicitud,t4.cod_complemento,t1.nro_transaccion,t3.cod_trans_detalle,t1.user_maker"
+                        + " from adquisiciones.transaccion t1"
+                        + " inner join (select distinct t1.cod_transaccion,t1.nro,t2.ESTADO"
+                        + "            from transaccion_nro t1 inner join transaccion_detalle t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
+                        + "            where t1.COD_TRAMITE=1) t2 on t1.cod_transaccion=t2.cod_transaccion"
+                        + " inner join (select t1.cod_transaccion,t1.cod_trans_detalle,t1.unidad_medida,t1.cantidad_pedido,t3.articulo,t4.detalle as tipo_item,t1.precio_unit "
+                        + "             from adquisiciones.transaccion_detalle t1 "                        
+                        + "             inner join ADQUISICIONES.CLASIFICADOR_ITEM t3 on t1.cod_item=t3.cod_item"
+                        + "             inner join adquisiciones.tipo_item t4 on t3.cod_tipo_item=t4.cod_tipo_item) t3 on t3.cod_transaccion=t1.cod_transaccion"
+                        + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"                        
+                        + " where t1.cod_transaccion="+cod_transaccion+" order by t3.tipo_item,t3.articulo,t4.cod_complemento";
+          //String sql="select * from dual;
+        return Consulta(sql);              
+    }
+    public Map[] getReporteSolicitudBorrador2(int cod_transaccion) throws Exception {         
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion, 'SIN ENVIAR' as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,t4.detalle_solicitud,t4.cod_complemento,t1.nro_transaccion,t3.cod_trans_detalle,t1.user_maker"
+                        + " from adquisiciones.transaccion t1"
+                        + " inner join (select distinct t1.cod_transaccion,t1.nro,t2.ESTADO"
+                        + "            from transaccion_nro t1 inner join transaccion_detalle t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
+                        + "            where t1.COD_TRAMITE=1) t2 on t1.cod_transaccion=t2.cod_transaccion"
+                        + " inner join (select t1.cod_transaccion,t1.cod_trans_detalle,t2.DETALLE as unidad_medida,t1.cantidad_pedido,t1.detalle as articulo,t1.precio_unit "
+                        + "             from adquisiciones.transaccion_detalle t1 inner join UNIDAD_MEDIDA t2 on t1.COD_UNIDAD_MEDIDA=t2.COD_UNIDAD_MEDIDA and t1.cod_unidad_medida <> 0"                        
+                        + "             ) t3 on t3.cod_transaccion=t1.cod_transaccion"
+                        + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"                        
+                        + " where t1.cod_transaccion="+cod_transaccion+" order by t3.articulo,t4.cod_complemento";
+          //String sql="select * from dual;
+        return Consulta(sql);              
+    }
+    // Reporte de pedidos de materiales2
+    public Map[] getReporteSolicitud2(int cod_transaccion) throws Exception {         
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,to_char(t2.fecha_envio,'YYYY-MM-DD') as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.tipo_item,t3.articulo,t4.detalle_solicitud,t4.cod_complemento,t1.nro_transaccion"
+                        + " from adquisiciones.transaccion t1"
+                        + " inner join (select distinct t1.cod_transaccion,t1.nro,t2.estado,t2.fecha_envio from adquisiciones.transaccion_nro t1 "
+                        + "            inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
+                        + "            inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+                        + "            where t2.estado='PPTO' and t1.cod_tramite=1) t2 on t1.cod_transaccion=t2.cod_transaccion"
+                        + " inner join (select t1.cod_transaccion,t1.cod_trans_detalle,t1.unidad_medida,t1.cantidad_pedido,t3.articulo,t4.detalle as tipo_item,t1.precio_unit "
+                        + "             from adquisiciones.transaccion_detalle t1 "                        
+                        + "             inner join ADQUISICIONES.CLASIFICADOR_ITEM t3 on t1.cod_item=t3.cod_item"
+                        + "             inner join adquisiciones.tipo_item t4 on t3.cod_tipo_item=t4.cod_tipo_item) t3 on t3.cod_transaccion=t1.cod_transaccion"
+                        + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"                        
+                        + " where t1.cod_transaccion="+cod_transaccion+" order by t3.tipo_item,t3.articulo,t4.cod_complemento";
+          //String sql="select * from dual;
+        return Consulta(sql);              
+    }
+    // Reporte de orden de compra
+    public Map[] getReporteOrden(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,to_char(t2.fecha_envio,'YYYY-MM-DD') as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.tipo_item,t3.articulo,(CASE WHEN t4.detalle_adqui is not null THEN T4.DETALLE_ADQUI ELSE t4.DETALLE_SOLICITUD  END ) as detalle_solicitud,t4.cod_complemento,t1.hoja_ruta,t1.cbte,t2.casa_comercial,t2.direccion,t2.telefono,t2.nit,t3.precio_unit,t2.nro as nro_transaccion,t3.cod_trans_detalle,t3.partida,t2.obs"
+                    + " from adquisiciones.transaccion t1"
+                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t2.estado,t2.fecha_envio,t4.nit,t4.telefono,t4.direccion,t4.casa_comercial,t1.obs from adquisiciones.transaccion_nro t1 "
+                    + "                inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
+                    + "                inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+                    + "                left join (select t1.COD_TRANS_NRO,t1.COD_PROVEEDOR AS NIT,t1.TELEFONO,t1.DIRECCION,t1.NOMBRE_COMERCIAL as CASA_COMERCIAL from proponentes t1 where t1.ESTADO = 'V') t4 on t4.COD_TRANS_NRO=t1.COD_TRANS_NRO"
+                    + "                where t2.estado='"+estado+"' and t1.cod_tramite= "+cod_tramite+") t2 on t1.cod_transaccion=t2.cod_transaccion"
+                    + " inner join (select distinct t1.cod_transaccion,t5.cod_trans_nro,t1.cod_trans_detalle,t1.unidad_medida,t1.cantidad_pedido,t3.articulo,t4.detalle as tipo_item,t1.precio_unit,t3.partida"
+                    + "        from adquisiciones.transaccion_detalle t1 "                    
+                    + "        inner join ADQUISICIONES.CLASIFICADOR_ITEM t3 on t1.cod_item=t3.cod_item"
+                    + "        inner join adquisiciones.tipo_item t4 on t3.cod_tipo_item=t4.cod_tipo_item"
+                    + "        inner join adquisiciones.transaccion_detalle_nro t5 on t5.cod_trans_detalle=t1.cod_trans_detalle"
+                    + "        ) t3 on t3.cod_trans_nro=t2.cod_trans_nro"
+                    + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"
+                    + " where t2.cod_trans_nro="+cod_trans_nro+ " order by t3.COD_TRANS_DETALLE,t3.tipo_item,t3.articulo,t4.cod_complemento";
+        return Consulta(sql);              
+    }
+    // Reporte de orden de compra
+    public Map[] getReporteOrdenx(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,to_char(t2.fecha_envio,'YYYY-MM-DD') as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,(CASE WHEN t4.detalle_adqui is not null THEN T4.DETALLE_ADQUI ELSE t4.DETALLE_SOLICITUD  END ) as detalle_solicitud,t4.cod_complemento,t1.hoja_ruta,(CASE WHEN t1.cbte is not null THEN t1.cbte ELSE t5.cod_preventivo  END ) as cbte,t2.casa_comercial,t2.direccion,t2.telefono,t2.nit,t3.precio_unit,t2.nro as nro_transaccion,t3.cod_trans_detalle,t3.partida,t2.obs"
+                    + " from adquisiciones.transaccion t1"
+                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t2.estado,t2.fecha_envio,t4.nit,t4.telefono,t4.direccion,t4.casa_comercial,t1.obs from adquisiciones.transaccion_nro t1 "
+                    + "                inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
+                    + "                inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+                    + "                left join (select t1.COD_TRANS_NRO,t1.COD_PROVEEDOR AS NIT,t1.TELEFONO,t1.DIRECCION,t1.NOMBRE_COMERCIAL as CASA_COMERCIAL from proponentes t1 where t1.ESTADO = 'V') t4 on t4.COD_TRANS_NRO=t1.COD_TRANS_NRO"
+                    + "                where t2.estado='"+estado+"' and t1.cod_tramite= "+cod_tramite+") t2 on t1.cod_transaccion=t2.cod_transaccion"
+                    + " inner join (select distinct t1.cod_transaccion,t5.cod_trans_nro,t1.cod_trans_detalle,t2.detalle as unidad_medida,t1.cantidad_pedido,t1.detalle as articulo,t1.precio_unit,t1.partida"
+                    + "        from adquisiciones.transaccion_detalle t1 "
+                    + "        inner join unidad_medida t2 on t1.COD_UNIDAD_MEDIDA=t2.COD_UNIDAD_MEDIDA "                    
+                    + "        inner join adquisiciones.transaccion_detalle_nro t5 on t5.cod_trans_detalle=t1.cod_trans_detalle"
+                    + "        ) t3 on t3.cod_trans_nro=t2.cod_trans_nro"
+                    + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"
+                    + " inner join adquisiciones.transaccion_preventivo t5 on t1.cod_transaccion=t5.cod_transaccion"
+                    + " where t2.cod_trans_nro="+cod_trans_nro+ " order by t3.COD_TRANS_DETALLE,t3.articulo,t4.cod_complemento";
+        return Consulta(sql);              
+    }
+   
+    // Reporte de orden de compra descargo
+    public Map[] getReporteOrdenDescargo(int cod_transaccion,String estado,int cod_tramite) throws Exception {         
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,to_char(t2.fecha_envio,'YYYY-MM-DD') as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.tipo_item,t3.articulo,(CASE WHEN t4.detalle_adqui is not null THEN T4.DETALLE_ADQUI ELSE t4.DETALLE_SOLICITUD  END ) as detalle_solicitud,t4.cod_complemento,t1.hoja_ruta,t1.cbte,t2.casa_comercial,t2.direccion,t2.telefono,t2.nit,t3.precio_unit,t2.nro as nro_transaccion,t3.cod_trans_detalle,t3.partida,t2.obs,t2.cod_trans_nro"
+                    + " from adquisiciones.transaccion t1"
+                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t2.estado,t2.fecha_envio,t4.nit,t4.telefono,t4.direccion,t4.casa_comercial,t1.obs from adquisiciones.transaccion_nro t1 "
+                    + "                inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
+                    + "                inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+                    + "                left join (select t1.COD_TRANS_NRO,t1.COD_PROVEEDOR AS NIT,t1.TELEFONO,t1.DIRECCION,t1.NOMBRE_COMERCIAL as CASA_COMERCIAL from proponentes t1 where t1.ESTADO = 'V') t4 on t4.COD_TRANS_NRO=t1.COD_TRANS_NRO"
+                    + "                where t2.estado='"+estado+"' and t1.cod_tramite= "+cod_tramite+") t2 on t1.cod_transaccion=t2.cod_transaccion"
+                    + " inner join (select distinct t1.cod_transaccion,t5.cod_trans_nro,t1.cod_trans_detalle,t1.unidad_medida,t1.cantidad_pedido,t3.articulo,t4.detalle as tipo_item,t1.precio_unit,t3.partida"
+                    + "        from adquisiciones.transaccion_detalle t1 "                    
+                    + "        inner join ADQUISICIONES.CLASIFICADOR_ITEM t3 on t1.cod_item=t3.cod_item"
+                    + "        inner join adquisiciones.tipo_item t4 on t3.cod_tipo_item=t4.cod_tipo_item"
+                    + "        inner join adquisiciones.transaccion_detalle_nro t5 on t5.cod_trans_detalle=t1.cod_trans_detalle"
+                    + "        ) t3 on t3.cod_trans_nro=t2.cod_trans_nro"
+                    + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"
+                    + " where t1.COD_TRANSACCION="+cod_transaccion+ " order by t3.tipo_item,t3.articulo,t4.cod_complemento";
+        return Consulta(sql);              
+    }
+    // Reporte de orden de compra descargo
+    public Map[] getReporteOrdenDescargox(int cod_transaccion,String estado,int cod_tramite) throws Exception {         
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,to_char(t2.fecha_envio,'YYYY-MM-DD') as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,(CASE WHEN t4.detalle_adqui is not null THEN T4.DETALLE_ADQUI ELSE t4.DETALLE_SOLICITUD  END ) as detalle_solicitud,t4.cod_complemento,t1.hoja_ruta,t1.cbte,t2.casa_comercial,t2.direccion,t2.telefono,t2.nit,t3.precio_unit,t2.nro as nro_transaccion,t3.cod_trans_detalle,t3.partida,t2.obs,t2.cod_trans_nro,t1.user_maker"
+                    + " from adquisiciones.transaccion t1"
+                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t2.estado,t2.fecha_envio,t4.nit,t4.telefono,t4.direccion,t4.casa_comercial,t1.obs from adquisiciones.transaccion_nro t1 "
+                    + "                inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
+                    + "                inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+                    + "                left join (select t1.COD_TRANS_NRO,t1.COD_PROVEEDOR AS NIT,t1.TELEFONO,t1.DIRECCION,t1.NOMBRE_COMERCIAL as CASA_COMERCIAL from proponentes t1 where t1.ESTADO = 'V') t4 on t4.COD_TRANS_NRO=t1.COD_TRANS_NRO"
+                    + "                where t2.estado='"+estado+"' and t1.cod_tramite= "+cod_tramite+") t2 on t1.cod_transaccion=t2.cod_transaccion"
+                    + " inner join (select distinct t1.cod_transaccion,t5.cod_trans_nro,t1.cod_trans_detalle,t2.detalle as unidad_medida,t1.cantidad_pedido,t1.detalle as articulo,t1.precio_unit,t1.partida"
+                    + "        from adquisiciones.transaccion_detalle t1 inner join unidad_medida t2 on t1.cod_unidad_medida=t2.cod_unidad_medida"
+                    + "        inner join adquisiciones.transaccion_detalle_nro t5 on t5.cod_trans_detalle=t1.cod_trans_detalle"
+                    + "        ) t3 on t3.cod_trans_nro=t2.cod_trans_nro"
+                    + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"
+                    + " where t1.COD_TRANSACCION="+cod_transaccion+ " order by t3.articulo,t4.cod_complemento";
+        return Consulta(sql);              
+    }
+
+    // Reporte de la transaccion con items
+    public Map[] getReporteIngreso(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
+       //String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,to_char(t2.fecha_envio,'YYYY-MM-DD') as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.tipo_item,t3.articulo,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t4.cod_complemento,t1.hoja_ruta,t1.cbte,t2.casa_comercial,t2.direccion,t2.telefono,t2.nit,t3.precio_unit,t1.nro_transaccion,t5.nro_orden_compra,to_char(t5.fec_orden_compra,'YYYY-MM-DD') as fec_orden_compra,t5.factura,to_char(t5.fecha_fact,'YYYY-MM-DD') as fecha_fact,t5.memo"
+       String sql="select distinct (t5.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,sysdate as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.tipo_item,t3.articulo,t3.partida,t3.cod_trans_detalle,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t4.cod_complemento,t1.hoja_ruta,t1.cbte,t5.casa_comercial,t5.nit,t3.precio_unit,t1.nro_transaccion,t2.nro_orden_compra,to_char(t2.fec_orden_compra,'YYYY-MM-DD') as fec_orden_compra,t5.factura,to_char(t5.fecha_fact,'YYYY-MM-DD') as fecha_fact,t5.memo,t3.origen,t5.obs"
+                    + " from adquisiciones.transaccion t1"
+        //          + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t2.estado,t2.fecha_envio,t1.nit,t1.telefono,t1.direccion,t1.casa_comercial from adquisiciones.transaccion_nro t1 "
+                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro as nro_orden_compra,t2.estado,sysdate as fec_orden_compra, t1.obs from adquisiciones.transaccion_nro t1 "
+                    + "                inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
+                    + "                inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+                    + "                where t2.estado='ALM1' and t1.cod_tramite=2"
+                    + "                ) t2 on t1.cod_transaccion=t2.cod_transaccion"
+                    + " inner join (select distinct t1.cod_transaccion,t5.cod_trans_nro,t1.cod_trans_detalle,t1.unidad_medida,t1.cantidad_pedido,t3.articulo,t3.partida,t4.detalle as tipo_item,t1.precio_unit,t6.DE as origen "
+                    + "        from adquisiciones.transaccion_detalle t1 "
+                    + "        inner join ADQUISICIONES.CLASIFICADOR_ITEM t3 on t1.cod_item=t3.cod_item"
+                    + "        inner join adquisiciones.tipo_item t4 on t3.cod_tipo_item=t4.cod_tipo_item"
+                    + "        inner join adquisiciones.transaccion_detalle_nro t5 on t5.cod_trans_detalle=t1.cod_trans_detalle"
+                    + "        inner join transaccion t6 on t1.COD_TRANSACCION=t6.COD_TRANSACCION"
+
+                    + "        ) t3 on t3.cod_trans_nro=t2.cod_trans_nro"
+
+                    + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"
+         //           + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro as nro_orden_compra,t2.fecha_envio as fec_orden_compra,t1.factura,t1.fecha_fact,t1.memo,T1.COD_TRANS_NRO_ANT from adquisiciones.transaccion_nro t1"
+                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t1.FECHA_ING as fecha_envio ,t1.factura,t1.fecha_fact,t1.memo,T1.COD_TRANS_NRO_ANT,t4.NOMBRE_COMERCIAL as casa_comercial,t4.cod_proveedor as nit, t1.obs from adquisiciones.transaccion_nro t1"
+                    + "                inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
+                    + "                inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+                    + "                inner join PROPONENTES t4 on t1.COD_TRANS_NRO_ANT=t4.COD_TRANS_NRO and t4.ESTADO='V' "
+                    + "                where t2.estado='"+estado+"' and t1.cod_tramite="+cod_tramite+") t5 on t5.cod_trans_nro_ant=t2.cod_trans_nro"
+                    + " where t5.cod_trans_nro="+cod_trans_nro+ " order by t3.tipo_item,t3.articulo,t4.cod_complemento";
+         return Consulta(sql);              
+    }
+
+    // Reporte de la transaccion con items
+    public Map[] getReporteIngresox(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
+       String sql="select distinct (t5.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,sysdate as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,t3.partida,t3.cod_trans_detalle,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t4.cod_complemento,t1.hoja_ruta,t1.cbte,t5.casa_comercial,t5.nit,t3.precio_unit,t1.nro_transaccion,t2.nro_orden_compra,to_char(t5.fec_orden_compra,'YYYY-MM-DD') as fec_orden_compra,t5.factura,to_char(t5.fecha_fact,'YYYY-MM-DD') as fecha_fact,t5.memo,t3.origen,t5.obs"
+                    + " from adquisiciones.transaccion t1"
+                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro as nro_orden_compra,t2.estado, t1.obs from adquisiciones.transaccion_nro t1 "
+                    + "                inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
+                    + "                inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+                    + "                where t2.estado='ALM1' and t1.cod_tramite=2"
+                    + "                ) t2 on t1.cod_transaccion=t2.cod_transaccion"
+                    + " inner join (select distinct t1.cod_transaccion,t5.cod_trans_nro,t1.cod_trans_detalle,t2.detalle as unidad_medida,t1.cantidad_pedido,t1.detalle as articulo,t1.partida,t1.precio_unit,t6.DE as origen "
+                    + "        from adquisiciones.transaccion_detalle t1 "
+                    + "        inner join unidad_medida t2 on t1.COD_UNIDAD_MEDIDA=t2.COD_UNIDAD_MEDIDA"
+                    + "        inner join adquisiciones.transaccion_detalle_nro t5 on t5.cod_trans_detalle=t1.cod_trans_detalle"
+                    + "        inner join transaccion t6 on t1.COD_TRANSACCION=t6.COD_TRANSACCION"
+                    + "        ) t3 on t3.cod_trans_nro=t2.cod_trans_nro"
+                    + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"
+                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t1.FECHA_ING as fecha_envio ,t1.factura,t1.fecha_fact,t1.memo,T1.COD_TRANS_NRO_ANT,t4.NOMBRE_COMERCIAL as casa_comercial,t4.cod_proveedor as nit, t1.obs,t1.fecha as fec_orden_compra from adquisiciones.transaccion_nro t1"
+                    + "                inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
+                    + "                inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+                    + "                inner join PROPONENTES t4 on t1.COD_TRANS_NRO_ANT=t4.COD_TRANS_NRO and t4.ESTADO='V' "
+                    + "                where t2.estado='"+estado+"' and t1.cod_tramite="+cod_tramite+") t5 on t5.cod_trans_nro_ant=t2.cod_trans_nro"
+                    + " where t5.cod_trans_nro="+cod_trans_nro+ " order by t3.articulo,t4.cod_complemento";
+         return Consulta(sql);              
+    }
+
+    // Reporte de pedido de materiales
+    public Map[] getReportePedido(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,t2.nro,t2.num_ing,sysdate as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t3.unidad_medida,t3.cantidad_pedido,t3.tipo_item,t3.articulo,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t3.cod_trans_detalle,t4.cod_complemento,t3.precio_unit,t1.nro_transaccion,t1.detalle,t1.cbte"
+                    + " from adquisiciones.transaccion t1"
+                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t2.estado,t2.fecha_envio,t4.nro as num_ing from adquisiciones.transaccion_nro t1 "
+                    + "            inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
+                    + "            inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+                    + "            inner join TRANSACCION_NRO t4 on t1.COD_TRANS_NRO_ANT=t4.COD_TRANS_NRO"
+                    + "            where t2.estado='"+estado+"' and t1.cod_tramite="+cod_tramite+") t2 on t1.cod_transaccion=t2.cod_transaccion"
+                    + " inner join (select distinct t1.cod_transaccion,t5.cod_trans_nro,t1.cod_trans_detalle,t1.unidad_medida,t1.cantidad_pedido,t3.articulo,t4.detalle as tipo_item,t1.precio_unit "
+                    + "    from adquisiciones.transaccion_detalle t1 "
+                    + "    inner join ADQUISICIONES.CLASIFICADOR_ITEM t3 on t1.cod_item=t3.cod_item"
+                    + "    inner join adquisiciones.tipo_item t4 on t3.cod_tipo_item=t4.cod_tipo_item"
+                    + "    inner join adquisiciones.transaccion_detalle_nro t5 on t5.cod_trans_detalle=t1.cod_trans_detalle"
+                    + "    ) t3 on t3.cod_trans_nro=t2.cod_trans_nro"
+                    + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"
+                    + " where t2.cod_trans_nro="+cod_trans_nro+" order by t3.tipo_item,t3.articulo,t4.cod_complemento";
+        return Consulta(sql);              
+    }
+
+    // Reporte de pedido de materiales
+    public Map[] getReportePedidox(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t2.fecha,'YYYY-MM-DD') as fecha_creacion,t2.nro,t2.num_ing,sysdate as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t3.cod_trans_detalle,t4.cod_complemento,t3.precio_unit,t1.nro_transaccion,t1.detalle,t1.cbte"
+                    + " from adquisiciones.transaccion t1"
+                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t2.estado,t2.fecha_envio,GET_NRO(t1.COD_TRANS_NRO_ANT) as num_ing, fecha from adquisiciones.transaccion_nro t1 "
+                    + "            inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
+                    + "            inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+                    + "            where t2.estado='"+estado+"' and t1.cod_tramite="+cod_tramite+") t2 on t1.cod_transaccion=t2.cod_transaccion"
+                    + " inner join (select distinct t1.cod_transaccion,t5.cod_trans_nro,t1.cod_trans_detalle,t2.detalle as unidad_medida,t1.cantidad_pedido,t1.detalle as articulo,t1.precio_unit "
+                    + "    from adquisiciones.transaccion_detalle t1 "
+                    + "    inner join unidad_medida t2 on t1.cod_unidad_medida=t2.cod_unidad_medida"
+                    + "    inner join adquisiciones.transaccion_detalle_nro t5 on t5.cod_trans_detalle=t1.cod_trans_detalle"
+                    + "    ) t3 on t3.cod_trans_nro=t2.cod_trans_nro"
+                    + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"
+                    + " where t2.cod_trans_nro="+cod_trans_nro+" order by t3.articulo,t4.cod_complemento";
+        return Consulta(sql);              
+    }
+
+    // Reporte nota de conformidad
+    public Map[] getReporteNotaConformidadx(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t2.fecha,'YYYY-MM-DD') as fecha_creacion,t2.nro,t2.num_ing,sysdate as fecha_envio, t2.ciudad, t2.lugar, t2.hora_nc, t2.fecha_nc,t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t3.cod_trans_detalle,t4.cod_complemento,t3.precio_unit,t1.nro_transaccion,t1.detalle,t1.cbte, t3.partida,t5.NOMBRE_COMERCIAL as casa_comercial"
+                    + " from adquisiciones.transaccion t1"
+                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t2.estado,t2.fecha_envio,GET_NRO(t1.COD_TRANS_NRO_ANT) as num_ing, fecha, t1.ciudad, t1.lugar, t1.HORA_NC,t1.FECHA_NC from adquisiciones.transaccion_nro t1 "
+                    + "            inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
+                    + "            inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+                    + "            where t2.estado='"+estado+"' and t1.cod_tramite="+cod_tramite+") t2 on t1.cod_transaccion=t2.cod_transaccion"
+                    + " inner join (select distinct t1.cod_transaccion,t5.cod_trans_nro,t1.cod_trans_detalle,t2.detalle as unidad_medida,t1.cantidad_pedido,t1.detalle as articulo,t1.precio_unit,t1.partida "
+                    + "    from adquisiciones.transaccion_detalle t1 "
+                    + "    inner join unidad_medida t2 on t1.cod_unidad_medida=t2.cod_unidad_medida"
+                    + "    inner join adquisiciones.transaccion_detalle_nro t5 on t5.cod_trans_detalle=t1.cod_trans_detalle"
+                    + "    ) t3 on t3.cod_trans_nro=t2.cod_trans_nro"
+                    + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"
+                    + " inner join proponentes t5 on t1.cod_transaccion=t5.cod_transaccion and t5.estado='V'"
+                    + " where t2.cod_trans_nro="+cod_trans_nro+" order by t3.articulo,t4.cod_complemento";
+        return Consulta(sql);              
+    }
+
+    // Reporte nota de conformidad
+    public Map[] getReporteNotaConformidad(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
+        String sql="select t3.COD_TRANS_DETALLE,t1.NRO,t1.COD_TRAMITE,t3.DETALLE,t2.NOMBRE,t2.NOMBRE_COMERCIAL,t4.DETALLE_SOLICITUD,t1.COD_TRANS_NRO"
+                    + " from TRANSACCION_NRO t1 inner join PROPONENTES t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION and t1.COD_TRANS_NRO like 3979 and t1.COD_TRAMITE like 4 and t2.ESTADO='V'"
+                    + " inner join TRANSACCION_DETALLE t3 on t3.COD_TRANSACCION=t2.COD_TRANSACCION"
+                    + " LEFT OUTER JOIN TRANSACCION_DET_COMPLEMENTO t4 on t4.COD_TRANS_DETALLE = t3.COD_TRANS_DETALLE";
+        return Consulta(sql);              
+    }
+
+    // Reporte de pedido de materiales2
+    public Map[] getReportePedido2(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,t2.nro,to_char(t2.fecha_envio,'YYYY-MM-DD') as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t3.unidad_medida,t3.cantidad_pedido,t3.tipo_item,t3.articulo,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t3.cod_trans_detalle,t4.cod_complemento,t3.precio_unit,t1.nro_transaccion,t1.detalle,t1.cbte"
+                    + " from adquisiciones.transaccion t1"
+                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t2.estado,t2.fecha_envio from adquisiciones.transaccion_nro t1 "
+                    + "            inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
+                    + "            inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+                    + "            where t2.estado='"+estado+"' and t1.cod_tramite="+cod_tramite+") t2 on t1.cod_transaccion=t2.cod_transaccion"
+                    + " inner join (select distinct t1.cod_transaccion,t5.cod_trans_nro,t1.cod_trans_detalle,t1.unidad_medida,t1.cantidad_pedido,t3.articulo,t4.detalle as tipo_item,t1.precio_unit "
+                    + "    from adquisiciones.transaccion_detalle t1 "
+                    + "    inner join ADQUISICIONES.CLASIFICADOR_ITEM t3 on t1.cod_item=t3.cod_item"
+                    + "    inner join adquisiciones.tipo_item t4 on t3.cod_tipo_item=t4.cod_tipo_item"
+                    + "    inner join adquisiciones.transaccion_detalle_nro t5 on t5.cod_trans_detalle=t1.cod_trans_detalle"
+                    + "    ) t3 on t3.cod_trans_nro=t2.cod_trans_nro"
+                    + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"
+                    + " where t2.cod_trans_nro="+cod_trans_nro+" order by t3.tipo_item,t3.articulo,t4.cod_complemento";
+        return Consulta(sql);              
+    }
+
+    // Monto total para formato numerico
+    public Map[] getTotal(int cod_trans_nro) throws Exception {         
+        String sql="select sum(t2.cantidad_pedido*t2.precio_unit) as total from adquisiciones.transaccion_detalle_nro t1 "
+                + " inner join adquisiciones.transaccion_detalle t2 on t1.cod_trans_detalle=t2.cod_trans_detalle where t1.cod_trans_nro="+cod_trans_nro;
+        return Consulta(sql);              
+    }
+
+    // Monto total para formato numerico x cod_transaccion
+    public Map[] getTotal2(int cod_transaccion) throws Exception {         
+        String sql="select NVL(sum(t2.cantidad_pedido*t2.precio_unit),0) as total from adquisiciones.transaccion_detalle_nro t1 "
+                + " inner join adquisiciones.transaccion_detalle t2 on t1.cod_trans_detalle=t2.cod_trans_detalle inner join transaccion_nro t3 on t2.COD_TRANSACCION = t3.COD_TRANSACCION and t1.COD_TRANS_NRO=t3.COD_TRANS_NRO and t3.COD_TRAMITE=1 where t2.COD_TRANSACCION="+cod_transaccion;
+        return Consulta(sql);              
+    }
+
+    // Reporte de la transaccion con items
+/*    public Map[] getTransaccionReporte(int cod_transaccion,String estado,int cod_rol,int cod_tramite) throws Exception {         
+        String sql=" SELECT nro_gestion,to_char(fecha_creacion,'YYYY-MM-DD') as fecha_creacion,to_char(fecha_envio,'YYYY-MM-DD') as fecha_envio,unidad_sol ,unidad_des ,usuario_sol ,unidad_medida ,cantidad_pedido ,tipo_item ,articulo ,detalle_solicitud,hoja_ruta,cbte,casa_comercial,direccion,telefono,nit,precio_unit,(cantidad_pedido*precio_unit) as subtotal,nro_orden_compra,to_char(fec_orden_compra,'YYYY-MM-DD') as fec_orden_compra,factura,to_char(fecha_fact,'YYYY-MM-DD') as fecha_fact,memo,nro_transaccion "
+                + "FROM TABLE(ADQUISICIONES.transaccion_reportes('"+estado+"',"+cod_transaccion+","+cod_rol+","+cod_tramite+")) ";
+        return Consulta(sql);              
+    }*/
+
+    //saca la cabecera de la transaccion
+    public Map[] getTransaccion(int cod_transaccion) throws Exception {
+         String sql="select distinct  (t2.nro||'-'||t1.gestion) as nro_gestion,t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.obs as obs_almacen,t1.hoja_ruta,t1.cbte,t1.obs_ppto,t1.certif_ppto,t1.monto_ppto,t1.fondo "
+                    + " from adquisiciones.transaccion t1 inner join adquisiciones.transaccion_nro t2 on t1.cod_transaccion=t2.cod_transaccion "                    
+                    + " where t1.cod_transaccion="+cod_transaccion;
+        return Consulta(sql);
+    }
+
+    //halla los detalles del nro de transaccion
+    public Map[] getTransaccionNro(int cod_trans_nro) throws Exception {
+         String sql="select t1.obs,t2.casa_comercial,t1.cod_proveedor,t1.factura,to_char(t1.fecha_fact,'DD-MM-YYYY') as fecha_fact,t1.memo,t1.cod_transaccion,t1.resolucion_adm,t1.cuce,t1.inf_comision,t1.nro_propuesta"
+                    + " from adquisiciones.transaccion_nro t1 left join adquisiciones.proveedores t2 on t1.cod_proveedor=t2.cod_proveedor  "
+                    + " where cod_trans_nro = "+cod_trans_nro;
+        return Consulta(sql);
+    }
+
+    //saca los items con sus complementos
+    public Map[] getItems(int cod_transaccion) throws Exception {
+         String sql ="select null as cod_complemento,t1.cod_trans_detalle,t1.estado,t3.PARTIDA,t3.cod_item,t4.detalle as tipo_item,t3.articulo,t1.unidad_medida,t1.cantidad_pedido,null as articulo_act,null as articulo_alm,t1.precio_unit,t1.contrato"
+                + " from adquisiciones.transaccion_detalle t1 "
+                + " inner join ADQUISICIONES.CLASIFICADOR_ITEM t3 on t3.cod_item=t1.cod_item "
+                + " inner join adquisiciones.tipo_item t4 on t4.cod_tipo_item=t3.cod_tipo_item"
+                + " where cod_transaccion="+cod_transaccion
+                    + " and t1.COD_TRANS_DETALLE not in ("
+                    + " select t1.COD_TRANS_DETALLE"
+                    + " from TRANSACCION_DETALLE t1"
+                    + " inner join TRANSACCION_DETALLE_NRO t2 on t1.COD_TRANS_DETALLE=t2.COD_TRANS_DETALLE"
+                    + " inner join TRANSACCION_NRO t3 on t2.COD_TRANS_NRO=t3.COD_TRANS_NRO"
+                    + " where t3.COD_TRAMITE=2"
+                    + ")"
+                + " union"
+                + " select t1.cod_complemento,t2.cod_trans_detalle,null as estado,null as partida,null as cod_item,null as tipo_item,t1.detalle_solicitud as articulo,null as unidad_medida,null as cantidad_pedido,t1.detalle_adqui as articulo_act,t1.detalle_alm as articulo_alm,null as precio_unit,null as contrato"
+                + " from adquisiciones.transaccion_det_complemento t1"
+                + " inner join adquisiciones.transaccion_detalle t2 on t1.COD_TRANS_DETALLE=t2.COD_TRANS_DETALLE"
+                + " where t2.cod_transaccion="+cod_transaccion
+                    + " and t1.COD_TRANS_DETALLE not in ("
+                    + " select t1.COD_TRANS_DETALLE"
+                    + " from TRANSACCION_DETALLE t1"
+                    + " inner join TRANSACCION_DETALLE_NRO t2 on t1.COD_TRANS_DETALLE=t2.COD_TRANS_DETALLE"
+                    + " inner join TRANSACCION_NRO t3 on t2.COD_TRANS_NRO=t3.COD_TRANS_NRO"
+                    + " where t3.COD_TRAMITE=2"
+                    + ")"
+                + " order by cod_trans_detalle,tipo_item";
+        return Consulta(sql);
+    }
+    //saca los items con sus complementos
+    public Map[] getItems2(int cod_transaccion) throws Exception {
+         String sql ="select t1.cod_trans_detalle,t1.estado,t1.PARTIDA,t1.detalle as articulo,t2.detalle as unidad_medida,t1.cantidad_pedido"
+                + " from adquisiciones.transaccion_detalle t1 inner join unidad_medida t2 on t1.COD_UNIDAD_MEDIDA=t2.COD_UNIDAD_MEDIDA "
+                + " where cod_transaccion="+cod_transaccion;
+        return Consulta(sql);
+    }
+    //saca los items con sus complementos
+    public Map[] getItems2(int cod_transaccion, int cod_tramite) throws Exception {
+         String sql ="select t1.cod_trans_detalle,t1.DETALLE as articulo,t1.PARTIDA,t1.estado,t2.detalle as unidad_medida,t1.cantidad_pedido,t1.precio_unit,t1.contrato,null as cod_complemento"
+                + " from adquisiciones.transaccion_detalle t1 inner join UNIDAD_MEDIDA t2 on t1.COD_UNIDAD_MEDIDA=t2.COD_UNIDAD_MEDIDA"
+                + " inner join TRANSACCION_NRO t3 on t1.COD_TRANSACCION=t3.COD_TRANSACCION and t3.COD_TRAMITE="+cod_tramite
+                + " where t1.COD_TRANSACCION="+cod_transaccion
+                + " order by t1.partida, t1.cod_trans_detalle";
+        return Consulta(sql);
+    }
+
+    //Saca el detalle de los items separados por orden de compra
+    public Map[] getItemsPorOrdenDeCompra(int cod_trans_nro) throws Exception {
+         String sql="select null as cod_complemento,t1.cod_trans_detalle,t1.estado,t4.detalle as tipo_item,t3.articulo,t1.unidad_medida,t1.cantidad_pedido,null as articulo_act,null as articulo_alm,t1.precio_unit,t1.dbc,t1.contrato,t3.partida,t3.cod_item "
+                    + " from adquisiciones.transaccion_detalle t1 "
+                    + " inner join ADQUISICIONES.CLASIFICADOR_ITEM t3 on t3.cod_item=t1.cod_item  "
+                    + " inner join adquisiciones.tipo_item t4 on t4.cod_tipo_item=t3.cod_tipo_item "
+                    + " inner join ADQUISICIONES.TRANSACCION_DETALLE_NRO t5 on t5.cod_trans_detalle=t1.cod_trans_detalle "
+                    + " where t5.cod_trans_nro="+cod_trans_nro
+                    + " union "
+                    + " select t1.cod_complemento,t2.cod_trans_detalle,null as estado,null as tipo_item,t1.detalle_solicitud as articulo,null as unidad_medida,null as cantidad_pedido,t1.detalle_adqui as articulo_act,t1.detalle_alm as articulo_alm,null as precio_unit,null as dbc,null as contrato,null as partida, null as cod_item "
+                    + " from adquisiciones.transaccion_det_complemento t1 "
+                    + " inner join adquisiciones.transaccion_detalle t2 on t1.COD_TRANS_DETALLE=t2.COD_TRANS_DETALLE"
+                    + " inner join ADQUISICIONES.TRANSACCION_DETALLE_NRO t3 on T3.COD_TRANS_DETALLE=T2.COD_TRANS_DETALLE "
+                    + " where t3.cod_trans_nro="+cod_trans_nro+" order by cod_trans_detalle,tipo_item";
+        return Consulta(sql);
+    }
+
+    //Saca el detalle de los items separados por orden de compra
+    public Map[] getItemsPorOrdenDeCompra2(int cod_trans_nro) throws Exception {
+         String sql="select null as cod_complemento,t1.cod_trans_detalle,t1.estado,t1.detalle as articulo,t3.detalle as unidad_medida,t1.cantidad_pedido,null as articulo_act,null as articulo_alm,t1.precio_unit,t1.dbc,t1.contrato,t1.partida,t1.cod_item "
+                    + " from adquisiciones.transaccion_detalle t1 "
+                    + " inner join ADQUISICIONES.TRANSACCION_DETALLE_NRO t2 on t2.cod_trans_detalle=t1.cod_trans_detalle  "
+                    + " inner join UNIDAD_MEDIDA t3 on t1.COD_UNIDAD_MEDIDA=t3.cod_unidad_medida "
+                    + " where t2.cod_trans_nro="+cod_trans_nro
+                    + " union "
+                    + " select t1.cod_complemento,t2.cod_trans_detalle,null as estado,t1.detalle_solicitud as articulo,null as unidad_medida,null as cantidad_pedido,t1.detalle_adqui as articulo_act,t1.detalle_alm as articulo_alm,null as precio_unit,null as dbc,null as contrato,null as partida, null as cod_item "
+                    + " from adquisiciones.transaccion_det_complemento t1 "
+                    + " inner join adquisiciones.transaccion_detalle t2 on t1.COD_TRANS_DETALLE=t2.COD_TRANS_DETALLE"
+                    + " inner join ADQUISICIONES.TRANSACCION_DETALLE_NRO t3 on T3.COD_TRANS_DETALLE=T2.COD_TRANS_DETALLE "
+                    + " where t3.cod_trans_nro="+cod_trans_nro+" order by cod_trans_detalle,cod_complemento desc";
+        return Consulta(sql);
+    }
+
+   // Lista Documentos Adjuntos
+    public Map[] getDocumentos(int cod_transaccion) throws Exception {
+         String sql ="SELECT COD_DOCS,COD_TRANSACCION,TERMINOS_REF,UBICACION,DESCRIPCION FROM ADQUISICIONES.DOCUMENTOS WHERE COD_TRANSACCION="+cod_transaccion+" AND ESTADO='V'";
+        return Consulta(sql);
+    }
+   
+     // Lista El ultimo documento
+    public Map[] getUltimoDocumento() throws Exception {
+         String sql ="SELECT (COD_DOCS+1) AS ULTIMO FROM ADQUISICIONES.DOCUMENTOS WHERE ROWNUM=1 ORDER BY COD_DOCS DESC";
+        return Consulta(sql);
+    }
+
+   //Inserta Documento Adjunto
+    public Map[] setDocumentos(String tran, int cod_transaccion,String terminos_ref,String ubicacion,String descripcion,String estado, int cod_adjunto) throws Exception {
+        if ("SET-insDataDoc".equals(tran)) {
+            String sql="insert into adquisiciones.documentos(cod_docs,cod_transaccion,terminos_ref,ubicacion,descripcion,estado,cod_adjunto)"+
+                        " values (ADQUISICIONES.SEC_COD_DOCS.NEXTVAL,"+cod_transaccion+",'"+terminos_ref+"','"+ubicacion+"','"+descripcion+"','"+estado+"',"+cod_adjunto+")";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+ 
+  //anula el Documento Adjunto
+    public Map[] setAnulaDocumento(String tran,int cod_documento) throws Exception {
+        if ("SET-upDateAnulaDocumento".equals(tran)) {
+            String sql="update adquisiciones.documentos "
+                    + "set estado='X' "
+                    + "where cod_docs="+cod_documento;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+   
+   //guarda los nuevos detalles de adquisiciones
+    public Map[] setNuevoComplemento(String tran,int cod_complemento,String detalle_adqui) throws Exception {
+        if ("SET-upDateNuevoComplemento".equals(tran)) {
+            String sql="update adquisiciones.transaccion_det_complemento set detalle_adqui="+detalle_adqui+" where cod_complemento="+cod_complemento;            
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    //guarda los nuevos detalles de adquisiciones
+    public Map[] setNuevoComplementoIngAlm(String tran,int cod_complemento,String detalle_alm) throws Exception {
+        if ("SET-upDateNuevoComplementoIngAlm".equals(tran)) {
+            String sql="update adquisiciones.transaccion_det_complemento set detalle_alm="+detalle_alm+" where cod_complemento="+cod_complemento;            
+            return Consulta(sql);
+        }
+        else return null;
+    }
+   
+    //guarda el precio unitario
+    public Map[] setDetallePrecioUnit(String tran,int cod_trans_detalle,double precio_unit) throws Exception {
+        if ("SET-upDatedetPrecUnit".equals(tran)) {
+            String sql="update adquisiciones.transaccion_detalle set precio_unit="+precio_unit+" where cod_trans_detalle="+cod_trans_detalle;            
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    //guarda el dbc
+    public Map[] setDetalleDBC(String tran,int cod_trans_detalle,String dbc) throws Exception {
+        if ("SET-upDatedetDBC".equals(tran)) {
+            String sql="update adquisiciones.transaccion_detalle set dbc='"+dbc+"' where cod_trans_detalle="+cod_trans_detalle;            
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+   //guarda contrato
+    public Map[] setDetalleContrato(String tran,int cod_trans_detalle,String contrato) throws Exception {
+        if ("SET-upDatedetDBC".equals(tran)) {
+            String sql="update adquisiciones.transaccion_detalle set contrato='"+contrato+"' where cod_trans_detalle="+cod_trans_detalle;            
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    //anula tramite
+    
+    public Map[] XAnulaTramite(String tran,int nro) throws Exception {
+        if ("SET-anulaTramite".equals(tran)) {
+            String sql="select t2.COD_TRANS_DETALLE "
+                    + " from transaccion_nro t1 inner join transaccion_detalle_nro t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
+                    + " where t1.nro="+nro+" and t1.COD_TRAMITE=2";
+                      
+            Map[] datos=Consulta(sql);
+            int cod_trans_detalle;
+            if (datos!=null){  
+                for (int f=0;f<datos.length;f++){
+                  
+                    cod_trans_detalle = Integer.parseInt(datos[f].get("COD_TRANS_DETALLE").toString());
+                    sql="update adquisiciones.transaccion_detalle set estado ='NUL' where cod_trans_detalle="+cod_trans_detalle;
+                    Consulta(sql);
+                  
+                }
+            }
+            
+            return null;
+        }
+        else return null;
+    }
+    public Map[] getTransDetalle(int nro) throws Exception {
+            String sql="select t2.COD_TRANS_DETALLE "
+                    + " from transaccion_nro t1 inner join transaccion_detalle_nro t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
+                    + " where t1.nro="+nro+" and t1.COD_TRAMITE=2";
+            return Consulta(sql);
+    }
+
+    //actualiza datos almacen
+    public Map[] setActualizaTransaccionAlm(int cod_transaccion,String obs_almacen) throws Exception {
+        String sql="update adquisiciones.transaccion "
+                + " set obs="+obs_almacen+" "
+                + " where cod_transaccion="+cod_transaccion;
+        return Consulta(sql);
+    }
+    //actualiza datos almacen
+    public Map[] setActualizaTransaccionAlmDos(int cod_trans_nro,String obs_almacen) throws Exception {
+        String sql="update adquisiciones.transaccion_nro "
+                + " set obs="+obs_almacen+" "
+                + " where cod_trans_nro="+cod_trans_nro;
+        return Consulta(sql);
+    }
+    //actualiza observacion de adquisiciones
+    public Map[] setActualizaTransaccionObsAdqui(int cod_transaccion,String obs_adqui) throws Exception {
+        String sql="update adquisiciones.transaccion "
+                + " set obs_adqui="+obs_adqui+" where cod_transaccion="+cod_transaccion;
+        return Consulta(sql);
+    }
+
+    //actualiza observacion de adquisiciones
+    public Map[] setItemRegDesierto(String tran,int cod_trans_detalle) throws Exception {
+        if ("SET-upDateItRDes".equals(tran)) {
+            String sql="update adquisiciones.transaccion_detalle "
+                    + "set estado='D' "
+                    + "where cod_trans_detalle="+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    //actualiza datos ingreso almacen
+    public Map[] setActualizaTransaccionIngresoAlm(int cod_trans_nro,String factura,String fecha_fact,String fecha_ing,String memo,String obs) throws Exception {
+        String sql="update adquisiciones.transaccion_nro "
+                + " set factura="+factura+", fecha_fact=TO_DATE("+fecha_fact+",'DD/MM/YYYY'), fecha_ing=TO_DATE("+fecha_ing+",'DD/MM/YYYY'), memo="+memo+ ", obs='"+obs+"'"
+                + " where cod_trans_nro="+cod_trans_nro;
+        return Consulta(sql);
+    }
+
+   //actualiza datos ppto
+    public Map[] setActualizaTransaccionPpto(String tran,int cod_transaccion,String obs_ppto,String hoja_ruta,String cbte,String certif_ppto,double monto_ppto,String fondo) throws Exception {
+        if ("SET-upDateActTransPpto".equals(tran)) {
+            String sql="update adquisiciones.transaccion "
+                    + "set obs_ppto="+obs_ppto+", hoja_ruta="+hoja_ruta+", cbte="+cbte+", certif_ppto="+certif_ppto+", monto_ppto="+monto_ppto+", fondo="+fondo+" "
+                    + "where cod_transaccion="+cod_transaccion;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+   //actualiza datos adq
+    public Map[] setActualizaTransaccionAdq(String tran,int cod_trans_nro,String obs_adq,String cod_proveedor,String resolucion_adm,String cuce,String inf_comision,String nro_propuesta) throws Exception {
+        if ("SET-upDateActTransAdq".equals(tran)) {
+            String sql="update adquisiciones.transaccion_nro "
+                    + " set obs="+obs_adq+",cod_proveedor='"+cod_proveedor+"',resolucion_adm='"+resolucion_adm+"',cuce='"+cuce+"',inf_comision='"+inf_comision+"' ,nro_propuesta='"+nro_propuesta+"' where cod_trans_nro="+cod_trans_nro;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    //add proveedor a orden de compra
+    public Map[] addProveedor(int cod_trans_nro,String cod_proveedor) throws Exception {
+        //if ("SET-upDateActTransAdq".equals(tran)) {
+            /*String sql1="update adquisiciones.proponentes"+
+                "set estado='X' where cod_trans_nro="+cod_trans_nro+" and cod_proveedor='"+cod_proveedor+"' and estado='V'";
+            Consulta(sql1);*/
+            String sql="update adquisiciones.transaccion_nro "
+                    + " set cod_proveedor='"+cod_proveedor+"' where cod_trans_nro="+cod_trans_nro;
+            return Consulta(sql);
+            //String sql3="update adquisiciones.proponentes set estado='V' where cod_trans_nro=180 and cod_proveedor like '130303'";
+             
+            //Consulta(sql3);
+            
+        //}
+        //else return null;
+    }
+    //valida el proveedor en la tabla de proponentes
+    public Map[] upProveedor(int cod_trans_nro,String cod_proveedor) throws Exception {
+        //if ("SET-upDateActTransAdq".equals(tran)) {
+            /*String sql1="update adquisiciones.proponentes"+
+                "set estado='X' where cod_trans_nro="+cod_trans_nro+" and cod_proveedor='"+cod_proveedor+"' and estado='V'";
+            Consulta(sql1);*/
+            String sql="update adquisiciones.proponentes set estado='V' where cod_trans_nro="+cod_trans_nro+" and cod_proveedor like '"+cod_proveedor+"'";
+            return Consulta(sql);
+                       
+        //}
+        //else return null;
+    }
+    //da de baja a un proveedor en la tabla de proponentes
+    public Map[] downProveedor(int cod_trans_nro) throws Exception {
+        //if ("SET-upDateActTransAdq".equals(tran)) {
+            /*String sql1="update adquisiciones.proponentes"+
+                "set estado='X' where cod_trans_nro="+cod_trans_nro+" and cod_proveedor='"+cod_proveedor+"' and estado='V'";
+            Consulta(sql1);*/
+            String sql="update adquisiciones.proponentes set estado='X' where estado='V' and cod_trans_nro="+cod_trans_nro;
+            return Consulta(sql);
+                       
+        //}
+        //else return null;
+    }
+    //add observacion
+    public Map[] addObservacion(int cod_trans_nro,String obs_adq) throws Exception {
+        //if ("SET-upDateActTransAdq".equals(tran)) {
+            String sql="update adquisiciones.transaccion_nro "
+                    + " set obs='"+obs_adq+"' where cod_trans_nro="+cod_trans_nro;
+            return Consulta(sql);
+        //}
+        //else return null;
+    }
+    //add datos orden de compra
+    public Map[] addDatosOrdenCompra(int cod_trans_nro,String resolucion_adm,String cuce, String inf_comision, String nro_propuesta) throws Exception {
+        //if ("SET-upDateActTransAdq".equals(tran)) {
+             String sql="update adquisiciones.transaccion_nro "
+                    + " set resolucion_adm='"+resolucion_adm+"',cuce='"+cuce+"',inf_comision='"+inf_comision+"' ,nro_propuesta='"+nro_propuesta+"' where cod_trans_nro="+cod_trans_nro;
+            return Consulta(sql);
+        //}
+        //else return null;
+    }
+   //anula la transaccion
+    public Map[] setAnulaTransaccionAdq(String tran,int cod_transaccion) throws Exception {
+        if ("SET-upDateAnulTransAdq".equals(tran)) {
+            String sql="update adquisiciones.transaccion "
+                    + "set estado='A' "
+                    + "where cod_transaccion="+cod_transaccion;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    /* ======================================================================
+        INGRE$O DE MATERIALES en discucion para dejar de impelmentrlo o no 
+        ===================================================================*/
+
+    //actualiza datos ingreso almacen
+    public Map[] getBuscaItems(String articulo) throws Exception {
+        String sql ="select t1.cod_item,t1.unidad_medida,t3.detalle as tipo_item, t1.articulo "
+                + " from ADQUISICIONES.CLASIFICADOR_ITEM t1 "
+                + " inner join adquisiciones.tipo_item t3 on t1.cod_tipo_item=t3.cod_tipo_item"
+                + " where UPPER(t1.articulo) like UPPER('%"+articulo+"%') ";
+        return Consulta(sql);
+    }
+
+    //genera una nueva transaccion para un ingreso de materiales
+    public Map[] setNuevoIngresoAlmacen(String tran,int cod_tramite,int gestion,int cod_usuario,String estado,String ingreso_material) throws Exception {
+        if ("SET-upDateGeneraIngAlm".equals(tran)) {
+            String sql="select (CASE WHEN MAX(t1.nro_transaccion) is not null THEN MAX(t1.nro_transaccion) ELSE 0 END )as nro "+
+                "from adquisiciones.transaccion t1 "+
+                "where t1.gestion="+gestion;                
+            Map[] datos=Consulta(sql);
+            int nro_tramite= Integer.parseInt(datos[0].get("NRO").toString());
+            nro_tramite++;
+            sql = "insert into adquisiciones.transaccion(cod_transaccion,nro_transaccion,gestion,fecha,usuario_reg,estado,ingreso_material) "+
+                "values (ADQUISICIONES.SEC_COD_TRANSACCION.NEXTVAL,"+nro_tramite+","+gestion+",sysdate,"+cod_usuario+",'"+estado+"','"+ingreso_material+"')";
+            return Consulta(sql);    
+        }
+        else return null;
+    }
+    //getDetalle
+    public String getDetalle(String tran,int cod_complemento) throws Exception {
+        if ("SET-getDetalle".equals(tran)){
+            String sql = "select t1.detalle_solicitud "+
+                "from adquisiciones.transaccion_det_complemento t1 where t1.cod_complemento = "+cod_complemento;
+            Map[] datos = Consulta(sql);
+            return datos[0].get("DETALLE_SOLICITUD").toString();     
+        }
+        else return null;
+    }
+    //addDetalle
+    public Map[] addDetalle(String tran,int cod_complemento,int cod_trans_detalle,String detalle) throws Exception {
+        if ("SET-addDetalle".equals(tran)){
+            String sql = "insert into adquisiciones.transaccion_det_complemento(cod_complemento,cod_trans_detalle,detalle_solicitud) "+
+                "values ("+cod_complemento+","+cod_trans_detalle+",'"+detalle+"')";
+            return Consulta(sql);    
+        }
+        else return null;
+    }
+    //addDetalle2
+    public Map[] addDetallex(String tran,int cod_trans_detalle,String detalle) throws Exception {
+        if ("SET-addDetalle".equals(tran)){
+            String sql = "insert into adquisiciones.transaccion_det_complemento(cod_complemento,cod_trans_detalle,detalle_solicitud) "+
+                "values (ADQUISICIONES.SEC_cod_complemento.NEXTVAL,"+cod_trans_detalle+",'"+detalle+"')";
+            return Consulta(sql);    
+        }
+        else return null;
+    }
+    //delDetalle
+    public Map[] delDetalle(String tran,int cod_complemento,int cod_trans_detalle) throws Exception {
+        if ("SET-delDetalle".equals(tran)) {
+            String sql="delete from adquisiciones.transaccion_det_complemento where cod_complemento="+cod_complemento+" and cod_trans_detalle="+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+   }
+   //updateDetalle
+    public Map[] updateDetalle(String tran,int cod_complemento,String detalle) throws Exception {
+        if ("SET-updateDetalle".equals(tran)) {
+            String sql="update adquisiciones.transaccion_det_complemento set detalle_solicitud='"+detalle+"' where cod_complemento = "+cod_complemento;
+            return Consulta(sql);
+        }
+        else return null;
+   }
+   //Almacen
+   //getDetalle
+    public String getDetalleALM(String tran,int cod_complemento) throws Exception {
+        if ("SET-getDetalle".equals(tran)){
+            String sql = "select t1.detalle_alm "+
+                "from adquisiciones.transaccion_det_complemento t1 where t1.cod_complemento = "+cod_complemento;
+            Map[] datos = Consulta(sql);
+            return datos[0].get("DETALLE_ALM").toString();     
+        }
+        else return null;
+    }
+    //addDetalle
+    public Map[] addDetalleALM(String tran,int cod_trans_detalle,String detalle) throws Exception {
+        if ("SET-addDetalle".equals(tran)){
+            String sql = "insert into adquisiciones.transaccion_det_complemento(cod_complemento,cod_trans_detalle,detalle_alm) "+
+                "values (ADQUISICIONES.SEC_cod_complemento.NEXTVAL,"+cod_trans_detalle+",'"+detalle+"')";
+            return Consulta(sql);    
+        }
+        else return null;
+    }
+    //delDetalle
+    public Map[] delDetalleALM(String tran,int cod_complemento,int cod_trans_detalle) throws Exception {
+        if ("SET-delDetalle".equals(tran)) {
+            String sql="delete from adquisiciones.transaccion_det_complemento where cod_complemento="+cod_complemento+" and cod_trans_detalle="+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+   }
+   //updateDetalle
+    public Map[] updateDetalleALM(String tran,int cod_complemento,String detalle) throws Exception {
+        if ("SET-updateDetalle".equals(tran)) {
+            String sql="update adquisiciones.transaccion_det_complemento set detalle_alm='"+detalle+"' where cod_complemento = "+cod_complemento;
+            return Consulta(sql);
+        }
+        else return null;
+   }
+
+   //updateCantidadItem
+    public Map[] updateCantidadItem(String tran,int cod_trans_detalle,int cantidad_pedido) throws Exception {
+        if ("SET-updateCantidadItem".equals(tran)) {
+            String sql="update adquisiciones.transaccion_detalle set cantidad_pedido = "+cantidad_pedido+" where cod_trans_detalle = "+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+   }    
+
+        /* ======================================================================
+        Reporte 
+        ===================================================================*/
+
+    //reporte de materiales a almacen
+    public Map[] getReporteIngMaterialesAlmacen(String fec_ini,String fec_fin,int gestion) throws Exception {
+        String sql="select t1.cod_trans_detalle,t9.estado,to_char(t1.fecha_envio,'YYYY-MM-DD') as fecha_envio,t8.articulo,t2.cantidad_pedido,t2.unidad_medida,t2.precio_unit ,t4.cod_trans_nro,t4.cod_tramite,t4.nro,t4.memo,t4.cod_trans_nro_ant,T5.DE,t5.cbte,t6.nro as nro_orden"
+            + " from adquisiciones.transaccion_envio_fecha t1 "
+            + " inner join ADQUISICIONES.TRANSACCION_DETALLE t2 on t1.cod_trans_detalle=t2.cod_trans_detalle"
+            + " inner join ADQUISICIONES.TRANSACCION_DETALLE_NRO t3 on T3.COD_TRANS_DETALLE=t2.cod_trans_detalle"
+            + " inner join ADQUISICIONES.TRANSACCION_NRO t4 on T4.COD_TRANS_NRO=t3.cod_trans_nro"
+            + " inner join adquisiciones.transaccion t5 on t5.cod_transaccion=t4.cod_transaccion"
+            + " inner join ( select distinct t1.cod_trans_nro,t1.nro from adquisiciones.transaccion_detalle t3 "
+            + "            left join adquisiciones.transaccion_detalle_nro t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
+            + "            left join adquisiciones.transaccion_nro t1 on t1.cod_trans_nro= t2.cod_trans_nro"
+            + "            left join adquisiciones.transaccion_envio_fecha t5 on t5.cod_trans_detalle=t3.cod_trans_detalle"
+            + "            where t1.cod_tramite=2 AND (t5.estado='ALM1' )) t6"
+            + " on t6.cod_trans_nro=t4.cod_trans_nro_ant"
+            + " inner join ADQUISICIONES.CLASIFICADOR_ITEM t8 on T8.COD_ITEM=T2.COD_ITEM"
+            + " inner join ADQUISICIONES.ESTADOS t9 on T9.CODIGO=T1.ESTADO"
+            + " where t4.cod_tramite=3 and (t1.estado='C') and t2.gestion="+gestion
+            + " order by t4.nro ";
+        return Consulta(sql);
+    }
+    
+    //docs enviados a divisiones conta o inventarios
+    public Map[] getReporteDocsEnviados(String fec_ini,String fec_fin,int gestion) throws Exception {
+        String sql="select t1.estado,t1.fecha_envio,t8.articulo,t2.cantidad_pedido,t2.precio_unit ,t4.nro,t4.memo,T5.DE,t5.cbte,t5.hoja_ruta, t6.casa_comercial"
+            + " from adquisiciones.transaccion_envio_fecha t1  "
+            + " inner join ADQUISICIONES.TRANSACCION_DETALLE t2 on t1.cod_trans_detalle=t2.cod_trans_detalle"
+            + " inner join ADQUISICIONES.TRANSACCION_DETALLE_NRO t3 on T3.COD_TRANS_DETALLE=t2.cod_trans_detalle"
+            + " inner join ADQUISICIONES.TRANSACCION_NRO t4 on T4.COD_TRANS_NRO=t3.cod_trans_nro"
+            + " inner join adquisiciones.transaccion t5 on t5.cod_transaccion=t4.cod_transaccion"
+            + " inner join ADQUISICIONES.CLASIFICADOR_ITEM t8 on T8.COD_ITEM=T2.COD_ITEM"
+            + " inner join (select cod_trans_nro,cod_proveedor from adquisiciones.transaccion_nro ) t9 on t9.cod_trans_nro=t4.cod_trans_nro_ant "            
+            + " inner join ADQUISICIONES.PROVEEDORES t6 on T6.COD_PROVEEDOR=T9.COD_PROVEEDOR"
+            + " inner join ADQUISICIONES.ESTADOS t9 on T9.CODIGO=T1.ESTADO"
+            + " where t4.cod_tramite=3 and t1.estado='ALM1' and t2.gestion=2011"
+            + " order by t4.nro ";
+        return Consulta(sql);
+    }
+
+    //reporte de adjudicaciones
+    public Map[] getReporteAdjudicaciones(String fec_ini,String fec_fin,int gestion,int cod_cuantia) throws Exception {
+        String sql="select t1.nro_propuesta,t2.de,t2.fondo,t3.cantidad_pedido,t2.detalle,t2.monto_ppto,t2.hoja_ruta,t1.inf_comision,t1.resolucion_adm,t3.precio_unit,t4.casa_comercial,t8.cuantia,t8.del,t8.hasta,t7.detalle as tipo_contrato "
+            + " from adquisiciones.transaccion_nro t1 inner join adquisiciones.transaccion t2 on t1.cod_transaccion=t2.cod_transaccion "
+            + " inner join adquisiciones.transaccion_detalle t3 on t3.cod_transaccion=t2.cod_transaccion "
+            + " inner join adquisiciones.proveedores t4 on t4.cod_proveedor=t1.cod_proveedor"
+            + " inner join ADQUISICIONES.TRANSACCION_ENVIO_FECHA t5 on t5.cod_trans_detalle=t3.cod_trans_detalle"            
+            + " inner join ADQUISICIONES.CLASIFICADOR_ITEM t6 on t6.cod_item=t3.cod_item"
+            + " inner join adquisiciones.tipo_item t7 on t7.cod_tipo_item=t6.cod_tipo_item"
+            + " inner join adquisiciones.cuantia t8 on t8.cod_cuantia=t2.cod_cuantia"
+            + " where t5.estado='C' and t2.cod_cuantia="+cod_cuantia           
+            + " and (t5.fecha_envio between TO_DATE("+fec_ini+",'DD/MM/YYYY HH24:MI:SS')  and  TO_DATE("+fec_fin+",'DD/MM/YYYY HH24:MI:SS')) "
+            + " order by tipo_contrato,t5.fecha_envio";
+        return Consulta(sql);
+    }
+    
+    //reporte de adjudicaciones
+    public Map[] getModalidad() throws Exception {
+        String sql="select cod_cuantia,cuantia from cuantia order by cod_cuantia";
+        return Consulta(sql);
+    }
+    public Map[] addProponente(String cod_proveedor, int cod_transaccion, int cod_trans_nro, String tipo, String clase, String nombre, String nombre_comercial, String direccion, String telefono, String adh_nombre) throws Exception {
+    /*if ("ADD-Proponente".equals(tran)) {
+            String sql="insert into adquisiciones.PROPONENTES proponentes(cod_proveedor,cod_transaccion)"+
+                        " values ('"+cod_proveedor+"',"+cod_transaccion+")";
+            return Consulta(sql);
+        }
+        else return null;*/
+        String sql="insert into adquisiciones.proponentes(cod_prop,cod_proveedor,cod_transaccion,cod_trans_nro,fecha,tipo,clase,nombre,nombre_comercial,direccion,telefono,estado,adh_nombre)"+" values (ADQUISICIONES.SEC_COD_PROP.NEXTVAL,'"+cod_proveedor+"',"+cod_transaccion+","+cod_trans_nro+",sysdate,'"+tipo+"','"+clase+"','"+nombre+"','"+nombre_comercial+"','"+direccion+"','"+telefono+"','X','"+adh_nombre+"')";
+        return Consulta(sql);
+   }
+   public Map[] addProponenteDescargo(String cod_proveedor, int cod_transaccion, int cod_trans_nro, String tipo, String clase, String nombre, String nombre_comercial, String direccion, String telefono, String adh_nombre) throws Exception {
+    /*if ("ADD-Proponente".equals(tran)) {
+            String sql="insert into adquisiciones.PROPONENTES proponentes(cod_proveedor,cod_transaccion)"+
+                        " values ('"+cod_proveedor+"',"+cod_transaccion+")";
+            return Consulta(sql);
+        }
+        else return null;*/
+        String sql="insert into adquisiciones.proponentes(cod_prop,cod_proveedor,cod_transaccion,cod_trans_nro,fecha,tipo,clase,nombre,nombre_comercial,direccion,telefono,estado,adh_nombre)"+" values (ADQUISICIONES.SEC_COD_PROP.NEXTVAL,'"+cod_proveedor+"',"+cod_transaccion+","+cod_trans_nro+",sysdate,'"+tipo+"','"+clase+"','"+nombre+"','"+nombre_comercial+"','"+direccion+"','"+telefono+"','V','"+adh_nombre+"')";
+        return Consulta(sql);
+   }
+    public Map[] updateProponenteDescargo(int cod_transaccion, int cod_trans_nro, String cod_proveedor, String tipo, String clase, String nombre, String nombre_comercial, String direccion, String telefono, String adh_nombre) throws Exception {
+        String sql="update adquisiciones.proponentes set cod_proveedor = '"+cod_proveedor+"', fecha=sysdate, tipo='"+tipo+"', clase='"+clase+"', nombre='"+nombre+"', nombre_comercial='"+nombre_comercial+"', direccion='"+direccion+"', telefono='"+telefono+"', adh_nombre='"+adh_nombre+"'  where estado='V' and cod_trans_nro="+cod_trans_nro+" and cod_transaccion="+cod_transaccion;
+        return Consulta(sql);
+   }
+   public Map[] delProponente(String cod_proveedor,int cod_transaccion,int cod_trans_nro) throws Exception {
+        //if ("SET-delDataUsr".equals(tran)) {
+            String sql="delete from adquisiciones.proponentes where cod_proveedor="+cod_proveedor+" and cod_transaccion="+cod_transaccion+" and cod_trans_nro="+cod_trans_nro;
+            return Consulta(sql);
+        //}
+        //else return null;
+   } 
+   public Map[] getProponentes(int cod_transaccion, int cod_trans_nro) throws Exception {
+        String sql="select t1.COD_PROVEEDOR,t1.TIPO,t1.CLASE, t1.NOMBRE,t1.NOMBRE_COMERCIAL, t1.DIRECCION, t1.TELEFONO, t1.ESTADO"
+            + " from PROPONENTES t1 "
+            + " where t1.COD_TRANSACCION = "+cod_transaccion+" and t1.cod_trans_nro="+cod_trans_nro;
+        return Consulta(sql);
+   }
+   public Map[] getProponenteADJ(int cod_trans_nro) throws Exception {
+        String sql="select t1.COD_PROVEEDOR,t1.TIPO,t1.CLASE, t1.NOMBRE,t1.NOMBRE_COMERCIAL, t1.DIRECCION, t1.TELEFONO, t1.ESTADO"
+            + " from PROPONENTES t1 "
+            + " where t1.estado='V' and t1.cod_trans_nro="+cod_trans_nro;
+        return Consulta(sql);
+   }
+   public Map[] getProponenteADJ2(int cod_transaccion) throws Exception {
+        String sql="select t1.COD_PROVEEDOR,t1.TIPO,t1.CLASE, t1.NOMBRE,t1.NOMBRE_COMERCIAL, t1.DIRECCION, t1.TELEFONO, t1.ESTADO"
+            + " from PROPONENTES t1 "
+            + " where t1.estado='V' and t1.cod_transaccion="+cod_transaccion;
+        return Consulta(sql);
+   }
+   public Map[] setProponenteADJ(int cod_trans_nro, String cod_proveedor, String nombre, String nombre_comercial, String direccion, String telefono) throws Exception {
+        String sql="update adquisiciones.proponentes set cod_proveedor='"+cod_proveedor+"',nombre='"+nombre+"',nombre_comercial='"+nombre_comercial+"',direccion='"+direccion+"',telefono='"+telefono+"' where estado='V' and cod_trans_nro="+cod_trans_nro;
+        return Consulta(sql);
+   }
+   public Map[] setProponenteADJ2(int cod_transaccion, String cod_proveedor, String nombre, String nombre_comercial, String direccion, String telefono) throws Exception {
+        String sql="update adquisiciones.proponentes set cod_proveedor='"+cod_proveedor+"',nombre='"+nombre+"',nombre_comercial='"+nombre_comercial+"',direccion='"+direccion+"',telefono='"+telefono+"' where estado='V' and cod_transaccion="+cod_transaccion;
+        return Consulta(sql);
+   }
+   public Map[] GeneraResIni(int cod_transaccion, int tipo_resolucion, String detalle, String envia, String detalle_nota_solicitud, String detalle_nota_presupuesto,String destino) throws Exception {
+        String sql="insert into RESOLUCION_INI (COD_RES_INI,COD_TRANSACCION,TIPO_RESOLUCION,FECHA,DETALLE,ENVIA,DETALLE_NOTA_SOLICITUD,DETALLE_NOTA_PRESUPUESTO,DESTINO)"+" values (ADQUISICIONES.SEC_RES_INICIO.NEXTVAL,"+cod_transaccion+","+tipo_resolucion+",sysdate,'"+detalle+"','"+envia+"','"+detalle_nota_solicitud+"','"+detalle_nota_presupuesto+"','"+destino+"')";
+        return Consulta(sql);
+   }
+   public Map[] getResIni(int cod_transaccion) throws Exception {
+      String sql="select t1.COD_RES_INI,t1.COD_RES_INI||'/'||to_char(t1.FECHA,'YY') as NUM_RESOLUCION,t1.COD_TRANSACCION,t1.FECHA,t1.tipo_resolucion,t1.detalle,t1.envia,t1.detalle_nota_solicitud,t1.detalle_nota_presupuesto,t1.destino"
+          + " from RESOLUCION_INI t1 inner join transaccion t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
+          + " where t1.COD_TRANSACCION = "+cod_transaccion;
+          return Consulta(sql);
+   }
+   public Map[] updateResIni(int cod_res_ini,String envia,String dns,String dnp,String destino) throws Exception {
+        //if ("SET-upDaTeUsr".equals(tran)) {
+            String sql="update adquisiciones.resolucion_ini set envia='"+envia+"',detalle_nota_solicitud='"+dns+"',detalle_nota_presupuesto='"+dnp+"',destino='"+destino+"'  where cod_res_ini="+cod_res_ini;
+            return Consulta(sql);
+        //}
+        //else return null;
+   }
+   public Map[] GeneraResAdj(int cod_trans_nro, String cod_proveedor, String detalle) throws Exception {
+    
+        String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,COD_TRANS_NRO,COD_PROVEEDOR,FECHA,DETALLE)"+" values (ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+cod_trans_nro+",'"+cod_proveedor+"',sysdate,'"+detalle+"')";
+        return Consulta(sql);
+   }
+  public Map[] getResAdj(int cod_trans_nro) throws Exception {
+      String sql="select t1.COD_RES_ADJ||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION, t1.COD_TRANS_NRO, t1.TITULO, t1.COD_PROVEEDOR, t1.FECHA, t1.TIPO, t1.NUM_RES_ADM, t1.NUM_ADC_ANPE, t1.NUM_INF_ADQ, t1.NUM_INF_HP, t1.NOTAS_ADQ, t1.CONVOCATORIA, t1.PROVEEDOR, t1.DESTINO, t1.ACTIVIDAD"
+          + " from RESOLUCION_ADJ t1 "
+          + " where t1.COD_TRANS_NRO = "+cod_trans_nro+"";
+          return Consulta(sql);
+   }
+   public Map[] addResAdj(int cod_trans_nro, String cod_proveedor, String tipo, String num_res_adm, String notas_adq, String num_adc_anpe, String convocatoria, String num_inf_adq, String num_inf_hp, String proveedor, String destino, String actividad, String titulo) throws Exception {
+    
+        String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ, COD_TRANS_NRO, COD_PROVEEDOR, FECHA, TIPO, NUM_RES_ADM, NOTAS_ADQ, NUM_ADC_ANPE, CONVOCATORIA, NUM_INF_ADQ, NUM_INF_HP, PROVEEDOR, DESTINO, ACTIVIDAD,TITULO)"+" values (ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+cod_trans_nro+",'"+cod_proveedor+"',sysdate,'"+tipo+"','"+num_res_adm+"','"+notas_adq+"','"+num_adc_anpe+"','"+convocatoria+"','"+num_inf_adq+"','"+num_inf_hp+"','"+proveedor+"','"+destino+"','"+actividad+"','"+titulo+"')";
+        return Consulta(sql);
+   }
+   public Map[] gentabla(String aaa,String bbb,String ccc,String ddd,int xx,String yy) throws Exception
+   {
+        String sql="update PROPONENTES set MONTO='"+aaa+"',PLAZO='"+bbb+"',OBSERVACION='"+ccc+"',CUMPLE='"+ddd+"' where COD_PROVEEDOR='"+yy+"' AND COD_TRANS_NRO="+xx;
+        return Consulta(sql);
+   }
+   //estos metodos existen pero estan modificados
+public Map[] genResAdjServ2(int cod_trans_nro,int tipo_resolucion,String det_res_adj,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String adc) throws Exception {
+    
+        String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,COD_TRANS_NRO,TIPO_RESOLUCION,DET_RES_ADJ,DET_RES_ADM,FECHA_CC,DET_INF_DIV_ADQ,DET_CONC_PROP,MODO_EVAL,DESTINO,CARGO,ACTIVIDAD,DET_ADC,FECHA) values"
+          +"(ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+cod_trans_nro+","+tipo_resolucion+",'"+det_res_adj+"','"+det_res_adm+"','"+fecha_cc+"','"+det_inf_div_adq+"','"+det_conc_prop+"','"+modo_eval+"','"+destino+"','"+cargo+"','"+actividad+"','"+adc+"',sysdate)";
+        return Consulta(sql);
+   }
+   public Map[] genResAdjBien(int cod_trans_nro,int tipo_resolucion,String det_res_adj,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String adc) throws Exception {
+    
+        String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,COD_TRANS_NRO,TIPO_RESOLUCION,DET_RES_ADJ,DET_RES_ADM,FECHA_CC,DET_INF_DIV_ADQ,DET_CONC_PROP,MODO_EVAL,DESTINO,CARGO,ACTIVIDAD,DET_ADC,FECHA) values"
+          +"(ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+cod_trans_nro+","+tipo_resolucion+",'"+det_res_adj+"','"+det_res_adm+"','"+fecha_cc+"','"+det_inf_div_adq+"','"+det_conc_prop+"','"+modo_eval+"','"+destino+"','"+cargo+"','"+actividad+"','"+adc+"',sysdate)";
+        return Consulta(sql);
+   }
+   public Map[] genResAdjConsu(int cod_trans_nro,int tipo_resolucion,String det_res_adj,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad) throws Exception {
+    
+        String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,COD_TRANS_NRO,TIPO_RESOLUCION,DET_RES_ADJ,DET_RES_ADM,FECHA_CC,DET_INF_DIV_ADQ,DET_CONC_PROP,MODO_EVAL,DESTINO,CARGO,ACTIVIDAD,FECHA) values"
+          +"(ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+cod_trans_nro+","+tipo_resolucion+",'"+det_res_adj+"','"+det_res_adm+"','"+fecha_cc+"','"+det_inf_div_adq+"','"+det_conc_prop+"','"+modo_eval+"','"+destino+"','"+cargo+"','"+actividad+"',sysdate)";
+        return Consulta(sql);
+   }
+   public Map[] genResAdjObra(int cod_trans_nro,int tipo_resolucion,String det_res_adj,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String tprov,String tbche,String adc) throws Exception {
+    
+        String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,COD_TRANS_NRO,TIPO_RESOLUCION,DET_RES_ADJ,DET_RES_ADM,FECHA_CC,DET_INF_DIV_ADQ,DET_CONC_PROP,MODO_EVAL,DESTINO,CARGO,ACTIVIDAD,NUM_INF_HP,CONVOCATORIA,DET_ADC,FECHA) values"
+          +"(ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+cod_trans_nro+","+tipo_resolucion+",'"+det_res_adj+"','"+det_res_adm+"','"+fecha_cc+"','"+det_inf_div_adq+"','"+det_conc_prop+"','"+modo_eval+"','"+destino+"','"+cargo+"','"+actividad+"','"+tprov+"','"+tbche+"','"+adc+"',sysdate)";
+        return Consulta(sql);
+   }
+
+
+public Map[] getResAdjServ(int cod_trans_nro) throws Exception {
+      /*String sql="select t1.COD_RES_ADJ||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RES_ADJ,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.DET_ADC,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor"
+          + " from RESOLUCION_ADJ t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
+          + " where t1.COD_TRANS_NRO = "+cod_trans_nro+" and t2.ESTADO='V'";
+          return Consulta(sql);*/
+          String sql="select t1.COD_RES_ADJ||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RES_ADJ,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.DET_ADC,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor,t1.DET_CONC_PROP,t1.MODO_EVAL,t1.DESTINO,t1.CARGO,t1.ACTIVIDAD,t2.adh_nombre"
+          + " from RESOLUCION_ADJ t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
+          + " where t1.COD_TRANS_NRO = "+cod_trans_nro+" and t2.ESTADO='V'";
+          return Consulta(sql);
+   }
+  public Map[] getResAdjBien(int cod_trans_nro) throws Exception {
+      String sql="select t1.COD_RES_ADJ||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RES_ADJ,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor,t1.DET_CONC_PROP,t1.MODO_EVAL,t1.DESTINO,t1.CARGO,t1.ACTIVIDAD,t2.adh_nombre,t1.DET_ADC"
+          + " from RESOLUCION_ADJ t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
+          + " where t1.COD_TRANS_NRO = "+cod_trans_nro+" and t2.ESTADO='V'";
+          return Consulta(sql);
+   }
+   public Map[] getResAdjObra(int cod_trans_nro) throws Exception {
+      String sql="select t1.COD_RES_ADJ||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RES_ADJ,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor,t1.DET_CONC_PROP,t1.MODO_EVAL,t1.DESTINO,t1.CARGO,t1.ACTIVIDAD,t2.adh_nombre,t1.NUM_INF_HP,t1.CONVOCATORIA,t1.DET_ADC"
+          + " from RESOLUCION_ADJ t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
+          + " where t1.COD_TRANS_NRO = "+cod_trans_nro+" and t2.ESTADO='V'";
+          return Consulta(sql);
+   }
+   public Map[] getResAdjConsul(int cod_trans_nro) throws Exception {
+      String sql="select t1.COD_RES_ADJ||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RES_ADJ,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor,t1.DET_CONC_PROP,t1.MODO_EVAL,t1.DESTINO,t1.CARGO,t1.ACTIVIDAD,t2.adh_nombre"
+          + " from RESOLUCION_ADJ t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
+          + " where t1.COD_TRANS_NRO = "+cod_trans_nro+" and t2.ESTADO='V'";
+          return Consulta(sql);
+   }
+
+
+public Map[] updateResAdjBien(int cod_trans_nro,int tipo_resolucion,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String adc) throws Exception {
+    
+        //String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,TIPO_RESOLUCION,DET_RES_ADM,DET_ADC,FECHA_COMISION_CALIFICACION,DET_INF_DIV_ADQ,FECHA)"+" values (ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+tipo_resolucion+",'"+det_res_adm+"','"+det_adc+"','"+fecha_comision_calificacion+"','"+det_inf_div_adq+"',sysdate)";
+        String sql="update RESOLUCION_ADJ set tipo_resolucion="+tipo_resolucion+", det_res_adm='"+det_res_adm+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"', det_conc_prop='"+det_conc_prop+"', modo_eval='"+modo_eval+"',destino='"+destino+"',cargo='"+cargo+"',actividad='"+actividad+"',DET_ADC='"+adc+"' where cod_trans_nro="+cod_trans_nro;
+        return Consulta(sql);
+   }
+   public Map[] updateResAdjObra(int cod_trans_nro,int tipo_resolucion,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String adc,String a,String b) throws Exception {
+    
+        //String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,TIPO_RESOLUCION,DET_RES_ADM,DET_ADC,FECHA_COMISION_CALIFICACION,DET_INF_DIV_ADQ,FECHA)"+" values (ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+tipo_resolucion+",'"+det_res_adm+"','"+det_adc+"','"+fecha_comision_calificacion+"','"+det_inf_div_adq+"',sysdate)";
+        String sql="update RESOLUCION_ADJ set tipo_resolucion="+tipo_resolucion+", det_res_adm='"+det_res_adm+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"', det_conc_prop='"+det_conc_prop+"', modo_eval='"+modo_eval+"',destino='"+destino+"',cargo='"+cargo+"',actividad='"+actividad+"',DET_ADC='"+adc+"',NUM_INF_HP='"+a+"',CONVOCATORIA='"+b+"' where cod_trans_nro="+cod_trans_nro;
+        return Consulta(sql);
+   }
+   public Map[] updateResAdjCons(int cod_trans_nro,int tipo_resolucion,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad) throws Exception {
+    
+        //String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,TIPO_RESOLUCION,DET_RES_ADM,DET_ADC,FECHA_COMISION_CALIFICACION,DET_INF_DIV_ADQ,FECHA)"+" values (ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+tipo_resolucion+",'"+det_res_adm+"','"+det_adc+"','"+fecha_comision_calificacion+"','"+det_inf_div_adq+"',sysdate)";
+        String sql="update RESOLUCION_ADJ set tipo_resolucion="+tipo_resolucion+", det_res_adm='"+det_res_adm+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"', det_conc_prop='"+det_conc_prop+"', modo_eval='"+modo_eval+"',destino='"+destino+"',cargo='"+cargo+"',actividad='"+actividad+"' where cod_trans_nro="+cod_trans_nro;
+        return Consulta(sql);
+   }
+   public Map[] updateResAdjServ(String adc,int cod_trans_nro,int tipo_resolucion,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad) throws Exception {
+    
+        //String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,TIPO_RESOLUCION,DET_RES_ADM,DET_ADC,FECHA_COMISION_CALIFICACION,DET_INF_DIV_ADQ,FECHA)"+" values (ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+tipo_resolucion+",'"+det_res_adm+"','"+det_adc+"','"+fecha_comision_calificacion+"','"+det_inf_div_adq+"',sysdate)";
+        /*String sql="update RESOLUCION_ADJ set tipo_resolucion="+tipo_resolucion+", det_res_adm='"+det_res_adm+"', det_adc='"+det_adc+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"' where cod_trans_nro="+cod_trans_nro;
+        return Consulta(sql);*/
+        String sql="update RESOLUCION_ADJ set tipo_resolucion="+tipo_resolucion+", det_res_adm='"+det_res_adm+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"', det_conc_prop='"+det_conc_prop+"', modo_eval='"+modo_eval+"',destino='"+destino+"',cargo='"+cargo+"',actividad='"+actividad+"', det_adc='"+adc+"' where cod_trans_nro="+cod_trans_nro;
+        return Consulta(sql);
+   }
+
+//////////////este metodo no existe hay que agregar
+public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Exception
+   {
+        String sql="update RESOLUCION_ADJ set NUM_INF_HP='"+n1+"',CONVOCATORIA='"+n2+"' where cod_trans_nro="+cod_trans_nro;
+        return Consulta(sql);
+   }
+  public Map[] setResAdj(int cod_trans_nro, String num_res_adm, String notas_adq, String num_adc_anpe, String convocatoria, String num_inf_adq, String num_inf_hp, String proveedor, String destino, String actividad) throws Exception {
+    
+        String sql="update RESOLUCION_ADJ set num_res_adm='"+num_res_adm+"', notas_adq='"+notas_adq+"', num_adc_anpe='"+num_adc_anpe+"', convocatoria='"+convocatoria+"', num_inf_adq='"+num_inf_adq+"', num_inf_hp='"+num_inf_hp+"', proveedor='"+proveedor+"', destino='"+destino+"', actividad='"+actividad+"' where cod_trans_nro="+cod_trans_nro;
+        return Consulta(sql);
+  }
+
+  public Map[] getTipoAdjuntos() throws Exception {
+        String sql="select t1.cod_adjunto,t1.descripcion"
+            + " from tipo_doc t1 ";
+            return Consulta(sql);
+  }
+  public Map[] getConcursantes(int cod_transaccion) throws Exception {
+        String sql="select t1.COD_PROVEEDOR,t1.NOMBRE_COMERCIAL, t1.NOMBRE, t1.MONTO, t1.PLAZO, t1.OBSERVACION, t1.CUMPLE"
+            + " from proponentes t1 where t1.COD_TRANSACCION="+cod_transaccion;
+            return Consulta(sql);
+  }
+  public Map[] existeReIni(int cod_transaccion) throws Exception {
+        String sql="select t1.COD_RES_INI"
+            + " from resolucion_ini t1 where t1.COD_TRANSACCION="+cod_transaccion;
+            return Consulta(sql);
+  }
+
+  public Map[] insertDatosGenerales(String codigo, String descripcion) throws Exception {
+    
+        String sql="insert into DATOS_GENERALES (CODIGO,DESCRIPCION)"+" values ('"+codigo+"','"+descripcion+"')";
+        return Consulta(sql);
+   }
+  public Map[] getDatosGenerales() throws Exception {
+    String sql="select t1.CODIGO, t1.DESCRIPCION"
+        + " from DATOS_GENERALES t1";
+        return Consulta(sql);
+  }
+  public Map[] getDatosAlmacen(int cod_trans_nro) throws Exception {
+    String sql="select t1.FACTURA,t1.FECHA_FACT,t1.FECHA_ING,t1.MEMO,t1.OBS"
+        + " from TRANSACCION_NRO t1 where t1.COD_TRANS_NRO="+cod_trans_nro;
+        return Consulta(sql);
+  }
+  public String getDatoGeneral(String codigo) throws Exception {
+      String sql="select t1.DESCRIPCION"
+          + " from DATOS_GENERALES t1 WHERE t1.CODIGO='"+codigo+"'";
+      
+      Map[] datos = Consulta(sql);
+        
+      return datos[0].get("DESCRIPCION").toString();
+  }
+  public String getNombreUsuario1(String cod_transaccion) throws Exception {
+      String sql="select t2.USUARIO"
+          + " from transaccion t1 inner join ADM_USUARIO t2 on t1.USUARIO_REG=t2.COD_USUARIO where t1.COD_TRANSACCION ='"+cod_transaccion+"'";
+      
+      Map[] datos = Consulta(sql);
+        
+      return datos[0].get("USUARIO").toString();
+  }
+  
+  public String getNombreUsuario2(String cod_trans_nro) throws Exception {
+      String sql="select t3.USUARIO"
+          + " from transaccion_nro t1 inner join TRANSACCION_NRO t2 on (t1.COD_TRANSACCION=t2.COD_TRANSACCION and t2.COD_TRAMITE=3) inner join ADM_USUARIO t3 on t2.COD_USUARIO=t3.COD_USUARIO "
+          +"where t1.COD_TRANS_NRO='"+cod_trans_nro+"'";
+      
+      Map[] datos = Consulta(sql);
+        
+      return datos[0].get("USUARIO").toString();
+  }
+  
+  public Map[] updateDatosGenerales(String codigo, String descripcion) throws Exception {
+    
+        String sql="update DATOS_GENERALES set DESCRIPCION='"+descripcion+"' where CODIGO='"+codigo+"'";
+        return Consulta(sql);
+  }
+  public Map[] getItemsPart(String partida) throws Exception {
+      String sql="select t2.COD_ITEM,t1.PARTIDA, t1.DETALLE, t2.ARTICULO, t2.UNIDAD_MEDIDA"
+          + " from partidas t1 inner join clasificador_item t2 on t1.PARTIDA=t2.PARTIDA"
+          + " where t1.PARTIDA = '"+partida+"' order by t2.ARTICULO";
+          return Consulta(sql);
+   }
+   public Map[] updateItemPPTO(String cod_trans_detalle,String cod_item,String unidad_medida) throws Exception {
+        //if ("SET-upDateActTransAdq".equals(tran)) {
+            String sql="update TRANSACCION_DETALLE"
+                    + " set cod_item='"+cod_item+"', unidad_medida = '"+unidad_medida+"' where cod_trans_detalle='"+cod_trans_detalle+"'";
+            return Consulta(sql);
+        //}
+        //else return null;
+    }
+    public Map[] addItems(String tran, int cod_item,int partida,String articulo,String unidad_medida, int gestion,String estado,int cod_tipo_item) throws Exception {
+        if ("ADD-insDataItm".equals(tran)) {
+            String sql="insert into adquisiciones.clasificador_item(cod_item,partida,articulo,unidad_medida,gestion,estado,cod_tipo_item)"+
+                        " values ("+cod_item+","+partida+",'"+articulo+"','"+unidad_medida+"',"+gestion+",'"+estado+"',"+cod_tipo_item+")";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] getItem(String cod_item) throws Exception {        
+        String sql="select t1.partida,t1.articulo,t1.unidad_medida,t1.cod_tipo_item"
+                + " from adquisiciones.clasificador_item t1"
+                + " where t1.cod_item='"+cod_item+"'";
+        return Consulta(sql);        
+    }
+    public String getSEC_COD_ITEM() throws Exception {
+      String sql="select LAST_NUMBER"
+          + " from user_sequences where SEQUENCE_NAME = 'SEC_COD_ITEM' ";
+      String sql2="select SEC_COD_ITEM.NEXTVAL FROM DUAL";
+      Map[] datos = Consulta(sql);
+      Consulta(sql2);  
+      return datos[0].get("LAST_NUMBER").toString();
+    }
+    public Map[] getPartidas(String gestion) throws Exception {        
+        String sql="select t1.COD_PARTIDA,t1.partida,t1.DETALLE"
+                + " from partidas t1"
+                + " where t1.tipo = 't' and t1.GESTION = '"+gestion+"' order by t1.PARTIDA asc";
+        return Consulta(sql);        
+    }
+    public String getDescPartida(String partida) throws Exception {
+        String sql = "select descripcion from partidas where partida = '"+partida+"'";
+        Map[] datos = Consulta(sql);
+        return datos[0].get("DESCRIPCION").toString();
+    }
+    //reporte de materiales a almacen
+    public Map[] getRepoAdquiOrden() throws Exception {
+        String sql="select distinct t1.COD_TRANSACCION,t1.HOJA_RUTA,t1.DE,t1.DETALLE,t4.COD_TRANS_DETALLE,t4.CANTIDAD_PEDIDO,t4.PRECIO_UNIT,t5.ARTICULO,t6.DETALLE_SOLICITUD,t1.MONTO_PPTO,t1.CBTE,t2.NRO as orden_compra,t3.NOMBRE_COMERCIAL,t2.OBS"
+            + " from transaccion t1 "
+            + " inner join TRANSACCION_NRO t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION and t1.ESTADO='V' and t2.COD_TRAMITE=2 and t1.TIPO_SOL=1"
+            + " inner join PROPONENTES t3 on t1.COD_TRANSACCION=t3.COD_TRANSACCION and t2.COD_TRANS_NRO=t3.COD_TRANS_NRO and t3.ESTADO = 'V'"
+            + " inner join TRANSACCION_DETALLE t4 on t1.COD_TRANSACCION=t4.COD_TRANSACCION and t4.ESTADO='C'"
+            + " inner join CLASIFICADOR_ITEM t5 on t4.COD_ITEM=t5.COD_ITEM"
+            + " inner join TRANSACCION_DET_COMPLEMENTO t6 on t4.COD_TRANS_DETALLE=t6.COD_TRANS_DETALLE"
+            + " inner join TRANSACCION_DETALLE_NRO t7 on t7.COD_TRANS_DETALLE=t4.COD_TRANS_DETALLE and t7.COD_TRANS_NRO=t2.COD_TRANS_NRO"
+            + " ORDER BY t2.NRO";
+        return Consulta(sql);
+    }
+    //get tipo_item
+    //public Map[] getTipoItem() throws Exception {
+    //    String sql="select t1.COD_TIPO_ITEM, t1.DETALLE"
+    //        + " from tipo_item t1 ";
+    //   return Consulta(sql);
+    //}
+    //get unidad_medida
+    public Map[] getUnidadMedida() throws Exception {
+        String sql="select t1.COD_UNIDAD_MEDIDA,t1.DETALLE"
+            + " from unidad_medida t1 ORDER BY t1.COD_UNIDAD_MEDIDA";
+        return Consulta(sql);
+    }
+    public String SecTransDetComplemento() throws Exception {
+        String sql="select ADQUISICIONES.SEC_COD_COMPLEMENTO.NEXTVAL from dual";
+        Map[] datos=Consulta(sql);
+        return datos[0].get("NEXTVAL").toString();
+    }
+    /*-----------Nuevo Adicionar items--------------*/
+    public String SecTransaccionDetalle() throws Exception {
+        String sql="select ADQUISICIONES.SEC_COD_TRANS_DETALLE.NEXTVAL from dual";
+        Map[] datos=Consulta(sql);
+        return datos[0].get("NEXTVAL").toString();
+    }
+    public String SecUnidadMedida() throws Exception {
+        String sql="select ADQUISICIONES.SEC_COD_UNIDAD_MEDIDA.NEXTVAL from dual";
+        Map[] datos=Consulta(sql);
+        return datos[0].get("NEXTVAL").toString();
+    }
+    public Map[] addItem(String tran, int cod_trans_detalle, int cod_transaccion, int gestion) throws Exception {
+        if ("SET-addItem".equals(tran)) {
+            String sql="insert into adquisiciones.transaccion_detalle(cod_trans_detalle,cod_transaccion,gestion)"+
+                        " values ("+cod_trans_detalle+","+cod_transaccion+","+gestion+")";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] addUnidadMedida(String tran, int cod_unidad_medida, String detalle) throws Exception {
+        if ("SET-addUnidadMedida".equals(tran)) {
+            String sql="insert into adquisiciones.unidad_medida(cod_unidad_medida,detalle)"+
+                        " values ("+cod_unidad_medida+",'"+detalle+"')";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] addItem2(String tran,int cod_transaccion, String detalle,String unidad_medida,int cantidad_pedido,int gestion) throws Exception {
+        if ("SET-addItem".equals(tran)) {
+            String sql="insert into adquisiciones.transaccion_detalle(cod_trans_detalle,cod_transaccion,detalle,unidad_medida,cantidad_pedido,gestion)"+
+                        " values (ADQUISICIONES.SEC_COD_TRANS_DETALLE.NEXTVAL,"+cod_transaccion+",'"+detalle+"','"+unidad_medida+"',"+cantidad_pedido+","+gestion+")";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] updateItemx2(String tran, String cod_trans_detalle, String detalle, int cod_unidad_medida, int cantidad_pedido, String partida, double precio_unit, int cod_item) throws Exception {
+        if ("SET-updateItem".equals(tran)) {
+            String sql="update adquisiciones.transaccion_detalle set precio_unit="+precio_unit+", detalle='"+detalle+"',cod_unidad_medida = "+cod_unidad_medida+",cantidad_pedido="+cantidad_pedido+",partida='"+partida+"', cod_item="+cod_item+
+                        " where cod_trans_detalle='"+cod_trans_detalle+"'";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] updateItemx(String tran, String cod_trans_detalle, String detalle, int cod_unidad_medida, int cantidad_pedido, String partida) throws Exception {
+        if ("SET-updateItem".equals(tran)) {
+            String sql="update adquisiciones.transaccion_detalle set detalle='"+detalle+"',cod_unidad_medida = "+cod_unidad_medida+",cantidad_pedido="+cantidad_pedido+",partida='"+partida+"'"+
+                        " where cod_trans_detalle='"+cod_trans_detalle+"'";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] updateItem(String tran, String cod_trans_detalle, String detalle, int cod_unidad_medida, int cantidad_pedido) throws Exception {
+        if ("SET-updateItem".equals(tran)) {
+            String sql="update adquisiciones.transaccion_detalle set detalle='"+detalle+"',cod_unidad_medida = "+cod_unidad_medida+",cantidad_pedido="+cantidad_pedido+
+                        " where cod_trans_detalle='"+cod_trans_detalle+"'";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] updateDetallex(String tran, int cod_complemento, String detalle) throws Exception {
+        if ("SET-updateDetalle".equals(tran)) {
+            String sql="update adquisiciones.transaccion_det_complemento set detalle_solicitud ='"+detalle+"'"+
+                        " where cod_complemento="+cod_complemento;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] delDetallex(String tran, int cod_complemento) throws Exception {
+        if ("SET-delDetalle".equals(tran)) {
+            String sql="delete from adquisiciones.transaccion_det_complemento where cod_complemento = "+cod_complemento;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] setPartida(String tran, int cod_trans_detalle, String partida) throws Exception {
+        if ("SET-setPartida".equals(tran)) {
+            String sql="update adquisiciones.transaccion_detalle set partida='"+partida+"' where cod_trans_detalle = "+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] getItemClasificador(int gestion, int partida) throws Exception {
+        String sql="select t1.COD_ITEM,t1.PARTIDA,t1.ARTICULO,t1.UNIDAD_MEDIDA,t1.COD_TIPO_ITEM"
+            + " from clasificador_item t1"
+            + " where t1.GESTION = "+gestion+" and t1.PARTIDA = "+partida+" AND t1.ESTADO = 'V'";
+        return Consulta(sql);
+    }
+    public Map[] loadDetalle(int cod_trans_detalle) throws Exception {
+        String sql="select t1.cod_complemento, t1.cod_trans_detalle, t1.detalle_solicitud, t1.detalle_adqui, t1.detalle_alm"
+            + " from transaccion_det_complemento t1"
+            + " where t1.COD_TRANS_DETALLE = "+cod_trans_detalle+" order by t1.cod_complemento";
+        return Consulta(sql);
+    }
+    public Map[] updateCodItem(String tran,int cod_trans_detalle,int cod_item) throws Exception {
+        if ("SET-updateCodItem".equals(tran)) {
+            String sql="update TRANSACCION_DETALLE set COD_ITEM ="+cod_item+" where COD_TRANS_DETALLE ="+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] getBuscaItemsx(int gestion,String articulo) throws Exception {
+        String sql ="select t1.COD_ITEM,t1.PARTIDA,t1.ARTICULO"
+                + " from CLASIFICADOR_ITEM t1"
+                + " where t1.gestion="+gestion+" and t1.estado='V' and UPPER(t1.articulo) like UPPER('%"+articulo+"%') ";
+           return Consulta(sql);
+    }
+    public Map[] delComplemento(String tran, int cod_trans_detalle) throws Exception {
+        if ("SET-delComplemento".equals(tran)) {
+            String sql="delete from adquisiciones.transaccion_det_complemento where cod_trans_detalle = "+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] delDetalleNro(String tran, int cod_trans_detalle) throws Exception {
+        if ("SET-delDetalleNro".equals(tran)) {
+            String sql="delete from adquisiciones.transaccion_detalle_nro where cod_trans_detalle = "+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] delItemRefFecha(String tran, int cod_trans_detalle) throws Exception {
+        if ("SET-delItemRefFecha".equals(tran)) {
+            String sql="delete from adquisiciones.transaccion_envio_fecha where cod_trans_detalle = "+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] delItemx(String tran, int cod_trans_detalle) throws Exception {
+        if ("SET-delItem".equals(tran)) {
+            String sql="delete from adquisiciones.transaccion_detalle where cod_trans_detalle = "+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public void delItemPro(String tran, int cod_trans_detalle) throws Exception {
+        if ("SET-delItemPro".equals(tran)) {
+            delComplemento("SET-delComplemento",cod_trans_detalle);
+            delDetalleNro("SET-delDetalleNro",cod_trans_detalle);
+            delItemRefFecha("SET-delItemRefFecha",cod_trans_detalle);
+            delItemx("SET-delItem",cod_trans_detalle);
+        }
+    }
+    public Map[] addPreventivo(String tran,int cod_transaccion, int cod_preventivo, String resumen, int da, String total) throws Exception {
+        if ("SET-addPreventivo".equals(tran)) {
+            String sql="insert into adquisiciones.transaccion_preventivo(cod_trans_preventivo,cod_transaccion,cod_preventivo,resumen,da,total,fecha)"+
+                        " values (ADQUISICIONES.SEC_TRANS_PREV.NEXTVAL,"+cod_transaccion+","+cod_preventivo+",'"+resumen+"',"+da+",'"+total+"',sysdate)";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] getPreventivos(int cod_transaccion) throws Exception {
+        String sql="select t1.cod_trans_preventivo,t1.COD_PREVENTIVO,t1.total,t1.RESUMEN"
+            + " from transaccion_preventivo t1 where t1.COD_TRANSACCION = "+cod_transaccion;
+        return Consulta(sql);
+    }
+    public Map[] delPreventivo(String tran, int cod_transaccion, int cod_preventivo) throws Exception {
+        if ("SET-delPreventivo".equals(tran)) {
+            String sql="delete from adquisiciones.transaccion_preventivo where cod_transaccion = "+cod_transaccion+" and cod_preventivo="+cod_preventivo;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] getTotalPartidas(int cod_trans_nro) throws Exception {
+        String sql="select t2.PARTIDA, SUM(t2.PRECIO_UNIT*t2.CANTIDAD_PEDIDO) as total"
+            + " from TRANSACCION_NRO t1 inner join transaccion_detalle t2 on t1.COD_TRANSACCION = t2.COD_TRANSACCION"
+            + " where t1.COD_TRANS_NRO = "+cod_trans_nro
+            + " group by t2.PARTIDA"
+            + " order by t2.PARTIDA";
+        return Consulta(sql);
+    }
+    public Map[] GetFechasRestriccion(int cod_transaccion) throws Exception {
+        String sql="select t1.fecha_inicio,t1.fecha_final"
+            + " from restriccion_fechas t1 where t1.COD_TRANSACCION = "+cod_transaccion;
+        return Consulta(sql);
+    }
+    public Map[] GetFechasRestriccionAdquiDepto() throws Exception {
+        String sql="select t2.COD_RES_INI as nro_ri, t1.FECHA_INICIO,t1.FECHA_FINAL,t3.nro as nro_sol,(trunc(t1.FECHA_FINAL)-trunc(sysdate)) as dias_restantes"
+                +" from restriccion_fechas t1 inner join resolucion_ini t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
+                +" inner join transaccion_nro t3 on t2.COD_TRANSACCION=t3.COD_TRANSACCION and t3.COD_TRAMITE=1";
+                //+" where t1.COD_TRANSACCION="+
+        return Consulta(sql);
+    }
+    public Map[] setCodW(String tran,int cod_transaccion, int cod_w) throws Exception {
+        if ("SET-setCodW".equals(tran)) {
+            String sql="update adquisiciones.transaccion set cod_w="+cod_w+" where cod_transaccion="+cod_transaccion;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] addFechaRestriccion(String tran, int cod_tipo_resf,int cod_trans_nro, String fecha_conclusion, String lugar) throws Exception {
+        if ("SET-addFechaRestriccion".equals(tran)) {
+            String sql="insert into adquisiciones.restriccion_fechas_proc(cod_res_fec_pro,cod_tipo_resf,cod_trans_nro,fecha_conclusion,lugar)"+
+                        " values (ADQUISICIONES.SEC_RES_FECHA.NEXTVAL,"+cod_tipo_resf+","+cod_trans_nro+",TO_DATE("+fecha_conclusion+",'DD/MM/YYYY'),'"+lugar+"')";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+     public Map[] addFechaRestriccion3(String tran, int cod_tipo_resf,int cod_trans_nro, String fecha_conclusion, String lugar,String hora_inicio) throws Exception {
+        if ("SET-addFechaRestriccion".equals(tran)) {
+            String sql="insert into adquisiciones.restriccion_fechas_proc(cod_res_fec_pro,cod_tipo_resf,cod_trans_nro,fecha_conclusion,lugar,hora_inicio)"+
+                        " values (ADQUISICIONES.SEC_RES_FECHA.NEXTVAL,"+cod_tipo_resf+","+cod_trans_nro+",TO_DATE("+fecha_conclusion+",'DD/MM/YYYY'),'"+lugar+"','"+hora_inicio+"')";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] addFechaRestriccion2(String tran, int cod_tipo_resf,int cod_trans_nro, String fecha_inicio,String fecha_conclusion, String lugar,String hora_inicio) throws Exception {
+        if ("SET-addFechaRestriccion".equals(tran)) {
+            String sql="insert into adquisiciones.restriccion_fechas_proc(cod_res_fec_pro,cod_tipo_resf,cod_trans_nro,fecha_inicio,fecha_conclusion,lugar,hora_inicio)"+
+                        " values (ADQUISICIONES.SEC_RES_FECHA.NEXTVAL,"+cod_tipo_resf+","+cod_trans_nro+",TO_DATE("+fecha_inicio+",'DD/MM/YYYY'),TO_DATE("+fecha_conclusion+",'DD/MM/YYYY'),'"+lugar+"','"+hora_inicio+"')";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] updateFechaEntrega(String tran,int cod_tipo_resf,int cod_trans_nro, String fecha_inicio, String fecha_conclusion) throws Exception {
+        if ("SET-updateFechaEntrega".equals(tran)) {
+            String sql="update adquisiciones.restriccion_fechas_proc set fecha_inicio= TO_DATE("+fecha_inicio+",'DD/MM/YYYY'), fecha_conclusion= TO_DATE("+fecha_conclusion+",'DD/MM/YYYY') where cod_tipo_resf="+cod_tipo_resf+" and cod_trans_nro="+cod_trans_nro;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+/*
+    public Map[] updateFechaRestriccion(String tran,int cod_trans_nro,int cod_tipo_resf, String fecha_conclusion, String lugar) throws Exception {
+        if ("SET-updateFechaRestriccion".equals(tran)) {
+            String sql="update adquisiciones.restriccion_fechas_proc set fecha_conclusion = TO_DATE("+fecha_conclusion+",'DD/MM/YYYY'), lugar = '"+lugar+"'";
+                +" where COD_TRANS_DETALLE ="+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+*/
+    public Map[] GetRestriccionFechas(int cod_trans_nro, int cod_tipo_resf) throws Exception {
+        String sql="select t1.COD_RES_FEC_PRO, t1.COD_TIPO_RESF, t1.FECHA_INICIO,t1.FECHA_CONCLUSION, t1.LUGAR,t1.HORA_INICIO"
+                +" from restriccion_fechas_proc t1"
+                +" where t1.COD_TRANS_NRO = "+cod_trans_nro+" and t1.cod_tipo_resf="+cod_tipo_resf
+                +" order by t1.COD_TIPO_RESF";
+                //+" where t1.COD_TRANSACCION="+
+        return Consulta(sql);
+    }
+    public Map[] GetRestriccionFechas(int cod_trans_nro) throws Exception {
+        String sql="select t1.COD_RES_FEC_PRO, t1.COD_TIPO_RESF, t1.FECHA_INICIO,t1.FECHA_CONCLUSION, t1.LUGAR,t1.HORA_INICIO"
+                +" from restriccion_fechas_proc t1"
+                +" where t1.COD_TRANS_NRO = "+cod_trans_nro
+                +" order by t1.COD_TIPO_RESF";
+                //+" where t1.COD_TRANSACCION="+
+        return Consulta(sql);
+    }
+    /*
+    public Map[] updateResFecha(String tran,int cod_trans_nro) throws Exception {
+        if ("SET-updateResFecha".equals(tran)) {
+            String sql="update adquisiciones.restriccion_fechas_proc set cod_trans_nro = "+cod_trans_nro
+                      +" where cod_usuario ="+cod_usuario;
+            return Consulta(sql);
+        }
+        else return null;
+    }*/
+    
+    public Map[] addContrato(String tran,int cod_trans_nro,
+      String a,String b,String c,
+      String d,String e,String f,
+      String g,String h,String i,
+      String j,String k,String l,
+      String m,String n,String o,
+      String p,String q,String r,
+      String s,String t,String u,
+      String v,String w,String x,
+      String y,String z,String a1,
+      String b1
+      ) throws Exception {
+        if ("SET-addContrato".equals(tran)) {
+            String sql="insert into adquisiciones.contratos(cod_contrato,cod_trans_nro,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,a1,b1)"+
+                        " values (ADQUISICIONES.SEC_CONTRATO.NEXTVAL,"+cod_trans_nro+",'"+a+"','"+b+"','"+c+"','"+d+"','"+e+"','"+f+"','"+g+"','"+h+"','"+i+"','"+j+"','"+k+"','"+l+"','"+m+"','"+n+"','"+o+"','"+p+"','"+q+"','"+r+"','"+s+"','"+t+"','"+u+"','"+v+"','"+w+"','"+x+"','"+y+"','"+z+"','"+a1+"','"+b1+"')";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] addContrato(String tran,int cod_trans_nro,
+      String a,String b,String c,
+      String d,String e,String f,
+      String g,String h,String i,
+      String j,String k,String l,
+      String m,String n,String o,
+      String p,String q,String r,
+      String s,String t,String u,
+      String v,String w,String x,
+      String y,String z
+      ) throws Exception {
+        if ("SET-addContrato".equals(tran)) {
+            String sql="insert into adquisiciones.contratos(cod_contrato,cod_trans_nro,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z)"+
+                        " values (ADQUISICIONES.SEC_CONTRATO.NEXTVAL,"+cod_trans_nro+",'"+a+"','"+b+"','"+c+"','"+d+"','"+e+"','"+f+"','"+g+"','"+h+"','"+i+"','"+j+"','"+k+"','"+l+"','"+m+"','"+n+"','"+o+"','"+p+"','"+q+"','"+r+"','"+s+"','"+t+"','"+u+"','"+v+"','"+w+"','"+x+"','"+y+"','"+z+"')";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] updateContrato(String tran,int cod_trans_nro,
+      String a,String b,String c,
+      String d,String e,String f,
+      String g,String h,String i,
+      String j,String k,String l,
+      String m,String n,String o,
+      String p,String q,String r,
+      String s,String t,String u,
+      String v,String w,String x,
+      String y,String z,String a1,
+      String b1
+      ) throws Exception {
+        if ("SET-updateContrato".equals(tran)) {
+            String sql="update adquisiciones.contratos set a='"+a+"',b='"+b+"',c='"+c
+            +"',d='"+d+"', e='"+e+"',f='"+f+"',g='"+g+"',h='"+h
+            +"',i='"+i+"',j='"+j+"',k='"+k+"',l='"+l+"',m='"+m
+            +"',n='"+n+"',o='"+o+"',p='"+p+"',q='"+q+"',r='"+r
+            +"',s='"+s+"',t='"+t+"',u='"+u+"',v='"+v+"',w='"+w
+            +"',x='"+x+"',y='"+y+"',z='"+z+"',a1='"+a1+"',b1='"+b1+"'"
+            +" where cod_trans_nro = "+cod_trans_nro;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] GetContrato(int cod_trans_nro) throws Exception {
+        String sql="select t1.a,t1.b,t1.c,t1.d,t1.e,t1.f,t1.g,t1.h,t1.i,t1.j,t1.k,t1.l,t1.m,t1.n,t1.o,t1.p,t1.q,t1.r,t1.s,t1.t,t1.u,t1.v,t1.w,t1.x,t1.y,t1.z,t1.a1,t1.b1"
+                +" from contratos t1"
+                +" where t1.COD_TRANS_NRO = "+cod_trans_nro;
+                //+" where t1.COD_TRANSACCION="+
+        return Consulta(sql);
+    }
+
+    public Map[] GetAdjunto(int cod_transaccion, int cod_adjunto) throws Exception {
+        String sql="select t1.COD_TRANSACCION, t1.COD_ADJUNTO"
+                +" from documentos t1 inner join transaccion t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
+                +" where t1.COD_TRANSACCION="+cod_transaccion+" and t1.COD_ADJUNTO="+cod_adjunto;
+                //+" where t1.COD_TRANSACCION="+
+        return Consulta(sql);
+    }
+
+    public Map[] addCuceSicoes(String tran, int cod_transaccion, String cuce_sicoes) throws Exception {
+        if ("SET-addCuceSicoes".equals(tran)) {
+            String sql="update adquisiciones.transaccion set cuce_sicoes='"+cuce_sicoes+"' where cod_transaccion = "+cod_transaccion;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] getCuceSicoes(int cod_transaccion) throws Exception {
+        String sql="select t1.cuce_sicoes from adquisiciones.transaccion t1 where t1.cod_transaccion="+cod_transaccion;
+        return Consulta(sql);
+    }
+
+    public Map[] addAdmAlm(String tran, int cod_usuario, int cod_almacen) throws Exception {
+        if ("SET-addAdmAlm".equals(tran)) {
+            String sql="insert into adquisiciones.adm_usr_almacen(cod_usr_alm,cod_usuario,cod_almacen)"+
+                        " values (ADQUISICIONES.SEC_COD_USR_ALM.NEXTVAL,"+cod_usuario+","+cod_almacen+")";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] updateAdmAlm(String tran, int cod_usr_alm, int cod_usuario, int cod_almacen) throws Exception {
+        if ("SET-updateAdmAlm".equals(tran)) {
+            String sql="update adquisiciones.adm_usr_almacen set cod_usuario="+cod_usuario+", cod_almacen="+cod_almacen+" where cod_usr_alm = "+cod_usr_alm;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    
+    public Map[] GetNotaConformidad(int cod_trans_nro) throws Exception {
+        String sql="select  t1.FECHA_NC, t1.HORA_NC, t1.CIUDAD, t1.LUGAR"
+                  +" from transaccion_nro t1"
+                  +" where t1.COD_TRANS_NRO ="+ cod_trans_nro;
+                //+" where t1.COD_TRANSACCION="+
+        return Consulta(sql);
+    }
+
+    public Map[] UpdateNotaConformidad(String tran, int cod_trans_nro, String fecha_nc, String hora_nc, String ciudad, String lugar) throws Exception {
+        if ("SET-UpdateNotaConformidad".equals(tran)) {
+            String sql="update adquisiciones.transaccion_nro set fecha_nc=TO_DATE('"+fecha_nc+"','DD/MM/YYYY'), hora_nc='"+hora_nc+"', ciudad='"+ciudad+"', lugar='"+lugar+"' where cod_trans_nro = "+cod_trans_nro;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
+    public Map[] addHojaRuta(String tran, int cod_transaccion, String hoja_ruta) throws Exception {
+        if ("SET-addHojaRuta".equals(tran)) {
+            String sql="update adquisiciones.transaccion set hoja_ruta='"+hoja_ruta+"' where cod_transaccion = "+cod_transaccion;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    
+}  
