@@ -1168,9 +1168,9 @@ public class AdquiWS{
 
     // Reporte nota de conformidad
     public Map[] getReporteNotaConformidadx(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
-        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t2.fecha,'YYYY-MM-DD') as fecha_creacion,t2.nro,t2.num_ing,sysdate as fecha_envio, t2.ciudad, t2.lugar, t2.hora_nc, t2.fecha_nc,t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t3.cod_trans_detalle,t4.cod_complemento,t3.precio_unit,t1.nro_transaccion,t1.detalle,t1.cbte, t3.partida,t5.NOMBRE_COMERCIAL as casa_comercial"
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t2.fecha,'YYYY-MM-DD') as fecha_creacion,t2.nro,t2.num_ing,sysdate as fecha_envio, t2.ciudad, t2.lugar, t2.hora_nc, t2.fecha_nc,t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t3.cod_trans_detalle,t4.cod_complemento,t3.precio_unit,t1.nro_transaccion,t1.detalle,t1.cbte, t3.partida,t7.NOMBRE_COMERCIAL as casa_comercial"
                     + " from adquisiciones.transaccion t1"
-                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t2.estado,t2.fecha_envio,GET_NRO(t1.COD_TRANS_NRO_ANT) as num_ing, fecha, t1.ciudad, t1.lugar, t1.HORA_NC,t1.FECHA_NC from adquisiciones.transaccion_nro t1 "
+                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.cod_trans_nro_ant,t1.nro,t2.estado,t2.fecha_envio,GET_NRO(t1.COD_TRANS_NRO_ANT) as num_ing, fecha, t1.ciudad, t1.lugar, t1.HORA_NC,t1.FECHA_NC from adquisiciones.transaccion_nro t1 "
                     + "            inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
                     + "            inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
                     + "            where t2.estado='"+estado+"' and t1.cod_tramite="+cod_tramite+") t2 on t1.cod_transaccion=t2.cod_transaccion"
@@ -1180,7 +1180,9 @@ public class AdquiWS{
                     + "    inner join adquisiciones.transaccion_detalle_nro t5 on t5.cod_trans_detalle=t1.cod_trans_detalle"
                     + "    ) t3 on t3.cod_trans_nro=t2.cod_trans_nro"
                     + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"
-                    + " inner join proponentes t5 on t1.cod_transaccion=t5.cod_transaccion and t5.estado='V'"
+                    + " inner join transaccion_nro t5 on t2.cod_trans_nro_ant=t5.cod_trans_nro"
+                    + " inner join transaccion_nro t6 on t5.cod_trans_nro_ant=t6.cod_trans_nro"
+                    + " inner join proponentes t7 on t7.cod_trans_nro=t6.cod_trans_nro and t7.estado='V'"
                     + " where t2.cod_trans_nro="+cod_trans_nro+" order by t3.articulo,t4.cod_complemento";
         return Consulta(sql);              
     }
