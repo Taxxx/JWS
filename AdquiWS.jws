@@ -69,7 +69,21 @@ public class AdquiWS{
    *
    * ================================================================
    * ================================================================*/
-  
+  public Map[] getProveedores() throws Exception {
+        /*String sql="select t1.cod_proveedor,t1.partida,t1.casa_comercial,t1.servicio,t1.direccion,t1.telefono,t1.nit,t1.estado as cod_estado,t2.estado,t1.fax,t1.web,t1.gran_actividad_nit,T1.RAZON_SOCIAL_NIT"+
+                   " from adquisiciones.proveedores t1 inner join ADQUISICIONES.ESTADOS t2 on t1.estado=t2.codigo where t1.estado!='X' order by t1.casa_comercial";*/
+        String sql="select DISTINCT p.COD_PROVEEDOR as cod, p.TIPO as tipo, p.CLASE as clase, p.NOMBRE as nombre, p.NOMBRE_COMERCIAL as nc, p.TELEFONO as tel, p.DIRECCION as dir"+
+                  " from proponentes p where p.ESTADO='V'";          
+        return Consulta(sql);
+    }
+    
+    public Map[] getDetProveedores(String cod) throws Exception
+    {
+        String sql="Select t.PARTIDA as partida, t.CANTIDAD_PEDIDO as cantidad, t1.DETALLE as unidad, t.DETALLE as detalle, t.GESTION as gestion"+
+                    " from TRANSACCION_DETALLE t INNER JOIN PROPONENTES p on p.COD_TRANSACCION=t.COD_TRANSACCION and p.COD_PROVEEDOR='"+cod+"'"+
+                    " LEFT OUTER JOIN UNIDAD_MEDIDA t1 on t.COD_UNIDAD_MEDIDA=t1.COD_UNIDAD_MEDIDA";
+        return Consulta(sql);
+    }
   //Verifica usuario
   public Map[] getUsuario(String apodo,String clave) throws Exception {
     String sql=" select distinct t1.cod_usuario,t1.usuario,(CASE WHEN t3.cod_almacen is null THEN 0 ELSE t3.cod_almacen END) as cod_almacen" +
