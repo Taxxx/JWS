@@ -73,7 +73,7 @@ public class AdquiWS{
         /*String sql="select t1.cod_proveedor,t1.partida,t1.casa_comercial,t1.servicio,t1.direccion,t1.telefono,t1.nit,t1.estado as cod_estado,t2.estado,t1.fax,t1.web,t1.gran_actividad_nit,T1.RAZON_SOCIAL_NIT"+
                    " from adquisiciones.proveedores t1 inner join ADQUISICIONES.ESTADOS t2 on t1.estado=t2.codigo where t1.estado!='X' order by t1.casa_comercial";*/
         String sql="select DISTINCT p.COD_PROVEEDOR as cod, p.TIPO as tipo, p.CLASE as clase, p.NOMBRE as nombre, p.NOMBRE_COMERCIAL as nc, p.TELEFONO as tel, p.DIRECCION as dir"+
-                  " from proponentes p where p.ESTADO='V'";          
+                  " from proponentes p INNER JOIN TRANSACCION_DETALLE t on p.COD_TRANSACCION=t.COD_TRANSACCION and p.ESTADO='V' and t.partida is not null";          
         return Consulta(sql);
     }
     
@@ -2481,7 +2481,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     public Map[] getProveedoresbusca(String a, String b, String c) throws Exception
     {
         String sql="select DISTINCT p.COD_PROVEEDOR as cod, p.TIPO as tipo, p.CLASE as clase, p.NOMBRE as nombre, p.NOMBRE_COMERCIAL as nc, p.TELEFONO as tel, p.DIRECCION as dir"+
-        " from proponentes p INNER JOIN TRANSACCION_DETALLE td on p.COD_TRANSACCION=td.COD_TRANSACCION and p.ESTADO='V' and p.NOMBRE like '"+a+"' and p.NOMBRE_COMERCIAL like '"+b+"' and td.DETALLE like '"+c+"'";
+        " from proponentes p INNER JOIN TRANSACCION_DETALLE td on p.COD_TRANSACCION=td.COD_TRANSACCION and p.ESTADO='V' and p.NOMBRE like '%"+a+"%' and p.NOMBRE_COMERCIAL like '%"+b+"%' and td.DETALLE like '%"+c+"%'";
         return Consulta(sql);
     }
     
