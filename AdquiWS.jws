@@ -2478,10 +2478,10 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         }
         else return null;
     }
-    public String getHojaRuta(String cod_transaccion) throws Exception {
+    public String getHojaRuta(int cod_transaccion) throws Exception {
       String sql="select t1.hoja_ruta"
           + " from transaccion t1"
-          + " where t1.cod_transaccion='"+cod_transaccion+"'";
+          + " where t1.cod_transaccion="+cod_transaccion;
       
       Map[] datos = Consulta(sql);
         
