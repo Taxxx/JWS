@@ -2478,6 +2478,15 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         }
         else return null;
     }
+    public String getHojaRuta(String cod_transaccion) throws Exception {
+      String sql="select t1.hoja_ruta"
+          + " from transaccion t1"
+          + " where t1.cod_transaccion='"+cod_transaccion+"'";
+      
+      Map[] datos = Consulta(sql);
+        
+      return datos[0].get("HOJA_RUTA").toString();
+  }
     public Map[] getProveedoresbusca(String a, String b, String c) throws Exception
     {
         String sql="select DISTINCT p.COD_PROVEEDOR as cod, p.TIPO as tipo, p.CLASE as clase, p.NOMBRE as nombre, p.NOMBRE_COMERCIAL as nc, p.TELEFONO as tel, p.DIRECCION as dir"+
