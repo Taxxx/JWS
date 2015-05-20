@@ -1976,6 +1976,17 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         + " from DATOS_GENERALES t1";
         return Consulta(sql);
   }
+  public Map[] getDatosGenerales2(int cod_almacen) throws Exception {
+    String sql="select t2.cod_faculty,t2.da,t2.gestion,t2.estado,t2.cod_da,t2.firma_rpa,t2.rpa"
+        + " from almacen t1 inner join unidad_ejecutora t2 on t1.facultad=t2.cod_faculty"
+        + " where t1.cod_almacen="+cod_almacen;
+        return Consulta(sql);
+  }
+  public Map[] updateRutaFirmaDigital(String cod_faculty, String firma_rpa) throws Exception {
+    
+        String sql="update UNIDAD_EJECUTORA set FIRMA_RPA='"+firma_rpa+"' where COD_FACULTY='"+cod_faculty+"'";
+        return Consulta(sql);
+  }
   public Map[] getDatosAlmacen(int cod_trans_nro) throws Exception {
     String sql="select t1.FACTURA,t1.FECHA_FACT,t1.FECHA_ING,t1.MEMO,t1.OBS"
         + " from TRANSACCION_NRO t1 where t1.COD_TRANS_NRO="+cod_trans_nro;
