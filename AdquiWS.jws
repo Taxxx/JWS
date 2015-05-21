@@ -1816,8 +1816,8 @@ public class AdquiWS{
         String sql="update adquisiciones.proponentes set cod_proveedor='"+cod_proveedor+"',nombre='"+nombre+"',nombre_comercial='"+nombre_comercial+"',direccion='"+direccion+"',telefono='"+telefono+"' where estado='V' and cod_transaccion="+cod_transaccion;
         return Consulta(sql);
    }
-   public Map[] GeneraResIni(int cod_transaccion, int tipo_resolucion, String detalle, String envia, String detalle_nota_solicitud, String detalle_nota_presupuesto,String destino) throws Exception {
-        String sql="insert into RESOLUCION_INI (COD_RES_INI,COD_TRANSACCION,TIPO_RESOLUCION,FECHA,DETALLE,ENVIA,DETALLE_NOTA_SOLICITUD,DETALLE_NOTA_PRESUPUESTO,DESTINO)"+" values (ADQUISICIONES.SEC_RES_INICIO.NEXTVAL,"+cod_transaccion+","+tipo_resolucion+",sysdate,'"+detalle+"','"+envia+"','"+detalle_nota_solicitud+"','"+detalle_nota_presupuesto+"','"+destino+"')";
+   public Map[] GeneraResIni(int cod_transaccion, int tipo_resolucion, String detalle, String envia, String detalle_nota_solicitud, String detalle_nota_presupuesto,String destino, int xx) throws Exception {
+        String sql="insert into RESOLUCION_INI (COD_RES_INI,COD_TRANSACCION,TIPO_RESOLUCION,FECHA,DETALLE,ENVIA,DETALLE_NOTA_SOLICITUD,DETALLE_NOTA_PRESUPUESTO,DESTINO,DIAS)"+" values (ADQUISICIONES.SEC_RES_INICIO.NEXTVAL,"+cod_transaccion+","+tipo_resolucion+",sysdate,'"+detalle+"','"+envia+"','"+detalle_nota_solicitud+"','"+detalle_nota_presupuesto+"','"+destino+"',"+xx+")";
         return Consulta(sql);
    }
    public Map[] getResIni(int cod_transaccion) throws Exception {
