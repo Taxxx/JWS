@@ -2071,6 +2071,11 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         Map[] datos = Consulta(sql);
         return datos[0].get("DESCRIPCION").toString();
     }
+    public String getCodFacultad(int cod_almacen) throws Exception {
+        String sql = "select t1.cod_faculty from unidad_ejecutora t1 inner join almacen t2 on t1.cod_faculty=t2.facultad where t2.cod_almacen="+cod_almacen;
+        Map[] datos = Consulta(sql);
+        return datos[0].get("COD_FACULTY").toString();
+    }
     //reporte de materiales a almacen
     public Map[] getRepoAdquiOrden() throws Exception {
         String sql="select distinct t1.COD_TRANSACCION,t1.HOJA_RUTA,t1.DE,t1.DETALLE,t4.COD_TRANS_DETALLE,t4.CANTIDAD_PEDIDO,t4.PRECIO_UNIT,t5.ARTICULO,t6.DETALLE_SOLICITUD,t1.MONTO_PPTO,t1.CBTE,t2.NRO as orden_compra,t3.NOMBRE_COMERCIAL,t2.OBS"
