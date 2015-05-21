@@ -86,7 +86,7 @@ public class AdquiWS{
         String sql="select t1.cod,t1.fechas from fechas_no_habiles";
         return Consulta(sql);
     }
-    public Map[] setFechasNH(int y,Date x) throws Exception
+    public Map[] setFechasModif(int y,Date x) throws Exception
     {
         String sql="update adquisiciones.fechas_no_habiles set fechas="+x+" where cod="+y;
         return Consulta(sql);
