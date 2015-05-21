@@ -1821,14 +1821,14 @@ public class AdquiWS{
         return Consulta(sql);
    }
    public Map[] getResIni(int cod_transaccion) throws Exception {
-      String sql="select t1.COD_RES_INI,t1.COD_RES_INI||'/'||to_char(t1.FECHA,'YY') as NUM_RESOLUCION,t1.COD_TRANSACCION,t1.FECHA,t1.tipo_resolucion,t1.detalle,t1.envia,t1.detalle_nota_solicitud,t1.detalle_nota_presupuesto,t1.destino"
+      String sql="select t1.COD_RES_INI,t1.COD_RES_INI||'/'||to_char(t1.FECHA,'YY') as NUM_RESOLUCION,t1.COD_TRANSACCION,t1.FECHA,t1.tipo_resolucion,t1.detalle,t1.envia,t1.detalle_nota_solicitud,t1.detalle_nota_presupuesto,t1.destino,t1.dias"
           + " from RESOLUCION_INI t1 inner join transaccion t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
           + " where t1.COD_TRANSACCION = "+cod_transaccion;
           return Consulta(sql);
    }
-   public Map[] updateResIni(int cod_res_ini,String envia,String dns,String dnp,String destino) throws Exception {
+   public Map[] updateResIni(int cod_res_ini,String envia,String dns,String dnp,String destino,int dias) throws Exception {
         //if ("SET-upDaTeUsr".equals(tran)) {
-            String sql="update adquisiciones.resolucion_ini set envia='"+envia+"',detalle_nota_solicitud='"+dns+"',detalle_nota_presupuesto='"+dnp+"',destino='"+destino+"'  where cod_res_ini="+cod_res_ini;
+            String sql="update adquisiciones.resolucion_ini set envia='"+envia+"',detalle_nota_solicitud='"+dns+"',detalle_nota_presupuesto='"+dnp+"',destino='"+destino+"',dias="+dias+"  where cod_res_ini="+cod_res_ini;
             return Consulta(sql);
         //}
         //else return null;
