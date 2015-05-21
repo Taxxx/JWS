@@ -76,9 +76,9 @@ public class AdquiWS{
                   " from proponentes p INNER JOIN TRANSACCION_DETALLE t on p.COD_TRANSACCION=t.COD_TRANSACCION and p.ESTADO='V' and t.partida is not null";          
         return Consulta(sql);
     }
-    public Map[] setFechasNH(Date x) throws Exception
+    public Map[] setFechasNH(String x) throws Exception
     {
-        String sql="insert into fechas_no_habiles(cod,fechas) values(SEC_COD_FECNH,"+x+")";
+        String sql="insert into fechas_no_habiles(cod,fechas) values(SEC_COD_FECNH, TO_DATE("+x+",'DD/MM/YYYY'))";
         return Consulta(sql);
     }
     public Map[] getFechasNH() throws Exception
@@ -86,9 +86,9 @@ public class AdquiWS{
         String sql="select t1.cod,t1.fechas from fechas_no_habiles";
         return Consulta(sql);
     }
-    public Map[] setFechasModif(int y,Date x) throws Exception
+    public Map[] setFechasModif(int y,String x) throws Exception
     {
-        String sql="update adquisiciones.fechas_no_habiles set fechas="+x+" where cod="+y;
+        String sql="update adquisiciones.fechas_no_habiles set fechas= TO_DATE("+x+",'DD/MM/YYYY') where cod="+y;
         return Consulta(sql);
     }
     public Map[] getDetProveedores(String cod) throws Exception
