@@ -83,7 +83,7 @@ public class AdquiWS{
     }
     public Map[] getFechasNH() throws Exception
     {
-        String sql="select t1.cod as COD,t1.fechas as FECHAS from FECHAS_NO_HABILES";
+        String sql="select t1.cod as COD, to_char(t1.fechas,'YYYY-MM-DD') as FECHAS from FECHAS_NO_HABILES t1";
         return Consulta(sql);
     }
     public Map[] setFechasModif(int y,String x) throws Exception
