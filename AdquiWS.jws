@@ -78,12 +78,12 @@ public class AdquiWS{
     }
     public Map[] setFechasNH(String x) throws Exception
     {
-        String sql="insert into fechas_no_habiles(cod,fechas) values(SEC_COD_FECNH, TO_DATE("+x+",'DD/MM/YYYY'))";
+        String sql="insert into FECHAS_NO_HABILES(COD,FECHAS) values(SEC_COD_FECNH, TO_DATE('"+x+"','DD/MM/YYYY'))";
         return Consulta(sql);
     }
     public Map[] getFechasNH() throws Exception
     {
-        String sql="select t1.cod,t1.fechas from fechas_no_habiles";
+        String sql="select t1.cod as COD,t1.fechas as FECHAS from FECHAS_NO_HABILES";
         return Consulta(sql);
     }
     public Map[] setFechasModif(int y,String x) throws Exception
