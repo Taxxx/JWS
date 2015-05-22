@@ -1996,6 +1996,11 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         + " where t1.cod_almacen="+cod_almacen;
         return Consulta(sql);
   }
+  public Map[] updateNombreRpa(String cod_faculty, String rpa) throws Exception {
+    
+        String sql="update UNIDAD_EJECUTORA set RPA='"+rpa+"' where COD_FACULTY='"+cod_faculty+"'";
+        return Consulta(sql);
+  }
   public Map[] updateRutaFirmaDigital(String cod_faculty, String firma_rpa) throws Exception {
     
         String sql="update UNIDAD_EJECUTORA set FIRMA_RPA='"+firma_rpa+"' where COD_FACULTY='"+cod_faculty+"'";
