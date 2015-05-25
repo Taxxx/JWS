@@ -88,7 +88,7 @@ public class AdquiWS{
     }
     public Map[] setFechasModif(int y,String x) throws Exception
     {
-        String sql="update adquisiciones.fechas_no_habiles set fechas= TO_DATE("+x+",'DD/MM/YYYY') where cod="+y;
+        String sql="update adquisiciones.fechas_no_habiles set fechas='"+x+"' where cod="+y;
         return Consulta(sql);
     }
     public Map[] getDetProveedores(String cod) throws Exception
