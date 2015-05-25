@@ -418,7 +418,7 @@ public class AdquiWS{
         return Consulta(sql);
     }
     public Map[] getUsrFirma(int cod_almacen) throws Exception {
-        String sql="select t1.cod_usuario, t1.usuario, NVL(t1.firma,'NO TIENE')"
+        String sql="select t1.cod_usuario, t1.usuario, NVL(t1.firma,'NO TIENE') as firma"
                  +" from adm_usuario t1 inner join adm_usr_almacen t2 on t1.COD_USUARIO=t2.COD_USUARIO"
                  +" where t2.cod_almacen="+cod_almacen+" and t1.ESTADO='V'";
         return Consulta(sql);
