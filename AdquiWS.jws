@@ -1842,18 +1842,18 @@ public class AdquiWS{
         return Consulta(sql);
    }
    public Map[] GeneraResIni(int cod_transaccion, int tipo_resolucion, String detalle, String envia, String detalle_nota_solicitud, String detalle_nota_presupuesto,String destino, int xx) throws Exception {
-        String sql="insert into RESOLUCION_INI1 (COD_RES_INI,COD_TRANSACCION,TIPO_RESOLUCION,FECHA,DETALLE,ENVIA,DETALLE_NOTA_SOLICITUD,DETALLE_NOTA_PRESUPUESTO,DESTINO,DIAS)"+" values (ADQUISICIONES.SEC_RES_INICIO.NEXTVAL,"+cod_transaccion+","+tipo_resolucion+",sysdate,'"+detalle+"','"+envia+"','"+detalle_nota_solicitud+"','"+detalle_nota_presupuesto+"','"+destino+"',"+xx+")";
+        String sql="insert into RESOLUCION_INI (COD_RES_INI,COD_TRANSACCION,TIPO_RESOLUCION,FECHA,DETALLE,ENVIA,DETALLE_NOTA_SOLICITUD,DETALLE_NOTA_PRESUPUESTO,DESTINO,DIAS)"+" values (ADQUISICIONES.SEC_RES_INICIO.NEXTVAL,"+cod_transaccion+","+tipo_resolucion+",sysdate,'"+detalle+"','"+envia+"','"+detalle_nota_solicitud+"','"+detalle_nota_presupuesto+"','"+destino+"',"+xx+")";
         return Consulta(sql);
    }
    public Map[] getResIni(int cod_transaccion) throws Exception {
       String sql="select t1.COD_RES_INI,t1.COD_RES_INI||'/'||to_char(t1.FECHA,'YY') as NUM_RESOLUCION,t1.COD_TRANSACCION,t1.FECHA,t1.tipo_resolucion,t1.detalle,t1.envia,t1.detalle_nota_solicitud,t1.detalle_nota_presupuesto,t1.destino,t1.dias"
-          + " from RESOLUCION_INI1 t1 inner join transaccion t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
+          + " from RESOLUCION_INI t1 inner join transaccion t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
           + " where t1.COD_TRANSACCION = "+cod_transaccion;
           return Consulta(sql);
    }
    public Map[] updateResIni(int cod_res_ini,String envia,String dns,String dnp,String destino,int dias) throws Exception {
         //if ("SET-upDaTeUsr".equals(tran)) {
-            String sql="update adquisiciones.resolucion_ini1 set envia='"+envia+"',detalle_nota_solicitud='"+dns+"',detalle_nota_presupuesto='"+dnp+"',destino='"+destino+"',dias="+dias+"  where cod_res_ini="+cod_res_ini;
+            String sql="update adquisiciones.resolucion_ini set envia='"+envia+"',detalle_nota_solicitud='"+dns+"',detalle_nota_presupuesto='"+dnp+"',destino='"+destino+"',dias="+dias+"  where cod_res_ini="+cod_res_ini;
             return Consulta(sql);
         //}
         //else return null;
@@ -1987,7 +1987,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
   }
   public Map[] existeReIni(int cod_transaccion) throws Exception {
         String sql="select t1.COD_RES_INI"
-            + " from resolucion_ini1 t1 where t1.COD_TRANSACCION="+cod_transaccion;
+            + " from resolucion_ini t1 where t1.COD_TRANSACCION="+cod_transaccion;
             return Consulta(sql);
   }
 
@@ -2318,7 +2318,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     }
     public Map[] GetFechasRestriccionAdquiDepto() throws Exception {
         String sql="select t2.COD_RES_INI as nro_ri, t1.FECHA_INICIO,t1.FECHA_FINAL,t3.nro as nro_sol,t2.dias as dias_restantes"
-                +" from restriccion_fechas t1 inner join resolucion_ini1 t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
+                +" from restriccion_fechas t1 inner join resolucion_ini t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
                 +" inner join transaccion_nro t3 on t2.COD_TRANSACCION=t3.COD_TRANSACCION and t3.COD_TRAMITE=1";
         return Consulta(sql);
     }
