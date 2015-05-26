@@ -2545,5 +2545,17 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         " from proponentes p INNER JOIN TRANSACCION_DETALLE td on p.COD_TRANSACCION=td.COD_TRANSACCION and p.ESTADO='V' and p.NOMBRE like '%"+a+"%' and p.NOMBRE_COMERCIAL like '%"+b+"%' and td.DETALLE like '%"+c+"%'";
         return Consulta(sql);
     }
+    public Map[] getFirmaUsuario(int cod_trans_nro) throws Exception {
+      String sql="select t1.cod_usuario,t1.firma"
+          + " from adm_usuario t1 inner join transaccion t2 on t1.cod_usuario = t2.usuario_reg inner join transaccion_nro t3 on t2.cod_transaccion=t3.cod_transaccion"
+          + " where t3.cod_trans_nro="+cod_trans_nro;
+          return Consulta(sql);
+    }
+    public Map[] getFirmaUsuario2(int cod_transaccion) throws Exception {
+      String sql="select distinct t1.cod_usuario,t1.firma"
+          + " from adm_usuario t1 inner join transaccion t2 on t1.cod_usuario = t2.usuario_reg inner join transaccion_nro t3 on t2.cod_transaccion=t3.cod_transaccion"
+          + " where t3.cod_transaccion="+cod_transaccion;
+          return Consulta(sql);
+    }
     
 }  
