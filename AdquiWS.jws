@@ -2320,6 +2320,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         String sql="select t2.COD_RES_INI as nro_ri, t1.FECHA_INICIO,t1.FECHA_FINAL,t3.nro as nro_sol,t2.dias as dias_restantes"
                 +" from restriccion_fechas t1 inner join resolucion_ini t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
                 +" inner join transaccion_nro t3 on t2.COD_TRANSACCION=t3.COD_TRANSACCION and t3.COD_TRAMITE=1";
+                //+" where t1.COD_TRANSACCION="+
         return Consulta(sql);
     }
     public Map[] setCodW(String tran,int cod_transaccion, int cod_w) throws Exception {
