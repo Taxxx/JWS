@@ -1221,6 +1221,12 @@ public class AdquiWS{
         return Consulta(sql);              
     }
 
+    public Map[] getDias(int cod) throws Exception
+    {
+      String sql="select t1.DIAS from RESOLUCION_INI t1 inner join TRANSACCION_NRO t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION and t2.COD_TRANS_NRO="+cod;
+      return Consulta(sql)
+    }
+
     // Reporte nota de conformidad
     public Map[] getReporteNotaConformidad(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
         String sql="select t3.COD_TRANS_DETALLE,t1.NRO,t1.COD_TRAMITE,t3.DETALLE,t2.NOMBRE,t2.NOMBRE_COMERCIAL,t4.DETALLE_SOLICITUD,t1.COD_TRANS_NRO"
