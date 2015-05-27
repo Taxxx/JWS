@@ -2548,7 +2548,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     public Map[] getProveedoresbusca(String a, String b, String c) throws Exception
     {
         String sql="select DISTINCT p.COD_PROVEEDOR as cod, p.TIPO as tipo, p.CLASE as clase, p.NOMBRE as nombre, p.NOMBRE_COMERCIAL as nc, p.TELEFONO as tel, p.DIRECCION as dir"+
-        " from proponentes p INNER JOIN TRANSACCION_DETALLE td on p.COD_TRANSACCION=td.COD_TRANSACCION and p.ESTADO='V' and p.NOMBRE like '%"+a+"%' and p.NOMBRE_COMERCIAL like '%"+b+"%' and td.DETALLE like '%"+c+"%'";
+        " from proponentes p INNER JOIN TRANSACCION_DETALLE td on p.COD_TRANSACCION=td.COD_TRANSACCION and td.partida is not null and p.ESTADO='V' and p.NOMBRE like '%"+a+"%' and p.NOMBRE_COMERCIAL like '%"+b+"%' and td.DETALLE like '%"+c+"%'";
         return Consulta(sql);
     }
     public Map[] getFirmaUsuario(int cod_trans_nro) throws Exception {
