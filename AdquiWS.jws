@@ -2118,6 +2118,12 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                 + " where t1.gestion="+gestion+" and t2.cod_almacen="+cod_almacen;
         return Consulta(sql);        
     }
+    public Map[] getAlmacenGestion(int gestion) throws Exception {        
+        String sql="select t1.cod_almacen, t1.almacen, t1.facultad, t1.cod_fac"
+                + " from almacen t1"
+                + " where t1.gestion="+gestion+" and t1.estado='V'";
+        return Consulta(sql);        
+    }
     public String getDescPartida(String partida) throws Exception {
         String sql = "select descripcion from partidas where partida = '"+partida+"'";
         Map[] datos = Consulta(sql);
