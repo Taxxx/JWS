@@ -1223,7 +1223,7 @@ public class AdquiWS{
 
     public Map[] getDias(int cod) throws Exception
     {
-      String sql="select t1.DIAS from TRANSACCION_NRO t1 WHERE and t1.COD_TRANS_NRO="+cod;
+      String sql="select DIAS from TRANSACCION_NRO WHERE COD_TRANS_NRO="+cod;
       return Consulta(sql);
     }
     public Map[] setDias(int cod, int d) throws Exception
