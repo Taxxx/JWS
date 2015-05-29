@@ -300,6 +300,13 @@ public class AdquiWS{
         return Consulta(sql);        
     }
 
+    public Map[] getUnidadEjecutora1(int gestion) throws Exception {        
+        String sql="select t1.cod_faculty,t1.da,t1.cod_da"
+                + " from unidad_ejecutora t1"
+                + " where t1.gestion="+gestion+" and t1.estado='V'";
+        return Consulta(sql);        
+    }
+
     public Map[] getUnidadEjecutora2(int gestion, int cod_almacen) throws Exception {        
         String sql="select t1.cod_apert,t1.detalle,t1.apertura, t2.almacen ,(apertura||' - '||detalle) as ue,t2.COD_ALMACEN,t3.DA"
                   +" from adquisiciones.programatic_apert t1 inner join adquisiciones.almacen t2 on t1.COD_FACULTY=t2.FACULTAD"
