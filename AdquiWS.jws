@@ -301,8 +301,8 @@ public class AdquiWS{
     }
 
     public Map[] getUnidadEjecutora1(int gestion) throws Exception {        
-        String sql="select t1.cod_faculty,t1.da,t1.cod_da"
-                + " from unidad_ejecutora t1"
+        String sql="select t1.cod_faculty,t1.da,t1.cod_da,t2.cod_almacen"
+                + " from unidad_ejecutora t1 inner join almacen t2 on t1.cod_faculty=t2.facultad"
                 + " where t1.gestion="+gestion+" and t1.estado='V'";
         return Consulta(sql);        
     }
