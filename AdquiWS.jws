@@ -240,7 +240,7 @@ public class AdquiWS{
         String sql="select t1.COD_USUARIO, t1.USUARIO, t1.NOMBRE_RESUMEN"
                   +" from ADM_USUARIO t1 inner join  adm_usr_almacen t2 on t1.COD_USUARIO=t2.COD_USUARIO"
                   +" inner join adm_usr_rol t3 on t1.COD_USUARIO=t3.COD_USUARIO"
-                  +" where t3.COD_ROL="+cod_rol+" and t1.gestion="+gestion;
+                  +" where t3.COD_ROL="+cod_rol+" and t2.gestion="+gestion;
         return Consulta(sql);        
     }
 
