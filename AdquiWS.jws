@@ -236,6 +236,14 @@ public class AdquiWS{
         return Consulta(sql);        
     }
 
+    public Map[] getUsuariosTipo(int cod_rol, int gestion) throws Exception {        
+        String sql="select t1.COD_USUARIO, t1.USUARIO, t1.NOMBRE_RESUMEN"
+                  +" from ADM_USUARIO t1 inner join  adm_usr_almacen t2 on t1.COD_USUARIO=t2.COD_USUARIO"
+                  +" inner join adm_usr_rol t3 on t1.COD_USUARIO=t3.COD_USUARIO"
+                  +" where t3.COD_ROL="+cod_rol+" and t2.gestion="+gestion;
+        return Consulta(sql);        
+    }
+
     public Map[] setUsuario(String tran, String apodo,String clave,String usuario,String nombre_resumen) throws Exception {
         if ("SET-insDataUsr".equals(tran)) {
             String sql="insert into adquisiciones.adm_usuario(cod_usuario,apodo,clave,usuario,nombre_resumen)"+
@@ -289,6 +297,13 @@ public class AdquiWS{
         String sql="select t1.cod_apert,t1.detalle,t1.apertura, t2.almacen ,(apertura||' - '||detalle) as ue,t3.da"
                 + " from adquisiciones.programatic_apert t1 inner join adquisiciones.almacen t2 on t1.cod_almacen=t2.cod_almacen inner join adquisiciones.unidad_ejecutora t3 on t1.cod_faculty=t3.cod_faculty"
                 + " where t1.estado='V' and t1.gestion="+gestion+" order by t1.apertura";
+        return Consulta(sql);        
+    }
+
+    public Map[] getUnidadEjecutora1(int gestion) throws Exception {        
+        String sql="select t1.cod_faculty,t1.da,t1.cod_da,t2.cod_almacen"
+                + " from unidad_ejecutora t1 inner join almacen t2 on t1.cod_faculty=t2.facultad"
+                + " where t1.gestion="+gestion+" and t1.estado='V'";
         return Consulta(sql);        
     }
 
@@ -2112,6 +2127,18 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                 + " where t1.tipo = 't' and t1.GESTION = '"+gestion+"' order by t1.PARTIDA asc";
         return Consulta(sql);        
     }
+    public Map[] getProgramaticApertGestion(int gestion, int cod_almacen) throws Exception {        
+        String sql="select t1.cod_apert,t1.cod_faculty,t2.cod_almacen,t1.detalle,t1.apertura"
+                + " from programatic_apert t1 inner join almacen t2 on t1.cod_faculty = t2.facultad"
+                + " where t1.gestion="+gestion+" and t2.cod_almacen="+cod_almacen;
+        return Consulta(sql);        
+    }
+    public Map[] getAlmacenGestion(int gestion) throws Exception {        
+        String sql="select t1.cod_almacen, t1.almacen, t1.facultad, t1.cod_fac"
+                + " from almacen t1"
+                + " where t1.gestion="+gestion+" and t1.estado='V'";
+        return Consulta(sql);        
+    }
     public String getDescPartida(String partida) throws Exception {
         String sql = "select descripcion from partidas where partida = '"+partida+"'";
         Map[] datos = Consulta(sql);
@@ -2501,10 +2528,10 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         return Consulta(sql);
     }
 
-    public Map[] addAdmAlm(String tran, int cod_usuario, int cod_almacen) throws Exception {
+    public Map[] addAdmAlm(String tran, int cod_usuario, int cod_almacen, int gestion) throws Exception {
         if ("SET-addAdmAlm".equals(tran)) {
-            String sql="insert into adquisiciones.adm_usr_almacen(cod_usr_alm,cod_usuario,cod_almacen)"+
-                        " values (ADQUISICIONES.SEC_COD_USR_ALM.NEXTVAL,"+cod_usuario+","+cod_almacen+")";
+            String sql="insert into adquisiciones.adm_usr_almacen(cod_usr_alm,cod_usuario,cod_almacen,gestion)"+
+                        " values (ADQUISICIONES.SEC_COD_USR_ALM.NEXTVAL,"+cod_usuario+","+cod_almacen+","+gestion+")";
             return Consulta(sql);
         }
         else return null;
