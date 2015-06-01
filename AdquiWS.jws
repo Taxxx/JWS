@@ -1885,9 +1885,9 @@ public class AdquiWS{
         String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ, COD_TRANS_NRO, COD_PROVEEDOR, FECHA, TIPO, NUM_RES_ADM, NOTAS_ADQ, NUM_ADC_ANPE, CONVOCATORIA, NUM_INF_ADQ, NUM_INF_HP, PROVEEDOR, DESTINO, ACTIVIDAD,TITULO)"+" values (ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+cod_trans_nro+",'"+cod_proveedor+"',sysdate,'"+tipo+"','"+num_res_adm+"','"+notas_adq+"','"+num_adc_anpe+"','"+convocatoria+"','"+num_inf_adq+"','"+num_inf_hp+"','"+proveedor+"','"+destino+"','"+actividad+"','"+titulo+"')";
         return Consulta(sql);
    }
-   public Map[] gentabla(String aaa,String bbb,String ccc,String ddd,int xx,String yy) throws Exception
+   public Map[] gentabla(String aaa,String bbb,String ccc,String ddd,int xx,String yy,String f,String g) throws Exception
    {
-        String sql="update PROPONENTES set MONTO='"+aaa+"',PLAZO='"+bbb+"',OBSERVACION='"+ccc+"',CUMPLE='"+ddd+"' where COD_PROVEEDOR='"+yy+"' AND COD_TRANS_NRO="+xx;
+        String sql="update PROPONENTES set MONTO='"+aaa+"',PTG_ECONOMICO='"+f+"',PTG_TECNICO='"+g+"',PLAZO='"+bbb+"',OBSERVACION='"+ccc+"',CUMPLE='"+ddd+"' where COD_PROVEEDOR='"+yy+"' AND COD_TRANS_NRO="+xx;
         return Consulta(sql);
    }
    //estos metodos existen pero estan modificados
@@ -1992,7 +1992,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
             return Consulta(sql);
   }
   public Map[] getConcursantes(int cod_transaccion) throws Exception {
-        String sql="select t1.COD_PROVEEDOR,t1.NOMBRE_COMERCIAL, t1.NOMBRE, t1.MONTO, t1.PLAZO, t1.OBSERVACION, t1.CUMPLE"
+        String sql="select t1.COD_PROVEEDOR,t1.NOMBRE_COMERCIAL, t1.NOMBRE, t1.MONTO, t1.PLAZO, t1.OBSERVACION, t1.CUMPLE, t1.PTG_ECONOMICO, t1.PTG_TECNICO"
             + " from proponentes t1 where t1.COD_TRANSACCION="+cod_transaccion;
             return Consulta(sql);
   }
