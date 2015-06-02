@@ -643,10 +643,10 @@ public class AdquiWS{
         return Consulta(sql);
     }
     
-    /*public Map[] getEst(cod_trans_nro) throws Exception {
+    public Map[] getEst(int cod_trans_nro) throws Exception {
         String sql="select T1.ESTADO FROM TRANSACCION_DETALLE T1 INNER JOIN TRANSACCION_NRO T2 ON T1.COD_TRANSACCION=T2.COD_TRANSACCION AND T2.COD_TRANS_NRO = "+cod_trans_nro;
         return Consulta(sql);
-    }*/
+    }
     
     // tramites
     public Map[] getTramites() throws Exception {
