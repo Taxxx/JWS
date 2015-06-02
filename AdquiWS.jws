@@ -466,11 +466,16 @@ public class AdquiWS{
         else return null;
     }
 
-    public Map[] getUsrUnidad(int gestion) throws Exception {
-        String sql="select t1.cod_apert,t1.detalle,t2.cod_usuario,t2.usuario " +
+    public Map[] getUsrUnidad(int gestion, int cod_almacen) throws Exception {
+        /*String sql="select t1.cod_apert,t1.detalle,t2.cod_usuario,t2.usuario " +
                 " from adquisiciones.programatic_apert t1, adquisiciones.adm_usuario t2, adquisiciones.adm_usr_apert t3 " +
                 " where t1.cod_apert=t3.cod_apert and t2.cod_usuario=t3.cod_usuario and t3.gestion="+gestion+" and t2.estado='V' "+ 
-                " order by t2.usuario ";
+                " order by t2.usuario ";*/
+        String sql="select t1.cod_apert,t1.detalle,t3.cod_usuario,t3.usuario"
+             +" from programatic_apert t1 inner join adm_usr_apert t2 on t1.cod_apert=t2.cod_apert"
+             +" inner join adm_usuario t3 on t2.cod_usuario=t3.cod_usuario"
+             +" inner join adm_usr_almacen t4 on t3.cod_usuario=t4.cod_usuario"
+             +" where t2.gestion="+gestion+" and t3.estado='V' and t4.cod_almacen="+cod_almacen;
         return Consulta(sql);
     }
 
