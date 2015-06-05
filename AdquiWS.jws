@@ -2413,7 +2413,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         }
         else return null;
     }
-    public Map[] updateFecha(String tran,int cod_tipo_resf,int cod_trans_nro, String fecha_inicio, String fecha_conclusion) throws Exception {
+    public Map[] updateFechaEntrega(String tran,int cod_tipo_resf,int cod_trans_nro, String fecha_inicio, String fecha_conclusion) throws Exception {
         if ("SET-updateFechaEntrega".equals(tran)) {
             String sql="update adquisiciones.restriccion_fechas_proc set fecha_inicio= TO_DATE("+fecha_inicio+",'DD/MM/YYYY'), fecha_conclusion= TO_DATE("+fecha_conclusion+",'DD/MM/YYYY') where cod_tipo_resf="+cod_tipo_resf+" and cod_trans_nro="+cod_trans_nro;
             return Consulta(sql);
