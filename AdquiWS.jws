@@ -2444,8 +2444,13 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         String sql="select COD_TRANS_NRO from TRANSACCION_NRO where cod_tramite=1 and cod_transaccion="+cod_transaccion;
         return Consulta(sql);
     }
+    public Map[] fechasExtra(String a,String b,int c, int d) throws Exception
+    {
+        String sql="update RESTRICCION_FECHAS_PROC SET FECHA_CALIFICACION='"+a+"', FECHA_ENTREGA='"+b+"' WHERE COD_TRANS_NRO="+c+" AND COD_TIPO_RESF="+d;
+        return Consulta(sql);
+    }
     public Map[] GetRestriccionFechas(int cod_trans_nro) throws Exception {
-        String sql="select t1.COD_RES_FEC_PRO, t1.COD_TIPO_RESF, t1.FECHA_INICIO,t1.FECHA_CONCLUSION, t1.LUGAR,t1.HORA_INICIO"
+        String sql="select t1.COD_RES_FEC_PRO, t1.COD_TIPO_RESF, t1.FECHA_INICIO,t1.FECHA_CONCLUSION, t1.LUGAR,t1.HORA_INICIO, t1.FECHA_CALIFICACION, t1.FECHA_ENTREGA"
                 +" from restriccion_fechas_proc t1"
                 +" where t1.COD_TRANS_NRO = "+cod_trans_nro
                 +" order by t1.COD_TIPO_RESF";
