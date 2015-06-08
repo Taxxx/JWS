@@ -805,7 +805,8 @@ public class AdquiWS{
                    + " inner join adquisiciones.transaccion_nro t4 on t3.cod_trans_nro=t4.cod_trans_nro"
                    + " inner join adquisiciones.tramites t5 on t4.cod_tramite=t5.cod_tramite"
                    + " inner join adquisiciones.estados t7 on T2.ESTADO=t7.codigo"
-                   + " where (t4.nro like '"+nro+"' and t1.HOJA_RUTA like '"+hoja_ruta+"' ) and t1.gestion="+gestion+" and t1.cod_almacen="+cod_almacen+" and (t5.cod_tramite="+cod_tramite+")";
+                   + " where (t4.nro like '"+nro+"' and t1.HOJA_RUTA like '"+hoja_ruta+"' ) and t1.gestion="+gestion+" and t1.cod_almacen="+cod_almacen+" and (t5.cod_tramite="+cod_tramite+")"
+                   + " order by t4.nro desc";
         return Consulta(sql);
     }
 
@@ -1209,7 +1210,7 @@ public class AdquiWS{
 
     // Reporte de pedido de materiales
     public Map[] getReportePedidox(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
-        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t2.fecha,'YYYY-MM-DD') as fecha_creacion,t2.nro,t2.num_ing,sysdate as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t3.cod_trans_detalle,t4.cod_complemento,t3.precio_unit,t1.nro_transaccion,t1.detalle,t1.cbte"
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t2.fecha,'YYYY-MM-DD') as fecha_creacion,t2.nro,t2.num_ing,sysdate as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t3.cod_trans_detalle,t4.cod_complemento,t3.precio_unit,t1.nro_transaccion,t1.detalle,(CASE WHEN t1.cbte is not null THEN t1.cbte ELSE t6.cod_preventivo  END ) as cbte"
                     + " from adquisiciones.transaccion t1"
                     + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t2.estado,t2.fecha_envio,GET_NRO(t1.COD_TRANS_NRO_ANT) as num_ing, fecha from adquisiciones.transaccion_nro t1 "
                     + "            inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
@@ -1221,6 +1222,7 @@ public class AdquiWS{
                     + "    inner join adquisiciones.transaccion_detalle_nro t5 on t5.cod_trans_detalle=t1.cod_trans_detalle"
                     + "    ) t3 on t3.cod_trans_nro=t2.cod_trans_nro"
                     + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"
+                    + " left join adquisiciones.transaccion_preventivo t6 on t1.cod_transaccion=t6.cod_transaccion"
                     + " where t2.cod_trans_nro="+cod_trans_nro+" order by t3.articulo,t4.cod_complemento";
         return Consulta(sql);              
     }
@@ -2388,7 +2390,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         else return null;
     }
 
-     public Map[] addFechaRestriccion3(String tran, int cod_tipo_resf,int cod_trans_nro, String fecha_conclusion, String lugar,String hora_inicio) throws Exception {
+    public Map[] addFechaRestriccion3(String tran, int cod_tipo_resf,int cod_trans_nro, String fecha_conclusion, String lugar,String hora_inicio) throws Exception {
         if ("SET-addFechaRestriccion".equals(tran)) {
             String sql="insert into adquisiciones.restriccion_fechas_proc(cod_res_fec_pro,cod_tipo_resf,cod_trans_nro,fecha_conclusion,lugar,hora_inicio)"+
                         " values (ADQUISICIONES.SEC_RES_INI_FECHA.NEXTVAL,"+cod_tipo_resf+","+cod_trans_nro+",TO_DATE("+fecha_conclusion+",'DD/MM/YYYY'),'"+lugar+"','"+hora_inicio+"')";
@@ -2396,8 +2398,16 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         }
         else return null;
     }
-    public Map[] addFechaRestriccion2(String tran, int cod_tipo_resf,int cod_trans_nro, String fecha_inicio,String fecha_conclusion, String lugar,String hora_inicio) throws Exception {
+    public Map[] addFechaBoletaGarantia(String tran, int cod_tipo_resf,int cod_trans_nro, String fecha_inicio,String fecha_conclusion) throws Exception {
         if ("SET-addFechaRestriccion".equals(tran)) {
+            String sql="insert into adquisiciones.restriccion_fechas_proc(cod_res_fec_pro,cod_tipo_resf,cod_trans_nro,fecha_inicio,fecha_conclusion)"+
+                        " values (ADQUISICIONES.SEC_RES_INI_FECHA.NEXTVAL,"+cod_tipo_resf+","+cod_trans_nro+",TO_DATE("+fecha_inicio+",'DD/MM/YYYY'),TO_DATE("+fecha_conclusion+",'DD/MM/YYYY'))";
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] addFechaRestriccion2(String tran, int cod_tipo_resf,int cod_trans_nro, String fecha_inicio,String fecha_conclusion, String lugar,String hora_inicio) throws Exception {
+        if ("SET-addFechaBoletaGarantia".equals(tran)) {
             String sql="insert into adquisiciones.restriccion_fechas_proc(cod_res_fec_pro,cod_tipo_resf,cod_trans_nro,fecha_inicio,fecha_conclusion,lugar,hora_inicio)"+
                         " values (ADQUISICIONES.SEC_RES_INI_FECHA.NEXTVAL,"+cod_tipo_resf+","+cod_trans_nro+",TO_DATE("+fecha_inicio+",'DD/MM/YYYY'),TO_DATE("+fecha_conclusion+",'DD/MM/YYYY'),'"+lugar+"','"+hora_inicio+"')";
             return Consulta(sql);
