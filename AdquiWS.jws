@@ -2333,10 +2333,10 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
             delItemx("SET-delItem",cod_trans_detalle);
         }
     }
-    public Map[] addPreventivo(String tran,int cod_transaccion, int cod_preventivo, String resumen, int da, String total) throws Exception {
+    public Map[] addPreventivo(String tran,int cod_transaccion, String cod_preventivo, String resumen, int da, String total) throws Exception {
         if ("SET-addPreventivo".equals(tran)) {
             String sql="insert into adquisiciones.transaccion_preventivo(cod_trans_preventivo,cod_transaccion,cod_preventivo,resumen,da,total,fecha)"+
-                        " values (ADQUISICIONES.SEC_TRANS_PREV.NEXTVAL,"+cod_transaccion+","+cod_preventivo+",'"+resumen+"',"+da+",'"+total+"',sysdate)";
+                        " values (ADQUISICIONES.SEC_TRANS_PREV.NEXTVAL,"+cod_transaccion+",'"+cod_preventivo+"','"+resumen+"',"+da+",'"+total+"',sysdate)";
             return Consulta(sql);
         }
         else return null;
@@ -2346,9 +2346,9 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
             + " from transaccion_preventivo t1 where t1.COD_TRANSACCION = "+cod_transaccion;
         return Consulta(sql);
     }
-    public Map[] delPreventivo(String tran, int cod_transaccion, int cod_preventivo) throws Exception {
+    public Map[] delPreventivo(String tran, int cod_transaccion, String cod_preventivo) throws Exception {
         if ("SET-delPreventivo".equals(tran)) {
-            String sql="delete from adquisiciones.transaccion_preventivo where cod_transaccion = "+cod_transaccion+" and cod_preventivo="+cod_preventivo;
+            String sql="delete from adquisiciones.transaccion_preventivo where cod_transaccion = "+cod_transaccion+" and cod_preventivo='"+cod_preventivo+"'";
             return Consulta(sql);
         }
         else return null;
