@@ -2451,19 +2451,20 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     }
     public Map[] notificacionfechas() throws Exception
     {
-        String sql="select nro as NRO_SOL,res_ini AS NRO_RI,otro AS PROCESO,p3.FECHA_CONCLUSION AS FECHA_FINAL, round(p3.FECHA_CONCLUSION-sysdate,0) as DIAS_RESTANTES"
-                    +" from"
-                    +" (select t2.COD_TRANS_NRO as cod,t2.NRO as nro,t1.COD_RES_INI as res_ini, (select DETALLE "
-                    +" from TIPO_RESTRICCION_FECHA "
-                    +" where TIPO_RESTRICCION_FECHA.COD_TIPO_RESF=(select count(*) "
-                    +" from RESTRICCION_FECHAS_PROC "
-                    +" where COD_TRANS_NRO=t2.COD_TRANS_NRO and FECHA_ENTREGA is not null)+12-(select count(*) "
-                    +" from RESTRICCION_FECHAS_PROC"
-                    +" where RESTRICCION_FECHAS_PROC.COD_TRANS_NRO=t2.COD_TRANS_NRO)) as otro "
-                    +" from RESOLUCION_INI t1 inner join TRANSACCION_NRO t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION and t2.COD_TRAMITE=2) p1 "
-                    +" left outer JOIN TIPO_RESTRICCION_FECHA p2 on p1.otro=p2.DETALLE"
-                    +" left OUTER JOIN RESTRICCION_FECHAS_PROC p3 on p2.COD_TIPO_RESF=p3.COD_TIPO_RESF and p3.COD_TRANS_NRO=p1.cod"
-                    +" where otro is not null and otro not like 'Boletas de Garantia'";
+        String sql="select p4.NRO as orden, p1.nro as NRO_SOL,res_ini AS NRO_RI,otro AS PROCESO,p3.FECHA_CONCLUSION AS FECHA_FINAL, round(p3.FECHA_CONCLUSION-sysdate,0) as DIAS_RESTANTES"
+                   +"  from"
+                   +"(select t2.COD_TRANSACCION as cod_T, t2.COD_TRANS_NRO as cod,t2.NRO as nro,t1.COD_RES_INI as res_ini, (select DETALLE "
+                   +"  from TIPO_RESTRICCION_FECHA "
+                   +" where TIPO_RESTRICCION_FECHA.COD_TIPO_RESF=(select count(*) "
+                   +" from RESTRICCION_FECHAS_PROC "
+                   +"  where COD_TRANS_NRO=t2.COD_TRANS_NRO and FECHA_ENTREGA is not null)+12-(select count(*) "
+                   +"  from RESTRICCION_FECHAS_PROC"
+                   +"  where RESTRICCION_FECHAS_PROC.COD_TRANS_NRO=t2.COD_TRANS_NRO)) as otro "
+                   +"  from RESOLUCION_INI t1 inner join TRANSACCION_NRO t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION and t2.COD_TRAMITE=1) p1 "
+                   +"  left outer JOIN TIPO_RESTRICCION_FECHA p2 on p1.otro=p2.DETALLE"
+                   +"  left OUTER JOIN RESTRICCION_FECHAS_PROC p3 on p2.COD_TIPO_RESF=p3.COD_TIPO_RESF and p3.COD_TRANS_NRO=p1.cod"
+                   +"  LEFT OUTER JOIN TRANSACCION_NRO p4 ON p4.COD_TRANSACCION=p1.cod_T and p4.COD_TRAMITE=2"
+                   +"  where otro is not null and otro not like 'Boletas de Garantia'";
         return Consulta(sql);
     }
     public Map[] GetRestriccionFechas(int cod_trans_nro) throws Exception {
