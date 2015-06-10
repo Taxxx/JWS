@@ -723,7 +723,7 @@ public class AdquiWS{
                     + " inner join adquisiciones.tramites t5 on t4.cod_tramite=t5.cod_tramite"
                     + " inner join adquisiciones.adm_workflow_usr t6 on t2.estado=T6.CODIGO"
                     + " inner join adquisiciones.estados t7 on T2.ESTADO=t7.codigo"
-                    + " where t1.cod_almacen="+cod_almacen+" and t6.cod_usuario="+cod_usuario+" and t1.gestion="+gestion+" and (t4.nro="+solicitud+" or t1.hoja_ruta="+hoja_ruta+" or t1.cbte="+preventivo+" ) and and t4.COD_TRAMITE="+cod_tramite;                
+                    + " where t1.cod_almacen="+cod_almacen+" and t6.cod_usuario="+cod_usuario+" and t1.gestion="+gestion+" and (t4.nro="+solicitud+" or t1.hoja_ruta="+hoja_ruta+" or t1.cbte="+preventivo+" ) and t4.COD_TRAMITE="+cod_tramite;                
         return Consulta(sql);
     }
     public Map[] getTransaccionesBuscaAdquisicionTODO(int cod_almacen,int cod_usuario,int cod_tramite,int gestion) throws Exception {
@@ -1229,7 +1229,7 @@ public class AdquiWS{
 
     // Reporte nota de conformidad
     public Map[] getReporteNotaConformidadx(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
-        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t2.fecha,'YYYY-MM-DD') as fecha_creacion,t2.nro,t2.num_ing,sysdate as fecha_envio, t2.ciudad, t2.lugar, t2.hora_nc, t2.fecha_nc,t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t3.cod_trans_detalle,t4.cod_complemento,t3.precio_unit,t1.nro_transaccion,t1.detalle,t1.cbte, t3.partida,t7.NOMBRE_COMERCIAL as casa_comercial"
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t2.fecha,'YYYY-MM-DD') as fecha_creacion,t2.nro,t2.num_ing,sysdate as fecha_envio, t2.ciudad, t2.lugar, t2.hora_nc, to_char(t2.fecha_nc,'DD-MM-YYYY') as fecha_nc,t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t3.cod_trans_detalle,t4.cod_complemento,t3.precio_unit,t1.nro_transaccion,t1.detalle,t1.cbte, t3.partida,t7.NOMBRE_COMERCIAL as casa_comercial"
                     + " from adquisiciones.transaccion t1"
                     + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.cod_trans_nro_ant,t1.nro,t2.estado,t2.fecha_envio,GET_NRO(t1.COD_TRANS_NRO_ANT) as num_ing, fecha, t1.ciudad, t1.lugar, t1.HORA_NC,t1.FECHA_NC from adquisiciones.transaccion_nro t1 "
                     + "            inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
@@ -2333,10 +2333,10 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
             delItemx("SET-delItem",cod_trans_detalle);
         }
     }
-    public Map[] addPreventivo(String tran,int cod_transaccion, int cod_preventivo, String resumen, int da, String total) throws Exception {
+    public Map[] addPreventivo(String tran,int cod_transaccion, String cod_preventivo, String resumen, int da, String total) throws Exception {
         if ("SET-addPreventivo".equals(tran)) {
             String sql="insert into adquisiciones.transaccion_preventivo(cod_trans_preventivo,cod_transaccion,cod_preventivo,resumen,da,total,fecha)"+
-                        " values (ADQUISICIONES.SEC_TRANS_PREV.NEXTVAL,"+cod_transaccion+","+cod_preventivo+",'"+resumen+"',"+da+",'"+total+"',sysdate)";
+                        " values (ADQUISICIONES.SEC_TRANS_PREV.NEXTVAL,"+cod_transaccion+",'"+cod_preventivo+"','"+resumen+"',"+da+",'"+total+"',sysdate)";
             return Consulta(sql);
         }
         else return null;
@@ -2346,9 +2346,9 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
             + " from transaccion_preventivo t1 where t1.COD_TRANSACCION = "+cod_transaccion;
         return Consulta(sql);
     }
-    public Map[] delPreventivo(String tran, int cod_transaccion, int cod_preventivo) throws Exception {
+    public Map[] delPreventivo(String tran, int cod_transaccion, String cod_preventivo) throws Exception {
         if ("SET-delPreventivo".equals(tran)) {
-            String sql="delete from adquisiciones.transaccion_preventivo where cod_transaccion = "+cod_transaccion+" and cod_preventivo="+cod_preventivo;
+            String sql="delete from adquisiciones.transaccion_preventivo where cod_transaccion = "+cod_transaccion+" and cod_preventivo='"+cod_preventivo+"'";
             return Consulta(sql);
         }
         else return null;
