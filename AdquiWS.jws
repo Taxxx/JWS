@@ -2451,8 +2451,8 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     }
     public Map[] dias_restantes(int cod_trans_nro) throws Exception
     {
-        String sql="select round(r1.FECHA_CONCLUSION-sysdate,0) as dias_restantes"
-                    +" from RESTRICCION_FECHAS_PROC r1"
+        String sql="select round(r1.FECHA_CONCLUSION-sysdate,0) as dias_restantes,r2.DETALLE as proceso"
+                    +" from RESTRICCION_FECHAS_PROC r1 LEFT OUTER JOIN TIPO_RESTRICCION_FECHA r2 on r1.COD_TIPO_RESF=r2.COD_TIPO_RESF "
                     +" where r1.COD_TRANS_NRO=3857 and r1.COD_TIPO_RESF=(select count(*) from RESTRICCION_FECHAS_PROC where FECHA_CALIFICACION is not null and COD_TRANS_NRO=3857)+12-(select count(*) from RESTRICCION_FECHAS_PROC where COD_TRANS_NRO=3857)";
         return Consulta(sql);
     }
