@@ -1879,37 +1879,44 @@ public class AdquiWS{
         String sql="update adquisiciones.proponentes set cod_proveedor='"+cod_proveedor+"',nombre='"+nombre+"',nombre_comercial='"+nombre_comercial+"',direccion='"+direccion+"',telefono='"+telefono+"' where estado='V' and cod_transaccion="+cod_transaccion;
         return Consulta(sql);
    }
-   public Map[] GeneraResIni(int cod_transaccion, int tipo_resolucion, String detalle, String envia, String detalle_nota_solicitud, String detalle_nota_presupuesto,String destino, int xx) throws Exception {
-        String sql="insert into RESOLUCION_INI (COD_RES_INI,COD_TRANSACCION,TIPO_RESOLUCION,FECHA,DETALLE,ENVIA,DETALLE_NOTA_SOLICITUD,DETALLE_NOTA_PRESUPUESTO,DESTINO,DIAS)"+" values (ADQUISICIONES.SEC_RES_INICIO.NEXTVAL,"+cod_transaccion+","+tipo_resolucion+",sysdate,'"+detalle+"','"+envia+"','"+detalle_nota_solicitud+"','"+detalle_nota_presupuesto+"','"+destino+"',"+xx+")";
+   public Map[] GeneraResIni(int cod_transaccion, int cod_tipo_resolucion, String detalle, String envia, String detalle_nota_solicitud, String detalle_nota_presupuesto,String destino, int xx, int gestion) throws Exception {
+        String sql="select (CASE WHEN MAX(t1.nro) is not null THEN MAX(t1.nro) ELSE 0 END )as nro"
+                +" from adquisiciones.resolucion t1"
+                +" where t1.gestion="+gestion+" and t1.cod_tipo_resolucion="+cod_tipo_resolucion;
+        Map[] datos=Consulta(sql);
+        int nro_resolucion= Integer.parseInt(datos[0].get("NRO").toString());
+        nro_resolucion++;
+        sql="insert into RESOLUCION (COD_RESOLUCION,COD_TRANSACCION,COD_TIPO_RESOLUCION,FECHA,DETALLE,ENVIA,DETALLE_NOTA_SOLICITUD,DETALLE_NOTA_PRESUPUESTO,DESTINO,DIAS,GESTION,NRO)"
+           +" values (ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_transaccion+","+cod_tipo_resolucion+",sysdate,'"+detalle+"','"+envia+"','"+detalle_nota_solicitud+"','"+detalle_nota_presupuesto+"','"+destino+"',"+xx+","+gestion+","+nro_resolucion+")";
         return Consulta(sql);
    }
    public Map[] getResIni(int cod_transaccion) throws Exception {
-      String sql="select t1.COD_RES_INI,t1.COD_RES_INI||'/'||to_char(t1.FECHA,'YY') as NUM_RESOLUCION,t1.COD_TRANSACCION,t1.FECHA,t1.tipo_resolucion,t1.detalle,t1.envia,t1.detalle_nota_solicitud,t1.detalle_nota_presupuesto,t1.destino,t1.dias"
-          + " from RESOLUCION_INI t1 inner join transaccion t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
+      String sql="select t1.COD_RESOLUCION,t1.NRO||'/'||to_char(t1.FECHA,'YY') as NUM_RESOLUCION,t1.NRO,t1.COD_TRANSACCION,t1.FECHA,t1.cod_tipo_resolucion,t1.detalle,t1.envia,t1.detalle_nota_solicitud,t1.detalle_nota_presupuesto,t1.destino,t1.dias"
+          + " from RESOLUCION t1 inner join transaccion t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
           + " where t1.COD_TRANSACCION = "+cod_transaccion;
           return Consulta(sql);
    }
-   public Map[] updateResIni(int cod_res_ini,String envia,String dns,String dnp,String destino,int dias) throws Exception {
+   public Map[] updateResIni(int cod_resolucion,String envia,String dns,String dnp,String destino,int dias) throws Exception {
         //if ("SET-upDaTeUsr".equals(tran)) {
-            String sql="update adquisiciones.resolucion_ini set envia='"+envia+"',detalle_nota_solicitud='"+dns+"',detalle_nota_presupuesto='"+dnp+"',destino='"+destino+"',dias="+dias+"  where cod_res_ini="+cod_res_ini;
+            String sql="update adquisiciones.resolucion set envia='"+envia+"',detalle_nota_solicitud='"+dns+"',detalle_nota_presupuesto='"+dnp+"',destino='"+destino+"',dias="+dias+"  where cod_resolucion="+cod_resolucion;
             return Consulta(sql);
         //}
         //else return null;
    }
    public Map[] GeneraResAdj(int cod_trans_nro, String cod_proveedor, String detalle) throws Exception {
     
-        String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,COD_TRANS_NRO,COD_PROVEEDOR,FECHA,DETALLE)"+" values (ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+cod_trans_nro+",'"+cod_proveedor+"',sysdate,'"+detalle+"')";
+        String sql="insert into RESOLUCION (COD_RESOLUCION,COD_TRANS_NRO,COD_PROVEEDOR,FECHA,DETALLE)"+" values (ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans_nro+",'"+cod_proveedor+"',sysdate,'"+detalle+"')";
         return Consulta(sql);
    }
   public Map[] getResAdj(int cod_trans_nro) throws Exception {
-      String sql="select t1.COD_RES_ADJ||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION, t1.COD_TRANS_NRO, t1.TITULO, t1.COD_PROVEEDOR, t1.FECHA, t1.TIPO, t1.NUM_RES_ADM, t1.NUM_ADC_ANPE, t1.NUM_INF_ADQ, t1.NUM_INF_HP, t1.NOTAS_ADQ, t1.CONVOCATORIA, t1.PROVEEDOR, t1.DESTINO, t1.ACTIVIDAD"
-          + " from RESOLUCION_ADJ t1 "
+      String sql="select t1.NRO||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION, t1.COD_TRANS_NRO, t1.TITULO, t1.COD_PROVEEDOR, t1.FECHA, t1.TIPO, t1.NUM_RES_ADM, t1.NUM_ADC_ANPE, t1.NUM_INF_ADQ, t1.NUM_INF_HP, t1.NOTAS_ADQ, t1.CONVOCATORIA, t1.PROVEEDOR, t1.DESTINO, t1.ACTIVIDAD"
+          + " from RESOLUCION t1 "
           + " where t1.COD_TRANS_NRO = "+cod_trans_nro+"";
           return Consulta(sql);
    }
    public Map[] addResAdj(int cod_trans_nro, String cod_proveedor, String tipo, String num_res_adm, String notas_adq, String num_adc_anpe, String convocatoria, String num_inf_adq, String num_inf_hp, String proveedor, String destino, String actividad, String titulo) throws Exception {
     
-        String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ, COD_TRANS_NRO, COD_PROVEEDOR, FECHA, TIPO, NUM_RES_ADM, NOTAS_ADQ, NUM_ADC_ANPE, CONVOCATORIA, NUM_INF_ADQ, NUM_INF_HP, PROVEEDOR, DESTINO, ACTIVIDAD,TITULO)"+" values (ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+cod_trans_nro+",'"+cod_proveedor+"',sysdate,'"+tipo+"','"+num_res_adm+"','"+notas_adq+"','"+num_adc_anpe+"','"+convocatoria+"','"+num_inf_adq+"','"+num_inf_hp+"','"+proveedor+"','"+destino+"','"+actividad+"','"+titulo+"')";
+        String sql="insert into RESOLUCION (COD_RESOLUCION, COD_TRANS_NRO, COD_PROVEEDOR, FECHA, TIPO, NUM_RES_ADM, NOTAS_ADQ, NUM_ADC_ANPE, CONVOCATORIA, NUM_INF_ADQ, NUM_INF_HP, PROVEEDOR, DESTINO, ACTIVIDAD,TITULO)"+" values (ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans_nro+",'"+cod_proveedor+"',sysdate,'"+tipo+"','"+num_res_adm+"','"+notas_adq+"','"+num_adc_anpe+"','"+convocatoria+"','"+num_inf_adq+"','"+num_inf_hp+"','"+proveedor+"','"+destino+"','"+actividad+"','"+titulo+"')";
         return Consulta(sql);
    }
    public Map[] gentabla(String aaa,String bbb,String ccc,String ddd,int xx,String yy,String f,String g) throws Exception
@@ -1918,98 +1925,98 @@ public class AdquiWS{
         return Consulta(sql);
    }
    //estos metodos existen pero estan modificados
-public Map[] genResAdjServ2(int cod_trans_nro,int tipo_resolucion,String det_res_adj,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String adc) throws Exception {
+public Map[] genResAdjServ2(int cod_trans_nro,int cod_tipo_resolucion,String det_res_adj,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String adc) throws Exception {
     
-        String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,COD_TRANS_NRO,TIPO_RESOLUCION,DET_RES_ADJ,DET_RES_ADM,FECHA_CC,DET_INF_DIV_ADQ,DET_CONC_PROP,MODO_EVAL,DESTINO,CARGO,ACTIVIDAD,DET_ADC,FECHA) values"
-          +"(ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+cod_trans_nro+","+tipo_resolucion+",'"+det_res_adj+"','"+det_res_adm+"','"+fecha_cc+"','"+det_inf_div_adq+"','"+det_conc_prop+"','"+modo_eval+"','"+destino+"','"+cargo+"','"+actividad+"','"+adc+"',sysdate)";
+        String sql="insert into RESOLUCION (COD_RESOLUCION,COD_TRANS_NRO,COD_TIPO_RESOLUCION,DET_RES_ADJ,DET_RES_ADM,FECHA_CC,DET_INF_DIV_ADQ,DET_CONC_PROP,MODO_EVAL,DESTINO,CARGO,ACTIVIDAD,DET_ADC,FECHA) values"
+          +"(ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans_nro+","+cod_tipo_resolucion+",'"+det_res_adj+"','"+det_res_adm+"','"+fecha_cc+"','"+det_inf_div_adq+"','"+det_conc_prop+"','"+modo_eval+"','"+destino+"','"+cargo+"','"+actividad+"','"+adc+"',sysdate)";
         return Consulta(sql);
    }
-   public Map[] genResAdjBien(int cod_trans_nro,int tipo_resolucion,String det_res_adj,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String adc) throws Exception {
+   public Map[] genResAdjBien(int cod_trans_nro,int cod_tipo_resolucion,String det_res_adj,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String adc) throws Exception {
     
-        String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,COD_TRANS_NRO,TIPO_RESOLUCION,DET_RES_ADJ,DET_RES_ADM,FECHA_CC,DET_INF_DIV_ADQ,DET_CONC_PROP,MODO_EVAL,DESTINO,CARGO,ACTIVIDAD,DET_ADC,FECHA) values"
-          +"(ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+cod_trans_nro+","+tipo_resolucion+",'"+det_res_adj+"','"+det_res_adm+"','"+fecha_cc+"','"+det_inf_div_adq+"','"+det_conc_prop+"','"+modo_eval+"','"+destino+"','"+cargo+"','"+actividad+"','"+adc+"',sysdate)";
+        String sql="insert into RESOLUCION (COD_RESOLUCION,COD_TRANS_NRO,COD_TIPO_RESOLUCION,DET_RES_ADJ,DET_RES_ADM,FECHA_CC,DET_INF_DIV_ADQ,DET_CONC_PROP,MODO_EVAL,DESTINO,CARGO,ACTIVIDAD,DET_ADC,FECHA) values"
+          +"(ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans_nro+","+cod_tipo_resolucion+",'"+det_res_adj+"','"+det_res_adm+"','"+fecha_cc+"','"+det_inf_div_adq+"','"+det_conc_prop+"','"+modo_eval+"','"+destino+"','"+cargo+"','"+actividad+"','"+adc+"',sysdate)";
         return Consulta(sql);
    }
-   public Map[] genResAdjConsu(int cod_trans_nro,int tipo_resolucion,String det_res_adj,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad) throws Exception {
+   public Map[] genResAdjConsu(int cod_trans_nro,int cod_tipo_resolucion,String det_res_adj,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad) throws Exception {
     
-        String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,COD_TRANS_NRO,TIPO_RESOLUCION,DET_RES_ADJ,DET_RES_ADM,FECHA_CC,DET_INF_DIV_ADQ,DET_CONC_PROP,MODO_EVAL,DESTINO,CARGO,ACTIVIDAD,FECHA) values"
-          +"(ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+cod_trans_nro+","+tipo_resolucion+",'"+det_res_adj+"','"+det_res_adm+"','"+fecha_cc+"','"+det_inf_div_adq+"','"+det_conc_prop+"','"+modo_eval+"','"+destino+"','"+cargo+"','"+actividad+"',sysdate)";
+        String sql="insert into RESOLUCION (COD_RESOLUCION,COD_TRANS_NRO,COD_TIPO_RESOLUCION,DET_RES_ADJ,DET_RES_ADM,FECHA_CC,DET_INF_DIV_ADQ,DET_CONC_PROP,MODO_EVAL,DESTINO,CARGO,ACTIVIDAD,FECHA) values"
+          +"(ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans_nro+","+cod_tipo_resolucion+",'"+det_res_adj+"','"+det_res_adm+"','"+fecha_cc+"','"+det_inf_div_adq+"','"+det_conc_prop+"','"+modo_eval+"','"+destino+"','"+cargo+"','"+actividad+"',sysdate)";
         return Consulta(sql);
    }
-   public Map[] genResAdjObra(int cod_trans_nro,int tipo_resolucion,String det_res_adj,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String tprov,String tbche,String adc) throws Exception {
+   public Map[] genResAdjObra(int cod_trans_nro,int cod_tipo_resolucion,String det_res_adj,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String tprov,String tbche,String adc) throws Exception {
     
-        String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,COD_TRANS_NRO,TIPO_RESOLUCION,DET_RES_ADJ,DET_RES_ADM,FECHA_CC,DET_INF_DIV_ADQ,DET_CONC_PROP,MODO_EVAL,DESTINO,CARGO,ACTIVIDAD,NUM_INF_HP,CONVOCATORIA,DET_ADC,FECHA) values"
-          +"(ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+cod_trans_nro+","+tipo_resolucion+",'"+det_res_adj+"','"+det_res_adm+"','"+fecha_cc+"','"+det_inf_div_adq+"','"+det_conc_prop+"','"+modo_eval+"','"+destino+"','"+cargo+"','"+actividad+"','"+tprov+"','"+tbche+"','"+adc+"',sysdate)";
+        String sql="insert into RESOLUCION (COD_RESOLUCION,COD_TRANS_NRO,COD_TIPO_RESOLUCION,DET_RES_ADJ,DET_RES_ADM,FECHA_CC,DET_INF_DIV_ADQ,DET_CONC_PROP,MODO_EVAL,DESTINO,CARGO,ACTIVIDAD,NUM_INF_HP,CONVOCATORIA,DET_ADC,FECHA) values"
+          +"(ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans_nro+","+cod_tipo_resolucion+",'"+det_res_adj+"','"+det_res_adm+"','"+fecha_cc+"','"+det_inf_div_adq+"','"+det_conc_prop+"','"+modo_eval+"','"+destino+"','"+cargo+"','"+actividad+"','"+tprov+"','"+tbche+"','"+adc+"',sysdate)";
         return Consulta(sql);
    }
 
 
 public Map[] getResAdjServ(int cod_trans_nro) throws Exception {
-      /*String sql="select t1.COD_RES_ADJ||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RES_ADJ,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.DET_ADC,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor"
-          + " from RESOLUCION_ADJ t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
+      /*String sql="select t1.COD_RESOLUCION||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RESOLUCION,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.DET_ADC,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor"
+          + " from RESOLUCION t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
           + " where t1.COD_TRANS_NRO = "+cod_trans_nro+" and t2.ESTADO='V'";
           return Consulta(sql);*/
-          String sql="select t1.COD_RES_ADJ||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RES_ADJ,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.DET_ADC,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor,t1.DET_CONC_PROP,t1.MODO_EVAL,t1.DESTINO,t1.CARGO,t1.ACTIVIDAD,t2.adh_nombre"
-          + " from RESOLUCION_ADJ t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
+          String sql="select t1.COD_RESOLUCION||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RESOLUCION,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.DET_ADC,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor,t1.DET_CONC_PROP,t1.MODO_EVAL,t1.DESTINO,t1.CARGO,t1.ACTIVIDAD,t2.adh_nombre"
+          + " from RESOLUCION t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
           + " where t1.COD_TRANS_NRO = "+cod_trans_nro+" and t2.ESTADO='V'";
           return Consulta(sql);
    }
   public Map[] getResAdjBien(int cod_trans_nro) throws Exception {
-      String sql="select t1.COD_RES_ADJ||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RES_ADJ,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor,t1.DET_CONC_PROP,t1.MODO_EVAL,t1.DESTINO,t1.CARGO,t1.ACTIVIDAD,t2.adh_nombre,t1.DET_ADC"
-          + " from RESOLUCION_ADJ t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
+      String sql="select t1.COD_RESOLUCION||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RESOLUCION,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor,t1.DET_CONC_PROP,t1.MODO_EVAL,t1.DESTINO,t1.CARGO,t1.ACTIVIDAD,t2.adh_nombre,t1.DET_ADC"
+          + " from RESOLUCION t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
           + " where t1.COD_TRANS_NRO = "+cod_trans_nro+" and t2.ESTADO='V'";
           return Consulta(sql);
    }
    public Map[] getResAdjObra(int cod_trans_nro) throws Exception {
-      String sql="select t1.COD_RES_ADJ||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RES_ADJ,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor,t1.DET_CONC_PROP,t1.MODO_EVAL,t1.DESTINO,t1.CARGO,t1.ACTIVIDAD,t2.adh_nombre,t1.NUM_INF_HP,t1.CONVOCATORIA,t1.DET_ADC"
-          + " from RESOLUCION_ADJ t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
+      String sql="select t1.NRO||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RESOLUCION,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor,t1.DET_CONC_PROP,t1.MODO_EVAL,t1.DESTINO,t1.CARGO,t1.ACTIVIDAD,t2.adh_nombre,t1.NUM_INF_HP,t1.CONVOCATORIA,t1.DET_ADC"
+          + " from RESOLUCION t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
           + " where t1.COD_TRANS_NRO = "+cod_trans_nro+" and t2.ESTADO='V'";
           return Consulta(sql);
    }
    public Map[] getResAdjConsul(int cod_trans_nro) throws Exception {
-      String sql="select t1.COD_RES_ADJ||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RES_ADJ,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor,t1.DET_CONC_PROP,t1.MODO_EVAL,t1.DESTINO,t1.CARGO,t1.ACTIVIDAD,t2.adh_nombre"
-          + " from RESOLUCION_ADJ t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
+      String sql="select t1.COD_RESOLUCION||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RESOLUCION,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor,t1.DET_CONC_PROP,t1.MODO_EVAL,t1.DESTINO,t1.CARGO,t1.ACTIVIDAD,t2.adh_nombre"
+          + " from RESOLUCION t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
           + " where t1.COD_TRANS_NRO = "+cod_trans_nro+" and t2.ESTADO='V'";
           return Consulta(sql);
    }
 
 
-public Map[] updateResAdjBien(int cod_trans_nro,int tipo_resolucion,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String adc) throws Exception {
+public Map[] updateResAdjBien(int cod_trans_nro,int cod_tipo_resolucion,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String adc) throws Exception {
     
-        //String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,TIPO_RESOLUCION,DET_RES_ADM,DET_ADC,FECHA_COMISION_CALIFICACION,DET_INF_DIV_ADQ,FECHA)"+" values (ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+tipo_resolucion+",'"+det_res_adm+"','"+det_adc+"','"+fecha_comision_calificacion+"','"+det_inf_div_adq+"',sysdate)";
-        String sql="update RESOLUCION_ADJ set tipo_resolucion="+tipo_resolucion+", det_res_adm='"+det_res_adm+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"', det_conc_prop='"+det_conc_prop+"', modo_eval='"+modo_eval+"',destino='"+destino+"',cargo='"+cargo+"',actividad='"+actividad+"',DET_ADC='"+adc+"' where cod_trans_nro="+cod_trans_nro;
+        //String sql="insert into RESOLUCION (COD_RESOLUCION,COD_TIPO_RESOLUCION,DET_RES_ADM,DET_ADC,FECHA_COMISION_CALIFICACION,DET_INF_DIV_ADQ,FECHA)"+" values (ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_tipo_resolucion+",'"+det_res_adm+"','"+det_adc+"','"+fecha_comision_calificacion+"','"+det_inf_div_adq+"',sysdate)";
+        String sql="update RESOLUCION set cod_tipo_resolucion="+cod_tipo_resolucion+", det_res_adm='"+det_res_adm+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"', det_conc_prop='"+det_conc_prop+"', modo_eval='"+modo_eval+"',destino='"+destino+"',cargo='"+cargo+"',actividad='"+actividad+"',DET_ADC='"+adc+"' where cod_trans_nro="+cod_trans_nro;
         return Consulta(sql);
    }
-   public Map[] updateResAdjObra(int cod_trans_nro,int tipo_resolucion,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String adc,String a,String b) throws Exception {
+   public Map[] updateResAdjObra(int cod_trans_nro,int cod_tipo_resolucion,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String adc,String a,String b) throws Exception {
     
-        //String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,TIPO_RESOLUCION,DET_RES_ADM,DET_ADC,FECHA_COMISION_CALIFICACION,DET_INF_DIV_ADQ,FECHA)"+" values (ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+tipo_resolucion+",'"+det_res_adm+"','"+det_adc+"','"+fecha_comision_calificacion+"','"+det_inf_div_adq+"',sysdate)";
-        String sql="update RESOLUCION_ADJ set tipo_resolucion="+tipo_resolucion+", det_res_adm='"+det_res_adm+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"', det_conc_prop='"+det_conc_prop+"', modo_eval='"+modo_eval+"',destino='"+destino+"',cargo='"+cargo+"',actividad='"+actividad+"',DET_ADC='"+adc+"',NUM_INF_HP='"+a+"',CONVOCATORIA='"+b+"' where cod_trans_nro="+cod_trans_nro;
+        //String sql="insert into RESOLUCION (COD_RESOLUCION,COD_TIPO_RESOLUCION,DET_RES_ADM,DET_ADC,FECHA_COMISION_CALIFICACION,DET_INF_DIV_ADQ,FECHA)"+" values (ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_tipo_resolucion+",'"+det_res_adm+"','"+det_adc+"','"+fecha_comision_calificacion+"','"+det_inf_div_adq+"',sysdate)";
+        String sql="update RESOLUCION set cod_tipo_resolucion="+cod_tipo_resolucion+", det_res_adm='"+det_res_adm+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"', det_conc_prop='"+det_conc_prop+"', modo_eval='"+modo_eval+"',destino='"+destino+"',cargo='"+cargo+"',actividad='"+actividad+"',DET_ADC='"+adc+"',NUM_INF_HP='"+a+"',CONVOCATORIA='"+b+"' where cod_trans_nro="+cod_trans_nro;
         return Consulta(sql);
    }
-   public Map[] updateResAdjCons(int cod_trans_nro,int tipo_resolucion,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad) throws Exception {
+   public Map[] updateResAdjCons(int cod_trans_nro,int cod_tipo_resolucion,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad) throws Exception {
     
-        //String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,TIPO_RESOLUCION,DET_RES_ADM,DET_ADC,FECHA_COMISION_CALIFICACION,DET_INF_DIV_ADQ,FECHA)"+" values (ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+tipo_resolucion+",'"+det_res_adm+"','"+det_adc+"','"+fecha_comision_calificacion+"','"+det_inf_div_adq+"',sysdate)";
-        String sql="update RESOLUCION_ADJ set tipo_resolucion="+tipo_resolucion+", det_res_adm='"+det_res_adm+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"', det_conc_prop='"+det_conc_prop+"', modo_eval='"+modo_eval+"',destino='"+destino+"',cargo='"+cargo+"',actividad='"+actividad+"' where cod_trans_nro="+cod_trans_nro;
+        //String sql="insert into RESOLUCION (COD_RESOLUCION,COD_TIPO_RESOLUCION,DET_RES_ADM,DET_ADC,FECHA_COMISION_CALIFICACION,DET_INF_DIV_ADQ,FECHA)"+" values (ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_tipo_resolucion+",'"+det_res_adm+"','"+det_adc+"','"+fecha_comision_calificacion+"','"+det_inf_div_adq+"',sysdate)";
+        String sql="update RESOLUCION set cod_tipo_resolucion="+cod_tipo_resolucion+", det_res_adm='"+det_res_adm+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"', det_conc_prop='"+det_conc_prop+"', modo_eval='"+modo_eval+"',destino='"+destino+"',cargo='"+cargo+"',actividad='"+actividad+"' where cod_trans_nro="+cod_trans_nro;
         return Consulta(sql);
    }
-   public Map[] updateResAdjServ(String adc,int cod_trans_nro,int tipo_resolucion,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad) throws Exception {
+   public Map[] updateResAdjServ(String adc,int cod_trans_nro,int cod_tipo_resolucion,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad) throws Exception {
     
-        //String sql="insert into RESOLUCION_ADJ (COD_RES_ADJ,TIPO_RESOLUCION,DET_RES_ADM,DET_ADC,FECHA_COMISION_CALIFICACION,DET_INF_DIV_ADQ,FECHA)"+" values (ADQUISICIONES.SEC_RES_ADJ.NEXTVAL,"+tipo_resolucion+",'"+det_res_adm+"','"+det_adc+"','"+fecha_comision_calificacion+"','"+det_inf_div_adq+"',sysdate)";
-        /*String sql="update RESOLUCION_ADJ set tipo_resolucion="+tipo_resolucion+", det_res_adm='"+det_res_adm+"', det_adc='"+det_adc+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"' where cod_trans_nro="+cod_trans_nro;
+        //String sql="insert into RESOLUCION (COD_RESOLUCION,COD_TIPO_RESOLUCION,DET_RES_ADM,DET_ADC,FECHA_COMISION_CALIFICACION,DET_INF_DIV_ADQ,FECHA)"+" values (ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_tipo_resolucion+",'"+det_res_adm+"','"+det_adc+"','"+fecha_comision_calificacion+"','"+det_inf_div_adq+"',sysdate)";
+        /*String sql="update RESOLUCION set tipo_resolucion="+tipo_resolucion+", det_res_adm='"+det_res_adm+"', det_adc='"+det_adc+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"' where cod_trans_nro="+cod_trans_nro;
         return Consulta(sql);*/
-        String sql="update RESOLUCION_ADJ set tipo_resolucion="+tipo_resolucion+", det_res_adm='"+det_res_adm+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"', det_conc_prop='"+det_conc_prop+"', modo_eval='"+modo_eval+"',destino='"+destino+"',cargo='"+cargo+"',actividad='"+actividad+"', det_adc='"+adc+"' where cod_trans_nro="+cod_trans_nro;
+        String sql="update RESOLUCION set cod_tipo_resolucion="+cod_tipo_resolucion+", det_res_adm='"+det_res_adm+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"', det_conc_prop='"+det_conc_prop+"', modo_eval='"+modo_eval+"',destino='"+destino+"',cargo='"+cargo+"',actividad='"+actividad+"', det_adc='"+adc+"' where cod_trans_nro="+cod_trans_nro;
         return Consulta(sql);
    }
 
 //////////////este metodo no existe hay que agregar
 public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Exception
    {
-        String sql="update RESOLUCION_ADJ set NUM_INF_HP='"+n1+"',CONVOCATORIA='"+n2+"' where cod_trans_nro="+cod_trans_nro;
+        String sql="update RESOLUCION set NUM_INF_HP='"+n1+"',CONVOCATORIA='"+n2+"' where cod_trans_nro="+cod_trans_nro;
         return Consulta(sql);
    }
   public Map[] setResAdj(int cod_trans_nro, String num_res_adm, String notas_adq, String num_adc_anpe, String convocatoria, String num_inf_adq, String num_inf_hp, String proveedor, String destino, String actividad) throws Exception {
     
-        String sql="update RESOLUCION_ADJ set num_res_adm='"+num_res_adm+"', notas_adq='"+notas_adq+"', num_adc_anpe='"+num_adc_anpe+"', convocatoria='"+convocatoria+"', num_inf_adq='"+num_inf_adq+"', num_inf_hp='"+num_inf_hp+"', proveedor='"+proveedor+"', destino='"+destino+"', actividad='"+actividad+"' where cod_trans_nro="+cod_trans_nro;
+        String sql="update RESOLUCION set num_res_adm='"+num_res_adm+"', notas_adq='"+notas_adq+"', num_adc_anpe='"+num_adc_anpe+"', convocatoria='"+convocatoria+"', num_inf_adq='"+num_inf_adq+"', num_inf_hp='"+num_inf_hp+"', proveedor='"+proveedor+"', destino='"+destino+"', actividad='"+actividad+"' where cod_trans_nro="+cod_trans_nro;
         return Consulta(sql);
   }
 
@@ -2024,8 +2031,8 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
             return Consulta(sql);
   }
   public Map[] existeReIni(int cod_transaccion) throws Exception {
-        String sql="select t1.COD_RES_INI"
-            + " from resolucion_ini t1 where t1.COD_TRANSACCION="+cod_transaccion;
+        String sql="select t1.COD_RESOLUCION"
+            + " from resolucion t1 where t1.COD_TRANSACCION="+cod_transaccion;
             return Consulta(sql);
   }
 
@@ -2367,9 +2374,9 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         return Consulta(sql);
     }
     public Map[] GetFechasRestriccionAdquiDepto() throws Exception {
-      String sql1="select t2.COD_RES_INI as nro_ri, t1.FECHA_INICIO,t1.FECHA_FINAL,t3.nro as nro_sol,t2.dias as dias_restantes from restriccion_fechas t1 inner join resolucion_ini t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION inner join transaccion_nro t3 on t2.COD_TRANSACCION=t3.COD_TRANSACCION and t3.COD_TRAMITE=1";
-        String sql="select t2.COD_RES_INI as nro_ri, t1.FECHA_INICIO,t1.FECHA_FINAL,t3.nro as nro_sol,t2.dias as dias_restantes"
-                +" from restriccion_fechas t1 inner join resolucion_ini t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
+      String sql1="select t2.COD_RESOLUCION as nro_ri, t1.FECHA_INICIO,t1.FECHA_FINAL,t3.nro as nro_sol,t2.dias as dias_restantes from restriccion_fechas t1 inner join resolucion t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION inner join transaccion_nro t3 on t2.COD_TRANSACCION=t3.COD_TRANSACCION and t3.COD_TRAMITE=1";
+        String sql="select t2.COD_RESOLUCION as nro_ri, t1.FECHA_INICIO,t1.FECHA_FINAL,t3.nro as nro_sol,t2.dias as dias_restantes"
+                +" from restriccion_fechas t1 inner join resolucion t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
                 +" inner join transaccion_nro t3 on t2.COD_TRANSACCION=t3.COD_TRANSACCION and t3.COD_TRAMITE=1";
                 //+" where t1.COD_TRANSACCION="+
         return Consulta(sql1);
@@ -2460,14 +2467,14 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     {
         String sql="select p4.NRO as orden, p1.nro as NRO_SOL,res_ini AS NRO_RI,otro AS PROCESO,p3.FECHA_CONCLUSION AS FECHA_FINAL, round(p3.FECHA_CONCLUSION-to_date(sysdate),0) as DIAS_RESTANTES"
                    +"  from"
-                   +" (select t2.COD_TRANSACCION as cod_T, t2.COD_TRANS_NRO as cod,t2.NRO as nro,t1.COD_RES_INI as res_ini, (select DETALLE "
+                   +" (select t2.COD_TRANSACCION as cod_T, t2.COD_TRANS_NRO as cod,t2.NRO as nro,t1.COD_RESOLUCION as res_ini, (select DETALLE "
                    +"  from TIPO_RESTRICCION_FECHA "
                    +" where TIPO_RESTRICCION_FECHA.COD_TIPO_RESF=(select count(*) "
                    +" from RESTRICCION_FECHAS_PROC "
                    +"  where COD_TRANS_NRO=t2.COD_TRANS_NRO and FECHA_ENTREGA is not null)+12-(select count(*) "
                    +"  from RESTRICCION_FECHAS_PROC"
                    +"  where RESTRICCION_FECHAS_PROC.COD_TRANS_NRO=t2.COD_TRANS_NRO)) as otro "
-                   +"  from RESOLUCION_INI t1 inner join TRANSACCION_NRO t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION and t2.COD_TRAMITE=1) p1 "
+                   +"  from RESOLUCION t1 inner join TRANSACCION_NRO t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION and t2.COD_TRAMITE=1) p1 "
                    +"  left outer JOIN TIPO_RESTRICCION_FECHA p2 on p1.otro=p2.DETALLE"
                    +"  left OUTER JOIN RESTRICCION_FECHAS_PROC p3 on p2.COD_TIPO_RESF=p3.COD_TIPO_RESF and p3.COD_TRANS_NRO=p1.cod"
                    +"  LEFT OUTER JOIN TRANSACCION_NRO p4 ON p4.COD_TRANSACCION=p1.cod_T and p4.COD_TRAMITE=2"
@@ -2624,14 +2631,14 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         else return null;
     }
     public String getHojaRuta(int cod_transaccion) throws Exception {
-      String sql="select t1.hoja_ruta"
-          + " from transaccion t1"
-          + " where t1.cod_transaccion="+cod_transaccion;
-      
-      Map[] datos = Consulta(sql);
+        String sql="select t1.hoja_ruta"
+            + " from transaccion t1"
+            + " where t1.cod_transaccion="+cod_transaccion;
         
-      return datos[0].get("HOJA_RUTA").toString();
-  }
+        Map[] datos = Consulta(sql);
+          
+        return datos[0].get("HOJA_RUTA").toString();
+    }
     public Map[] getProveedoresbusca(String a, String b, String c) throws Exception
     {
         String sql="select DISTINCT p.COD_PROVEEDOR as cod, p.TIPO as tipo, p.CLASE as clase, p.NOMBRE as nombre, p.NOMBRE_COMERCIAL as nc, p.TELEFONO as tel, p.DIRECCION as dir"+
