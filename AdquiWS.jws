@@ -2146,6 +2146,19 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                 + " where t1.tipo = 't' and t1.GESTION = '"+gestion+"' order by t1.PARTIDA asc";
         return Consulta(sql);        
     }
+    public Map[] getPartidas1(int cod) throws Exception {        
+        String sql="select t1.PARTIDA, t1.DETALLE"
+                + " from TRANSACCION_DETALLE t1"
+                + " where t1.COD_TRANSACCION="+cod;
+        return Consulta(sql);        
+    }
+    public Map[] getdatosres15(int cod) throws Exception {
+        String sql="select DISTINCT t1.HOJA_RUTA, t1.USUARIO_SOL, t1.DETALLE, t2.COD_PREVENTIVO, t2.TOTAL, t4.DETALLE, t3.NRO"
+                + " from TRANSACCION t1 INNER JOIN TRANSACCION_PREVENTIVO t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION and t1.COD_TRANSACCION="+cod
+                + " INNER JOIN TRANSACCION_NRO t3 on t1.COD_TRANSACCION=t3.COD_TRANSACCION and t3.COD_TRAMITE=1"
+                + " INNER JOIN PROGRAMATIC_APERT t4 on t4.APERTURA=SUBSTR(t1.DE,1,14)";
+        return Consulta(sql);
+    }
     public Map[] getProgramaticApertGestion(int gestion, int cod_almacen) throws Exception {        
         String sql="select t1.cod_apert,t1.cod_faculty,t2.cod_almacen,t1.detalle,t1.apertura"
                 + " from programatic_apert t1 inner join almacen t2 on t1.cod_faculty = t2.facultad"
