@@ -2164,7 +2164,19 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         String sql="SELECT CITE,DESTINO,COTIZACION,OBJETIVO"
                     +" FROM RESOLUCION"
                     +" WHERE COD_TRANSACCION="+cod;
-        return null;
+        return Consulta(sql);
+    }
+    public Map[] generaRes15(int cod_trans, int cod_trans_nro, String dias, String cite, String destino, String objetivo, String cotizacion, String detalle, String enviado, String cargo, int gestion) throws Exception
+    {
+        String sql="select (CASE WHEN MAX(t1.nro) is not null THEN MAX(t1.nro) ELSE 0 END )as nro"
+                +" from adquisiciones.resolucion t1"
+                +" where t1.gestion="+gestion+" and t1.cod_tipo_resolucion=3";
+        Map[] datos=Consulta(sql);
+        int nro_resolucion= Integer.parseInt(datos[0].get("NRO").toString());
+        nro_resolucion++;
+        sql="insert into RESOLUCION (COD_RESOLUCION,COD_TRANSACCION,COD_TRANS_NRO,COD_TIPO_RESOLUCION,FECHA,GESTION,DETALLE,ENVIA,DESTINO,DIAS,CARGO,CITE,COTIZACION,OBJETIVO,NRO)"
+                    +" values(SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans+","+cod_trans_nro+",3,sysdate,"+gestion+",'"+detalle+"','"+enviado+"','"+destino+"','"+dias+"','"+cargo+"','"+cite+"','"+cotizacion+"','"+objetivo+"',"+nro_resolucion+")";
+        return Consulta(sql);
     }
     public Map[] getProgramaticApertGestion(int gestion, int cod_almacen) throws Exception {        
         String sql="select t1.cod_apert,t1.cod_faculty,t2.cod_almacen,t1.detalle,t1.apertura"
