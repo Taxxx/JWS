@@ -2161,15 +2161,15 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     }
     public Map[] getres15(int cod,int cod_t_n) throws Exception
     {
-        String sql="SELECT CITE,DESTINO,COTIZACION,OBJETIVO"
+        String sql="SELECT NRO,CITE,DESTINO,COTIZACION,OBJETIVO"
                     +" FROM RESOLUCION"
-                    +" WHERE COD_TRANSACCION="+cod+" and COD_TRANS_NRO="+cod_t_n;
+                    +" WHERE COD_TRANSACCION="+cod+" and COD_TRANS_NRO="+cod_t_n+" and COD_TIPO_RESOLUCION=3";
         return Consulta(sql);
     }
     public Map[] updateRes15(int cod,int cod_t_n,String cite,String destino,String objetivo,String cotizacion) throws Exception
     {
         String sql="update RESOLUCION set CITE='"+cite+"', DESTINO='"+destino+"', OBJETIVO='"+objetivo+"', COTIZACION='"+cotizacion+"'"
-                    +" WHERE COD_TRANSACCION="+cod+" and COD_TRANS_NRO="+cod_t_n;
+                    +" WHERE COD_TRANSACCION="+cod+" and COD_TRANS_NRO="+cod_t_n+" and COD_TIPO_RESOLUCION=3";
         return Consulta(sql);
     }
     public Map[] generaRes15(int cod_trans, int cod_trans_nro, String dias, String cite, String destino, String objetivo, String cotizacion, String detalle, String enviado, String cargo, int gestion) throws Exception
