@@ -2159,7 +2159,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                 + " INNER JOIN PROGRAMATIC_APERT t4 on t4.APERTURA=SUBSTR(t1.DE,1,14)";
         return Consulta(sql);
     }
-    public Map[] getres15(int cod,int cod_t_n) throws Exception
+    public Map[] getresmay(int cod,int cod_t_n) throws Exception
     {
         String sql="SELECT NRO,CITE,DESTINO,COTIZACION,OBJETIVO,FECHA_INICIO_CON,CARGO,DOCUMENTOS"
                     +" FROM RESOLUCION"
