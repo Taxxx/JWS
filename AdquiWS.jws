@@ -244,6 +244,20 @@ public class AdquiWS{
         return Consulta(sql);        
     }
 
+    public Map[] getUsuarios() throws Exception {        
+        String sql="select t1.cod_usuario,t1.USUARIO"
+                  +" from adm_usuario t1"
+                  +" where t1.estado='V'";
+        return Consulta(sql);        
+    }
+
+    public Map[] getItems() throws Exception {        
+        String sql="select t1.cod_item,t1.articulo"
+                  +" from clasificador_item t1"
+                  +" where t1.estado='V'";
+        return Consulta(sql);        
+    }
+
     public Map[] setUsuario(String tran, String apodo,String clave,String usuario,String nombre_resumen) throws Exception {
         if ("SET-insDataUsr".equals(tran)) {
             String sql="insert into adquisiciones.adm_usuario(cod_usuario,apodo,clave,usuario,nombre_resumen)"+
