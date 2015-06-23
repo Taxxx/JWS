@@ -2161,7 +2161,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     }
     public Map[] getresmay(int cod,int cod_t_n) throws Exception
     {
-        String sql="SELECT NRO,CITE,DESTINO,COTIZACION,OBJETIVO,FECHA_INICIO_CON,CARGO,DOCUMENTOS"
+        String sql="SELECT NRO,CITE,DESTINO,COTIZACION,OBJETIVO,DOCUMENTOS,FECHA_INICIO_CON,CARGO"
                     +" FROM RESOLUCION"
                     +" WHERE COD_TRANSACCION="+cod+" and COD_TRANS_NRO="+cod_t_n+" and COD_TIPO_RESOLUCION=3";
         return Consulta(sql);
