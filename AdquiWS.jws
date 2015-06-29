@@ -1832,6 +1832,16 @@ public class AdquiWS{
         String sql="insert into adquisiciones.proponentes(cod_prop,cod_proveedor,cod_transaccion,cod_trans_nro,fecha,tipo,clase,nombre,nombre_comercial,direccion,telefono,estado,adh_nombre)"+" values (ADQUISICIONES.SEC_COD_PROP.NEXTVAL,'"+cod_proveedor+"',"+cod_transaccion+","+cod_trans_nro+",sysdate,'"+tipo+"','"+clase+"','"+nombre+"','"+nombre_comercial+"','"+direccion+"','"+telefono+"','X','"+adh_nombre+"')";
         return Consulta(sql);
    }
+    public Map[] addProponente11(String cod_proveedor, int cod_transaccion, int cod_trans_nro, String tipo, String clase, String nombre, String nombre_comercial, String direccion, String telefono, String adh_nombre, int tp) throws Exception {
+    /*if ("ADD-Proponente".equals(tran)) {
+            String sql="insert into adquisiciones.PROPONENTES proponentes(cod_proveedor,cod_transaccion)"+
+                        " values ('"+cod_proveedor+"',"+cod_transaccion+")";
+            return Consulta(sql);
+        }
+        else return null;*/
+        String sql="insert into adquisiciones.proponentes(cod_prop,cod_proveedor,cod_transaccion,cod_trans_nro,fecha,tipo,clase,nombre,nombre_comercial,direccion,telefono,estado,adh_nombre,COD_TIPO_PROPONENTE)"+" values (ADQUISICIONES.SEC_COD_PROP.NEXTVAL,'"+cod_proveedor+"',"+cod_transaccion+","+cod_trans_nro+",sysdate,'"+tipo+"','"+clase+"','"+nombre+"','"+nombre_comercial+"','"+direccion+"','"+telefono+"','X','"+adh_nombre+"',"+tp+")";
+        return Consulta(sql);
+   }
    public Map[] addProponenteDescargo(String cod_proveedor, int cod_transaccion, int cod_trans_nro, String tipo, String clase, String nombre, String nombre_comercial, String direccion, String telefono, String adh_nombre) throws Exception {
     /*if ("ADD-Proponente".equals(tran)) {
             String sql="insert into adquisiciones.PROPONENTES proponentes(cod_proveedor,cod_transaccion)"+
