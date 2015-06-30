@@ -2705,8 +2705,8 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
           + " where t3.cod_transaccion="+cod_transaccion;
           return Consulta(sql);
     }
-    /****************invitaciones***************/
-    /*public Map[] getdatosextra(int cod_transaccion) throws Exception
+    /****************invitacioness***************/
+    public Map[] getdatosextra(int cod_transaccion) throws Exception
     {
         String sql="select detalle,destino from transaccion where cod_transaccion="+cod_transaccion;
         return Consulta(sql);
@@ -2717,7 +2717,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                 +" from resolucion where cod_transaccion="+cod_transaccion+" and cod_trans_nro="+cod_trans_nro;
         return Consulta(sql);
     }
-    /*public Map[] geninvitacion(int cod_transaccion,int cod_trans_nro,String a,String b,String c,String d,String e,String f) throws Exception
+    public Map[] geninvitacion(int cod_transaccion,int cod_trans_nro,String a,String b,String c,String d,String e,String f,int gestion) throws Exception
     {
         String sql="select (CASE WHEN MAX(t1.nro) is not null THEN MAX(t1.nro) ELSE 0 END )as nro"
                 +" from adquisiciones.resolucion t1"
@@ -2732,7 +2732,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     public Map[] updateinvitacion(int cod_t,int codtn,String np,String fec,String fec_re,String jefe_adq) throws Exception
     {
         String sql="update resolucion set documentos='"+np+"', fecha_cc='"+fec+"', objetivo='"+fec_re+"', jefe_adqui='"+jefe_adq+"'"
-                    +" where cod_transaccion="cod_t+" and cod_trans_nro="+codtn;
+                    +" where cod_transaccion="+cod_t+" and cod_trans_nro="+codtn;
                 return Consulta(sql);
-    }*/
+    }
 }  
