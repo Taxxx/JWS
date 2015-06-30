@@ -2717,7 +2717,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                 +" from resolucion where cod_transaccion="+cod_transaccion+" and cod_trans_nro="+cod_trans_nro;
         return Consulta(sql);
     }
-    public Map[] geninvitacion(int cod_transaccion,int cod_trans_nro,String a,String b,String c,String d,String e,String f) throws Exception
+    /*public Map[] geninvitacion(int cod_transaccion,int cod_trans_nro,String a,String b,String c,String d,String e,String f) throws Exception
     {
         String sql="select (CASE WHEN MAX(t1.nro) is not null THEN MAX(t1.nro) ELSE 0 END )as nro"
                 +" from adquisiciones.resolucion t1"
@@ -2728,7 +2728,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         String sql="insert into resolucion (cod_resolucion,nro,detalle,destino,jefe_adqui,cod_transaccion,cod_trans_nro,documentos,objetivo,fecha_cc)"
                 +" values(ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+nro_resolucion+",'"+b+"','"+c+"','"+e+"',"+cod_transaccion+","+cod_trans_nro+",'"+f+"','"+d+"','"+c+"')";
         return Consulta(sql);
-    }
+    }*/
     public Map[] updateinvitacion(String np,String fec,String fec_re,String jefe_adq) throws Exception
     {
         String sql="update resolucion set documentos='"+np+"', fecha_cc='"+fec+"', objetivo='"+fec_re+"', jefe_adqui='"+jefe_adq+"'";
