@@ -2723,7 +2723,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
           return Consulta(sql);
     }
     /****************invitaciones***************/
-    public Map[] getdatosextra(int cod_transaccion) throws Exception
+    /*public Map[] getdatosextra(int cod_transaccion) throws Exception
     {
         String sql="select detalle,destino from transaccion where cod_transaccion="+cod_transaccion;
         return Consulta(sql);
@@ -2745,11 +2745,11 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         String sql1="insert into resolucion (cod_resolucion,nro,detalle,destino,jefe_adqui,cod_transaccion,cod_trans_nro,documentos,objetivo,fecha_cc, cod_tipo_resolucion)"
                 +" values(ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+nro_resolucion+",'"+b+"','"+c+"','"+e+"',"+cod_transaccion+","+cod_trans_nro+",'"+f+"','"+d+"','"+c+"',3)";
         return Consulta(sql1);
-    }*/
+    }
     public Map[] updateinvitacion(int cod_t,int codtn,String np,String fec,String fec_re,String jefe_adq) throws Exception
     {
         String sql="update resolucion set documentos='"+np+"', fecha_cc='"+fec+"', objetivo='"+fec_re+"', jefe_adqui='"+jefe_adq+"'"
                     +" where cod_transaccion="cod_t+" and cod_trans_nro="+codtn;
                 return Consulta(sql);
-    }
+    }*/
 }  
