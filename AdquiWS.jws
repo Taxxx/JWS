@@ -2725,7 +2725,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     /****************invitacioness***************/
     public Map[] getdatosextra(int cod_transaccion) throws Exception
     {
-        String sql="select detalle,destino from transaccion where cod_transaccion="+cod_transaccion;
+        String sql="select DETALLE,A as DESTINO from transaccion where cod_transaccion="+cod_transaccion;
         return Consulta(sql);
     }
     public Map[] getinvitacion(int cod_transaccion,int cod_trans_nro) throws Exception
@@ -2743,7 +2743,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         int nro_resolucion= Integer.parseInt(datos[0].get("NRO").toString());
         nro_resolucion++;
         String sql1="insert into resolucion (cod_resolucion,nro,detalle,destino,jefe_adqui,cod_transaccion,cod_trans_nro,documentos,objetivo,fecha_cc, cod_tipo_resolucion)"
-                +" values(ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+nro_resolucion+",'"+b+"','"+c+"','"+e+"',"+cod_transaccion+","+cod_trans_nro+",'"+f+"','"+d+"','"+c+"',3)";
+                +" values(ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+nro_resolucion+",'"+b+"','"+c+"','"+e+"',"+cod_transaccion+","+cod_trans_nro+",'"+f+"','"+d+"','"+c+"',4)";
         return Consulta(sql1);
     }
     public Map[] updateinvitacion(int cod_t,int codtn,String np,String fec,String fec_re,String jefe_adq) throws Exception
