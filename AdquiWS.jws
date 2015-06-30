@@ -2705,5 +2705,33 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
           + " where t3.cod_transaccion="+cod_transaccion;
           return Consulta(sql);
     }
-    
+    /****************invitaciones***************/
+    public Map[] getdatosextra(int cod_transaccion) throws Exception
+    {
+        String sql="select detalle,destino from transaccion where cod_transaccion="+cod_transaccion;
+        return Consulta(sql);
+    }
+    public Map[] getinvitacion(int cod_transaccion,int cod_trans_nro) throws Exception
+    {
+        String sql="select nro as nota, detalle, destino, fecha_cc as fecha, documentos as nro_p, objetivo as f_reunion, jefe_adqui as jefe_adq"
+                +" from resolucion where cod_transaccion="+cod_transaccion+" and cod_trans_nro="+cod_trans_nro;
+        return Consulta(sql);
+    }
+    public Map[] geninvitacion(int cod_transaccion,int cod_trans_nro,String a,String b,String c,String d,String e,String f) throws Exception
+    {
+        String sql="select (CASE WHEN MAX(t1.nro) is not null THEN MAX(t1.nro) ELSE 0 END )as nro"
+                +" from adquisiciones.resolucion t1"
+                +" where t1.gestion="+gestion+" and t1.cod_tipo_resolucion=4";
+        Map[] datos=Consulta(sql);
+        int nro_resolucion= Integer.parseInt(datos[0].get("NRO").toString());
+        nro_resolucion++;
+        String sql="insert into resolucion (cod_resolucion,nro,detalle,destino,jefe_adqui,cod_transaccion,cod_trans_nro,documentos,objetivo,fecha_cc)"
+                +" values(ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+nro_resolucion+",'"+b+"','"+c+"','"+e+"',"+cod_transaccion+","+cod_trans_nro+",'"+f+"','"+d+"','"+c+"')";
+        return Consulta(sql);
+    }
+    public Map[] updateinvitacion(String np,String fec,String fec_re,String jefe_adq) throws Exception
+    {
+        String sql="update resolucion set documentos='"+np+"', fecha_cc='"+fec+"', objetivo='"+fec_re+"', jefe_adqui='"+jefe_adq+"'";
+                return Consulta(sql);
+    }
 }  
