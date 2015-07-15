@@ -909,7 +909,7 @@ public class AdquiWS{
             nro_ing_alm++;
 
             sql="update adquisiciones.transaccion_nro "
-                + " set nro ="+nro_ing_alm
+                + " set nro ="+nro_ing_alm+", cod_usuario=3 "
                 + " where cod_tramite = 3 and cod_trans_nro="+cod_trans_nro;
             Consulta(sql);
 
