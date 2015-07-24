@@ -1989,7 +1989,7 @@ public Map[] getResAdjServ(int cod_trans_nro) throws Exception {
           return Consulta(sql);
    }
   public Map[] getResAdjBien(int cod_trans_nro) throws Exception {
-      String sql="select t1.COD_RESOLUCION||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RESOLUCION,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor,t1.DET_CONC_PROP,t1.MODO_EVAL,t1.DESTINO,t1.CARGO,t1.ACTIVIDAD,t2.adh_nombre,t1.DET_ADC,t2.PTG_ECONOMICO,t2.PTG_TECNICO"
+      String sql="select t1.COD_RESOLUCION||'/'||to_char(t1.FECHA, 'YY') as NUM_RESOLUCION,t1.COD_RESOLUCION,t1.COD_TRANS_NRO,t1.DET_RES_ADM,t1.FECHA_CC,t1.DET_INF_DIV_ADQ,t2.NOMBRE_COMERCIAL as proveedor,t1.DET_CONC_PROP,t1.MODO_EVAL,t1.DESTINO,t1.CARGO,t1.ACTIVIDAD,t2.adh_nombre,t1.DET_ADC,t1.DET_UNI_SOL,t1.DET_AUT"
           + " from RESOLUCION t1 inner join proponentes t2 on t1.COD_TRANS_NRO=t2.COD_TRANS_NRO"
           + " where t1.COD_TRANS_NRO = "+cod_trans_nro+" and t2.ESTADO='V'";
           return Consulta(sql);
