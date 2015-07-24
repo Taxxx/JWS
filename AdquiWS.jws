@@ -1991,10 +1991,10 @@ public Map[] getResAdjServ(int cod_trans_nro) throws Exception {
    }
 
 
-public Map[] updateResAdjBien(int cod_trans_nro,int cod_tipo_resolucion,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String adc) throws Exception {
+public Map[] updateResAdjBien(int cod_trans_nro,int cod_tipo_resolucion,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String adc,String aaa,String bbb) throws Exception {
     
         //String sql="insert into RESOLUCION (COD_RESOLUCION,COD_TIPO_RESOLUCION,DET_RES_ADM,DET_ADC,FECHA_COMISION_CALIFICACION,DET_INF_DIV_ADQ,FECHA)"+" values (ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_tipo_resolucion+",'"+det_res_adm+"','"+det_adc+"','"+fecha_comision_calificacion+"','"+det_inf_div_adq+"',sysdate)";
-        String sql="update RESOLUCION set cod_tipo_resolucion="+cod_tipo_resolucion+", det_res_adm='"+det_res_adm+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"', det_conc_prop='"+det_conc_prop+"', modo_eval='"+modo_eval+"',destino='"+destino+"',cargo='"+cargo+"',actividad='"+actividad+"',DET_ADC='"+adc+"' where cod_trans_nro="+cod_trans_nro;
+        String sql="update RESOLUCION set cod_tipo_resolucion="+cod_tipo_resolucion+", det_res_adm='"+det_res_adm+"', fecha_cc='"+fecha_cc+"', det_inf_div_adq='"+det_inf_div_adq+"', det_conc_prop='"+det_conc_prop+"', modo_eval='"+modo_eval+"',destino='"+destino+"',cargo='"+cargo+"',actividad='"+actividad+"',DET_ADC='"+adc+"',PTG_ECONOMICO='"+aaa+"',PTG_TECNICO='"+bbb+"' where cod_trans_nro="+cod_trans_nro;
         return Consulta(sql);
    }
    public Map[] updateResAdjObra(int cod_trans_nro,int cod_tipo_resolucion,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,String adc,String a,String b) throws Exception {
