@@ -1237,7 +1237,7 @@ public class AdquiWS{
                     + "    ) t3 on t3.cod_trans_nro=t2.cod_trans_nro"
                     + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"
                     + " left join adquisiciones.transaccion_preventivo t6 on t1.cod_transaccion=t6.cod_transaccion"
-                    + " where t2.cod_trans_nro="+cod_trans_nro+" order by t3.articulo,t4.cod_complemento";
+                    + " where t2.cod_trans_nro="+cod_trans_nro+" order by cod_trans_detalle,t3.articulo,t4.cod_complemento";
         return Consulta(sql);              
     }
 
@@ -1258,7 +1258,7 @@ public class AdquiWS{
                     + " inner join transaccion_nro t5 on t2.cod_trans_nro_ant=t5.cod_trans_nro"
                     + " inner join transaccion_nro t6 on t5.cod_trans_nro_ant=t6.cod_trans_nro"
                     + " inner join proponentes t7 on t7.cod_trans_nro=t6.cod_trans_nro and t7.estado='V'"
-                    + " where t2.cod_trans_nro="+cod_trans_nro+" order by t3.articulo,t4.cod_complemento";
+                    + " where t2.cod_trans_nro="+cod_trans_nro+" order by cod_trans_detalle,t3.articulo,t4.cod_complemento";
         return Consulta(sql);              
     }
 
@@ -1278,7 +1278,7 @@ public class AdquiWS{
         String sql="select t3.COD_TRANS_DETALLE,t1.NRO,t1.COD_TRAMITE,t3.DETALLE,t2.NOMBRE,t2.NOMBRE_COMERCIAL,t4.DETALLE_SOLICITUD,t1.COD_TRANS_NRO"
                     + " from TRANSACCION_NRO t1 inner join PROPONENTES t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION and t1.COD_TRANS_NRO like 3979 and t1.COD_TRAMITE like 4 and t2.ESTADO='V'"
                     + " inner join TRANSACCION_DETALLE t3 on t3.COD_TRANSACCION=t2.COD_TRANSACCION"
-                    + " LEFT OUTER JOIN TRANSACCION_DET_COMPLEMENTO t4 on t4.COD_TRANS_DETALLE = t3.COD_TRANS_DETALLE";
+                    + " LEFT OUTER JOIN TRANSACCION_DET_COMPLEMENTO t4 on t4.COD_TRANS_DETALLE = t3.COD_TRANS_DETALLE order by t4.cod_trans_detalle";
         return Consulta(sql);              
     }
 
