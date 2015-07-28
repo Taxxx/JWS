@@ -2539,7 +2539,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                    +"  where COD_TRANS_NRO=t2.COD_TRANS_NRO and FECHA_ENTREGA is not null)+12-(select count(*) "
                    +"  from RESTRICCION_FECHAS_PROC"
                    +"  where RESTRICCION_FECHAS_PROC.COD_TRANS_NRO=t2.COD_TRANS_NRO)) as otro "
-                   +"  from RESOLUCION t1 inner join TRANSACCION_NRO t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION and t2.COD_TRAMITE=1) p1 "
+                   +"  from RESOLUCION t1 inner join TRANSACCION_NRO t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION and t2.COD_TRAMITE=1) p1 and t1.COD_TIPO_RESOLUCION=1"
                    +"  left outer JOIN TIPO_RESTRICCION_FECHA p2 on p1.otro=p2.DETALLE"
                    +"  left OUTER JOIN RESTRICCION_FECHAS_PROC p3 on p2.COD_TIPO_RESF=p3.COD_TIPO_RESF and p3.COD_TRANS_NRO=p1.cod"
                    +"  LEFT OUTER JOIN TRANSACCION_NRO p4 ON p4.COD_TRANSACCION=p1.cod_T and p4.COD_TRAMITE=2"
