@@ -244,6 +244,20 @@ public class AdquiWS{
         return Consulta(sql);        
     }
 
+    public Map[] getUsuarios() throws Exception {        
+        String sql="select t1.cod_usuario,t1.USUARIO"
+                  +" from adm_usuario t1"
+                  +" where t1.estado='V'";
+        return Consulta(sql);        
+    }
+
+    public Map[] getItems() throws Exception {        
+        String sql="select t1.cod_item,t1.articulo"
+                  +" from clasificador_item t1"
+                  +" where t1.estado='V'";
+        return Consulta(sql);        
+    }
+
     public Map[] setUsuario(String tran, String apodo,String clave,String usuario,String nombre_resumen) throws Exception {
         if ("SET-insDataUsr".equals(tran)) {
             String sql="insert into adquisiciones.adm_usuario(cod_usuario,apodo,clave,usuario,nombre_resumen)"+
@@ -1184,7 +1198,7 @@ public class AdquiWS{
                     + "                inner join PROPONENTES t4 on t1.COD_TRANS_NRO_ANT=t4.COD_TRANS_NRO and t4.ESTADO='V' "
                     + "                where t2.estado='"+estado+"' and t1.cod_tramite="+cod_tramite+") t5 on t5.cod_trans_nro_ant=t2.cod_trans_nro"
                     + " left join adquisiciones.transaccion_preventivo t6 on t1.cod_transaccion=t6.cod_transaccion"
-                    + " where t5.cod_trans_nro="+cod_trans_nro+ " order by t3.articulo,t4.cod_complemento";
+                    + " where t5.cod_trans_nro="+cod_trans_nro+ " order by cod_trans_detalle,t3.articulo,t4.cod_complemento";
          return Consulta(sql);              
     }
 
@@ -1204,7 +1218,7 @@ public class AdquiWS{
                     + "    inner join adquisiciones.transaccion_detalle_nro t5 on t5.cod_trans_detalle=t1.cod_trans_detalle"
                     + "    ) t3 on t3.cod_trans_nro=t2.cod_trans_nro"
                     + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"
-                    + " where t2.cod_trans_nro="+cod_trans_nro+" order by t3.tipo_item,t3.articulo,t4.cod_complemento";
+                    + " where t2.cod_trans_nro="+cod_trans_nro+" order by cod_trans_detalle,t3.tipo_item,t3.articulo,t4.cod_complemento";
         return Consulta(sql);              
     }
 
@@ -1889,26 +1903,29 @@ public class AdquiWS{
         String sql="update adquisiciones.proponentes set cod_proveedor='"+cod_proveedor+"',nombre='"+nombre+"',nombre_comercial='"+nombre_comercial+"',direccion='"+direccion+"',telefono='"+telefono+"' where estado='V' and cod_transaccion="+cod_transaccion;
         return Consulta(sql);
    }
-   public Map[] GeneraResIni(int cod_transaccion, int cod_tipo_resolucion, String detalle, String envia, String detalle_nota_solicitud, String detalle_nota_presupuesto,String destino, int xx, int gestion) throws Exception {
+   public Map[] GeneraResIni(int cod_transaccion, int cod_tipo_resolucion, String detalle, String envia, 
+    String detalle_nota_solicitud, String detalle_nota_presupuesto,String destino, int xx, 
+    int gestion,String jefe_adqui,String det_recursos,String det_uni_sol,String det_aut) throws Exception {
         String sql="select (CASE WHEN MAX(t1.nro) is not null THEN MAX(t1.nro) ELSE 0 END )as nro"
                 +" from adquisiciones.resolucion t1"
                 +" where t1.gestion="+gestion+" and t1.cod_tipo_resolucion="+cod_tipo_resolucion;
         Map[] datos=Consulta(sql);
         int nro_resolucion= Integer.parseInt(datos[0].get("NRO").toString());
         nro_resolucion++;
-        sql="insert into RESOLUCION (COD_RESOLUCION,COD_TRANSACCION,COD_TIPO_RESOLUCION,FECHA,DETALLE,ENVIA,DETALLE_NOTA_SOLICITUD,DETALLE_NOTA_PRESUPUESTO,DESTINO,DIAS,GESTION,NRO)"
-           +" values (ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_transaccion+","+cod_tipo_resolucion+",sysdate,'"+detalle+"','"+envia+"','"+detalle_nota_solicitud+"','"+detalle_nota_presupuesto+"','"+destino+"',"+xx+","+gestion+","+nro_resolucion+")";
+        sql="insert into RESOLUCION (COD_RESOLUCION,COD_TRANSACCION,COD_TIPO_RESOLUCION,FECHA,DETALLE,ENVIA,DETALLE_NOTA_SOLICITUD,DETALLE_NOTA_PRESUPUESTO,DESTINO,DIAS,GESTION,NRO,JEFE_ADQUI,DET_RECURSOS,DET_UNI_SOL,DET_AUT)"
+           +" values (ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_transaccion+","+cod_tipo_resolucion+",sysdate,'"+detalle+"','"+envia+"','"+detalle_nota_solicitud+"','"+detalle_nota_presupuesto+"','"+destino+"',"+xx+","+gestion+","+nro_resolucion+",'"
+            +jefe_adqui+"','"+det_recursos+"','"+det_uni_sol+"','"+det_aut+"')";
         return Consulta(sql);
    }
    public Map[] getResIni(int cod_transaccion) throws Exception {
-      String sql="select t1.COD_RESOLUCION,t1.NRO||'/'||to_char(t1.FECHA,'YY') as NUM_RESOLUCION,t1.NRO,t1.COD_TRANSACCION,t1.FECHA,t1.cod_tipo_resolucion,t1.detalle,t1.envia,t1.detalle_nota_solicitud,t1.detalle_nota_presupuesto,t1.destino,t1.dias"
+      String sql="select t1.COD_RESOLUCION,t1.NRO||'/'||to_char(t1.FECHA,'YY') as NUM_RESOLUCION,t1.NRO,t1.COD_TRANSACCION,t1.FECHA,t1.cod_tipo_resolucion,t1.detalle,t1.envia,t1.detalle_nota_solicitud,t1.detalle_nota_presupuesto,t1.destino,t1.dias,t1.jefe_adqui,t1.det_recursos,t1.det_uni_sol,t1.det_aut"
           + " from RESOLUCION t1 inner join transaccion t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
           + " where t1.COD_TRANSACCION = "+cod_transaccion;
           return Consulta(sql);
    }
-   public Map[] updateResIni(int cod_resolucion,String envia,String dns,String dnp,String destino,int dias) throws Exception {
+   public Map[] updateResIni(int cod_resolucion,String envia,String dns,String dnp,String destino,int dias,String jefe_adqui,String det_recursos,String det_uni_sol,String det_aut) throws Exception {
         //if ("SET-upDaTeUsr".equals(tran)) {
-            String sql="update adquisiciones.resolucion set envia='"+envia+"',detalle_nota_solicitud='"+dns+"',detalle_nota_presupuesto='"+dnp+"',destino='"+destino+"',dias="+dias+"  where cod_resolucion="+cod_resolucion;
+            String sql="update adquisiciones.resolucion set envia='"+envia+"',detalle_nota_solicitud='"+dns+"',detalle_nota_presupuesto='"+dnp+"',destino='"+destino+"',dias="+dias+",jefe_adqui='"+jefe_adqui+"',det_recursos='"+det_recursos+"',det_uni_sol='"+det_uni_sol+"',det_aut='"+det_aut+"'  where cod_resolucion="+cod_resolucion;
             return Consulta(sql);
         //}
         //else return null;
