@@ -2233,9 +2233,9 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         Map[] datos=Consulta(sql);
         int nro_resolucion= Integer.parseInt(datos[0].get("NRO").toString());
         nro_resolucion++;
-        sql="insert into RESOLUCION (COD_RESOLUCION,COD_TRANSACCION,COD_TRANS_NRO,COD_TIPO_RESOLUCION,FECHA,GESTION,DETALLE,ENVIA,DESTINO,DIAS,CARGO,CITE,COTIZACION,OBJETIVO,NRO,DOCUMENTOS,FECHA_INICIO_CON)"
+        String sql1="insert into adquisiciones.RESOLUCION (COD_RESOLUCION,COD_TRANSACCION,COD_TRANS_NRO,COD_TIPO_RESOLUCION,FECHA,GESTION,DETALLE,ENVIA,DESTINO,DIAS,CARGO,CITE,COTIZACION,OBJETIVO,NRO,DOCUMENTOS,FECHA_INICIO_CON)"
                     +" values(SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans+","+cod_trans_nro+",3,sysdate,"+gestion+",'"+detalle+"','"+enviado+"','"+destino+"','"+dias+"','"+cargo+"','"+cite+"','"+cotizacion+"','"+objetivo+"',"+nro_resolucion+",'"+doc+"','"+f+"')";
-        return Consulta(sql);
+        return Consulta(sql1);
     }
     public Map[] getProgramaticApertGestion(int gestion, int cod_almacen) throws Exception {        
         String sql="select t1.cod_apert,t1.cod_faculty,t2.cod_almacen,t1.detalle,t1.apertura"
