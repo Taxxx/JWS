@@ -2221,7 +2221,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     }
     public Map[] updateRes15(int cod,int cod_t_n,String cite,String destino,String objetivo,String cotizacion,String doc,String f,String cargo) throws Exception
     {
-        String sql="update RESOLUCION set CARGO='"+cargo+"', FECHA_INICIO_CON='"+f+"', DOCUMENTOS='"+doc+"', CITE='"+cite+"', DESTINO='"+destino+"', OBJETIVO='"+objetivo+"', COTIZACION='"+cotizacion+"'"
+        String sql="update RESOLUCION set CARGO='"+cargo+"', FECHA_INICIO_CON='sysdate', DOCUMENTOS='"+doc+"', CITE='"+cite+"', DESTINO='"+destino+"', OBJETIVO='"+objetivo+"', COTIZACION='"+cotizacion+"'"
                     +" WHERE COD_TRANSACCION="+cod+" and COD_TRANS_NRO="+cod_t_n+" and COD_TIPO_RESOLUCION=3";
         return Consulta(sql);
     }
@@ -2233,7 +2233,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         Map[] datos=Consulta(sql);
         int nro_resolucion= Integer.parseInt(datos[0].get("NRO").toString());
         nro_resolucion++;
-        String sql1="insert into adquisicionesRESOLUCION (COD_RESOLUCION,COD_TRANSACCION,COD_TRANS_NRO,COD_TIPO_RESOLUCION,FECHA,GESTION,DETALLE,ENVIA,DESTINO,DIAS,CARGO,CITE,COTIZACION,OBJETIVO,NRO,DOCUMENTOS,FECHA_INICIO_CON)"
+        String sql1="insert into RESOLUCION (COD_RESOLUCION,COD_TRANSACCION,COD_TRANS_NRO,COD_TIPO_RESOLUCION,FECHA,GESTION,DETALLE,ENVIA,DESTINO,DIAS,CARGO,CITE,COTIZACION,OBJETIVO,NRO,DOCUMENTOS,FECHA_INICIO_CON)"
                     +" values(SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans+","+cod_trans_nro+",3,sysdate,"+gestion+",'"+detalle+"','"+enviado+"','"+destino+"','"+dias+"','"+cargo+"','"+cite+"','"+cotizacion+"','"+objetivo+"',"+nro_resolucion+",'"+doc+"',sysdate)";
         return Consulta(sql1);
     }
