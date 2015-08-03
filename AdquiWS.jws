@@ -2214,7 +2214,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     }
     public Map[] getresmay(int cod,int cod_t_n) throws Exception
     {
-        String sql="SELECT NRO,CITE,DESTINO,COTIZACION,OBJETIVO,DOCUMENTOS,FECHA_INICIO_CON,CARGO"
+        String sql="SELECT NRO,CITE,DESTINO,COTIZACION,OBJETIVO,FECHA_INICIO_CON,CARGO"
                     +" FROM RESOLUCION"
                     +" WHERE COD_TRANSACCION="+cod+" and COD_TRANS_NRO="+cod_t_n+" and COD_TIPO_RESOLUCION=3";
         return Consulta(sql);
@@ -2225,7 +2225,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                     +" WHERE COD_TRANSACCION="+cod+" and COD_TRANS_NRO="+cod_t_n+" and COD_TIPO_RESOLUCION=3";
         return Consulta(sql);
     }
-    public Map[] generaRes15(int cod_trans, int cod_trans_nro, String dias, String cite, String destino, String objetivo, String cotizacion, String detalle, String enviado, String cargo, int gestion,String doc,String f) throws Exception
+    public Map[] generaRes15(int cod_trans, int cod_trans_nro, int dias, String cite, String destino, String objetivo, String cotizacion, String detalle, String enviado, String cargo, int gestion,String doc,String f) throws Exception
     {
         String sql="select (CASE WHEN MAX(t1.nro) is not null THEN MAX(t1.nro) ELSE 0 END )as nro"
                 +" from adquisiciones.resolucion t1"
@@ -2233,8 +2233,8 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         Map[] datos=Consulta(sql);
         int nro_resolucion= Integer.parseInt(datos[0].get("NRO").toString());
         nro_resolucion++;
-        String sql1="insert into adquisiciones.RESOLUCION (COD_RESOLUCION,COD_TRANSACCION,COD_TRANS_NRO,COD_TIPO_RESOLUCION,FECHA,GESTION,DETALLE,ENVIA,DESTINO,DIAS,CARGO,CITE,COTIZACION,OBJETIVO,NRO,DOCUMENTOS,FECHA_INICIO_CON)"
-                    +" values(SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans+","+cod_trans_nro+",3,sysdate,"+gestion+",'"+detalle+"','"+enviado+"','"+destino+"',"+dias+",'"+cargo+"','"+cite+"','"+cotizacion+"','"+objetivo+"',"+nro_resolucion+",'"+doc+"','"+f+"')";
+        String sql1="insert into adquisiciones.RESOLUCION (COD_RESOLUCION,COD_TRANSACCION,COD_TRANS_NRO,COD_TIPO_RESOLUCION,FECHA,GESTION,DETALLE,ENVIA,DESTINO,DIAS,CARGO,CITE,COTIZACION,OBJETIVO,NRO,FECHA_INICIO_CON)"
+                    +" values(SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans+","+cod_trans_nro+",3,sysdate,"+gestion+",'"+detalle+"','"+enviado+"','"+destino+"',"+dias+",'"+cargo+"','"+cite+"','"+cotizacion+"','"+objetivo+"',"+nro_resolucion+",'"+f+"')";
         return Consulta(sql1);
     }
     public Map[] getProgramaticApertGestion(int gestion, int cod_almacen) throws Exception {        
