@@ -2557,7 +2557,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     public Map[] notificacionfechas() throws Exception
     {
         String sql="select p4.NRO as orden, p1.nro as NRO_SOL,res_ini AS NRO_RI,otro AS PROCESO,p3.FECHA_CONCLUSION AS FECHA_FINAL, round(p3.FECHA_CONCLUSION-to_date(sysdate),0) as DIAS_RESTANTES"
-                   +"  from"
+                   +"  from "
                    +" (select t2.COD_TRANSACCION as cod_T, t2.COD_TRANS_NRO as cod,t2.NRO as nro,t1.COD_RESOLUCION as res_ini, (select DETALLE "
                    +"  from TIPO_RESTRICCION_FECHA "
                    +" where TIPO_RESTRICCION_FECHA.COD_TIPO_RESF=(select count(*) "
