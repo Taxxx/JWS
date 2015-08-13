@@ -790,7 +790,7 @@ public class AdquiWS{
                     + " inner join adquisiciones.transaccion_nro t4 on t3.cod_trans_nro=t4.cod_trans_nro"
                     + " inner join adquisiciones.tramites t5 on t4.cod_tramite=t5.cod_tramite"
                     + " inner join adquisiciones.estados t7 on T2.ESTADO=t7.codigo AND (t2.ESTADO='JUR' OR t2.ESTADO='ALM1' OR t2.ESTADO='C')"
-                    + " where t4.nro is not null and t1.gestion="+gestion+" and t1.cod_almacen="+cod_almacen+" and (t5.cod_tramite="+cod_tramite+") ) t1 )"
+                    + " where t4.nro is not null and t1.gestion="+gestion+" and t1.estado <> 'X' and t1.cod_almacen="+cod_almacen+" and (t5.cod_tramite="+cod_tramite+") ) t1 ) "
                     + " where linenum BETWEEN "+inicio+" AND "+fin;
         return Consulta(sql);
     }    
