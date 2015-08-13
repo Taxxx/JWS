@@ -2099,7 +2099,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         return Consulta(sql);
   }
   public Map[] getDatosGenerales2(int cod_almacen) throws Exception {
-    String sql="select t2.cod_faculty,t2.da,t2.gestion,t2.estado,t2.cod_da,t2.firma_rpa,t2.rpa"
+    String sql="select t2.cod_faculty,t2.da,t2.gestion,t2.estado,t2.cod_da,t2.firma_rpa,t2.rpa,t2.jadqui"
         + " from almacen t1 inner join unidad_ejecutora t2 on t1.facultad=t2.cod_faculty"
         + " where t1.cod_almacen="+cod_almacen;
         return Consulta(sql);
