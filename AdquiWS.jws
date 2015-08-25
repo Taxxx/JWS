@@ -2777,7 +2777,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                     +" where cod_transaccion="+cod_t+" and cod_trans_nro="+codtn;
                 return Consulta(sql);
     }
-    public Map[] obtienetotal(int user,Date fi,Date ff,int men,int may) throws Exception
+    public Map[] obtienetotal(int user,String fi,String ff,int men,int may) throws Exception
     {
         String sql="select sum(DISTINCT TO_NUMBER(t6.TOTAL, '99999.9999')) as TOTAL"+
           " from (select t1.COD_TRANS_DETALLE,t1.ESTADO,((SELECT MIN(t.FECHA_ENVIO) AS FEC FROM TRANSACCION_ENVIO_FECHA t where t.COD_TRANS_DETALLE=t1.COD_TRANS_DETALLE and t.ESTADO not like 'B' and t.ESTADO not like 'PPTO' and t.ESTADO not like 'ADQ')) as f"+
