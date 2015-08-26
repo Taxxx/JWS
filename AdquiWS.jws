@@ -2795,7 +2795,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     {
         String sql="update TRANSACCION_NRO SET FECHA_INI_TRAM='"+a+"', FECHA_FIN_TRAM='"+b+"' WHERE COD_TRANS_NRO="+c;
         Map[] datos=Consulta(sql);
-        String sql1="SELECT Round(FECHA_INI_TRAM-FECHA_FIN_TRAM,0)"
+        String sql1="SELECT Round(FECHA_INI_TRAM-FECHA_FIN_TRAM,0) as DIAS"
                     +" FROM TRANSACCION_NRO"
                     +" where COD_TRANS_NRO="+c;
         return Consulta(sql1);
