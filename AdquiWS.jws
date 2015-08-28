@@ -2779,7 +2779,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     }
     public Map[] obtienetotal(int user,String fi,String ff,int men,int may) throws Exception
     {
-        String sql="select sum(DISTINCT TO_NUMBER(t6.TOTAL, '99999.9999')) as TOTAL"+
+        /*String sql="select sum(DISTINCT TO_NUMBER(t6.TOTAL, '99999.9999')) as TOTAL"+
           " from (select t1.COD_TRANS_DETALLE,t1.ESTADO,((SELECT MIN(t.FECHA_ENVIO) AS FEC FROM TRANSACCION_ENVIO_FECHA t where t.COD_TRANS_DETALLE=t1.COD_TRANS_DETALLE and t.ESTADO not like 'B' and t.ESTADO not like 'PPTO' and t.ESTADO not like 'ADQ')) as f"+
           " from TRANSACCION_ENVIO_FECHA t1) y1"+
           " INNER JOIN TRANSACCION_ENVIO_FECHA y2 ON y2.FECHA_ENVIO=y1.F and y1.COD_TRANS_DETALLE=y2.COD_TRANS_DETALLE and y2.FECHA_ENVIO between '"+fi+"' and '"+ff+"'"+
@@ -2789,7 +2789,18 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
           " INNER JOIN PROPONENTES p1 ON p1.COD_TRANS_NRO=t2.COD_TRANS_NRO and p1.ESTADO='V'"+
           " INNER JOIN TRANSACCION_PREVENTIVO t6 ON t6.COD_TRANSACCION=t4.COD_TRANSACCION AND TO_NUMBER(t6.TOTAL,'9999999.99') BETWEEN "+men+" and "+may+
           " LEFT OUTER JOIN TRANSACCION_DET_COMPLEMENTO t5 ON t5.COD_TRANS_DETALLE=t1.COD_TRANS_DETALLE";
-        return Consulta(sql);
+        return Consulta(sql);*/
+        String sql="select pp.total"
+                    +" from("
+                    +" SELECT DISTINCT T5.COD_TRANSACCION,T1.NRO, (CASE WHEN t5.MONTO_PPTO IS NULL THEN TO_NUMBER(t4.TOTAL, '99999.9999') ELSE t5.MONTO_PPTO END) as total"
+                    +" FROM TRANSACCION_NRO T1 INNER JOIN TRANSACCION_DETALLE T2 ON T1.COD_TRANSACCION=T2.COD_TRANSACCION AND T1.COD_TRAMITE=2 AND T1.COD_USUARIO="+user
+                    +" LEFT OUTER JOIN TRANSACCION T5 ON T5.COD_TRANSACCION=T1.COD_TRANSACCION and T5.MONTO_PPTO is not null"
+                    +" INNER JOIN TRANSACCION_ENVIO_FECHA T3 ON T3.COD_TRANS_DETALLE=T2.COD_TRANS_DETALLE AND T3.FECHA_ENVIO BETWEEN '"+fi+"' AND '"+ff+"'"
+                    +" INNER JOIN (select t1.COD_TRANS_DETALLE,t1.ESTADO,((SELECT MIN(t.FECHA_ENVIO) AS FEC FROM TRANSACCION_ENVIO_FECHA t where t.COD_TRANS_DETALLE=t1.COD_TRANS_DETALLE and t.ESTADO not like 'B' and t.ESTADO not like 'PPTO' and t.ESTADO not like 'ADQ')) as f"
+                    +" from TRANSACCION_ENVIO_FECHA t1) Y1 ON Y1.COD_TRANS_DETALLE=T3.COD_TRANS_DETALLE AND T3.FECHA_ENVIO=Y1.f"
+                    +" LEFT OUTER JOIN TRANSACCION_PREVENTIVO T4 ON T4.COD_TRANSACCION=T1.COD_TRANSACCION) pp"
+                    +" WHERE PP.total BETWEEN "+men+" and "+may;
+                    return Consulta(sql);
     }
     public Map[] fechasTramite(String a,String b,int c) throws Exception
     {
