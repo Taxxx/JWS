@@ -2799,8 +2799,8 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                     +" INNER JOIN (select t1.COD_TRANS_DETALLE,t1.ESTADO,((SELECT MIN(t.FECHA_ENVIO) AS FEC FROM TRANSACCION_ENVIO_FECHA t where t.COD_TRANS_DETALLE=t1.COD_TRANS_DETALLE and t.ESTADO not like 'B' and t.ESTADO not like 'PPTO' and t.ESTADO not like 'ADQ')) as f"
                     +" from TRANSACCION_ENVIO_FECHA t1) Y1 ON Y1.COD_TRANS_DETALLE=T3.COD_TRANS_DETALLE AND T3.FECHA_ENVIO=Y1.f"
                     +" LEFT OUTER JOIN TRANSACCION_PREVENTIVO T4 ON T4.COD_TRANSACCION=T1.COD_TRANSACCION) pp"
-                    +" WHERE PP.total BETWEEN "+men+" and "+may;
-                    return Consulta(sql);
+                    +" WHERE pp.total BETWEEN "+men+" and "+may;
+        return Consulta(sql);
     }
     //una pequeña modificacion para ver si cambio javi OK 2
     public Map[] fechasTramite(String a,String b,int c) throws Exception
