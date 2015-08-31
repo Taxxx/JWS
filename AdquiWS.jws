@@ -2792,7 +2792,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         return Consulta(sql);*/
         String sql="select count(*) as CONT,sum(pp.total) as TOTAL"
                     +" from("
-                    +" SELECT DISTINCT T5.COD_TRANSACCION,T1.NRO, (CASE WHEN t5.MONTO_PPTO IS NULL THEN TO_NUMBER(t4.TOTAL, '99999.9999') ELSE t5.MONTO_PPTO END) as total"
+                    +" SELECT DISTINCT T5.COD_TRANSACCION,T1.NRO, (CASE WHEN t5.MONTO_PPTO IS NULL THEN TO_NUMBER(t4.TOTAL, '9999999.999999') ELSE t5.MONTO_PPTO END) as total"
                     +" FROM TRANSACCION_NRO T1 INNER JOIN TRANSACCION_DETALLE T2 ON T1.COD_TRANSACCION=T2.COD_TRANSACCION AND T1.COD_TRAMITE=2 AND T1.COD_USUARIO="+user
                     +" LEFT OUTER JOIN TRANSACCION T5 ON T5.COD_TRANSACCION=T1.COD_TRANSACCION and T5.MONTO_PPTO is not null"
                     +" INNER JOIN TRANSACCION_ENVIO_FECHA T3 ON T3.COD_TRANS_DETALLE=T2.COD_TRANS_DETALLE AND T3.FECHA_ENVIO BETWEEN '"+fi+"' AND TO_DATE('"+ff+"','dd/mm/yyyy')-1"
