@@ -2804,7 +2804,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                     +" LEFT OUTER JOIN TRANSACCION t4 ON t2.COD_TRANSACCION=t4.COD_TRANSACCION) ppp";
         return Consulta(sql);
     }
-    //una pequeña modificacion para ver si cambio javi OK 2 3 4
+    //una pequeña modificacion para ver si cambio javi OK 2 3 4 5
     public Map[] fechasTramite(String a,String b,int c) throws Exception
     {
         String sql="update TRANSACCION_NRO SET FECHA_INI_TRAM='"+a+"', FECHA_FIN_TRAM='"+b+"' WHERE COD_TRANS_NRO="+c;
