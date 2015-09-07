@@ -2779,25 +2779,16 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     }
     public Map[] obtienetotal(int user,String fi,String ff,int men,int may) throws Exception
     {
-        /*String sql="select sum(DISTINCT TO_NUMBER(t6.TOTAL, '99999.9999')) as TOTAL"+
-          " from (select t1.COD_TRANS_DETALLE,t1.ESTADO,((SELECT MIN(t.FECHA_ENVIO) AS FEC FROM TRANSACCION_ENVIO_FECHA t where t.COD_TRANS_DETALLE=t1.COD_TRANS_DETALLE and t.ESTADO not like 'B' and t.ESTADO not like 'PPTO' and t.ESTADO not like 'ADQ')) as f"+
-          " from TRANSACCION_ENVIO_FECHA t1) y1"+
-          " INNER JOIN TRANSACCION_ENVIO_FECHA y2 ON y2.FECHA_ENVIO=y1.F and y1.COD_TRANS_DETALLE=y2.COD_TRANS_DETALLE and y2.FECHA_ENVIO between '"+fi+"' and '"+ff+"'"+
-          " INNER JOIN TRANSACCION_DETALLE t1 ON t1.COD_TRANS_DETALLE=y1.COD_TRANS_DETALLE"+
-          " INNER JOIN TRANSACCION_NRO t2 ON t2.COD_TRANSACCION=t1.COD_TRANSACCION and t2.NRO is not null and t2.COD_TRAMITE=2 and t2.COD_USUARIO="+user+
-          " INNER JOIN TRANSACCION t4 ON t2.COD_TRANSACCION=t4.COD_TRANSACCION"+
-          " INNER JOIN PROPONENTES p1 ON p1.COD_TRANS_NRO=t2.COD_TRANS_NRO and p1.ESTADO='V'"+
-          " INNER JOIN TRANSACCION_PREVENTIVO t6 ON t6.COD_TRANSACCION=t4.COD_TRANSACCION AND TO_NUMBER(t6.TOTAL,'9999999.99') BETWEEN "+men+" and "+may+
-          " LEFT OUTER JOIN TRANSACCION_DET_COMPLEMENTO t5 ON t5.COD_TRANS_DETALLE=t1.COD_TRANS_DETALLE";
-        return Consulta(sql);*/
+
+        //String sql = "select 1 from dual";  
         String sql="select sum(ppp.MONTO_PPTO) as TOTAL, COUNT(DISTINCT ppp.NRO) AS COUNT"
                     +" from"
                     +" (select DISTINCT t2.NRO,t4.DE,t4.DETALLE,t4.COD_TRANSACCION,t4.HOJA_RUTA,t2.COD_USUARIO,t2.OBS,p1.NOMBRE_COMERCIAL,(CASE WHEN t4.CBTE IS NULL THEN t6.COD_PREVENTIVO ELSE T4.CBTE END) AS CBTE,(CASE WHEN t4.MONTO_PPTO IS NULL THEN (CASE WHEN t6.total IS NULL THEN 0 ELSE to_number(t6.TOTAL,'9999999.9999999') END ) ELSE t4.MONTO_PPTO END) as MONTO_PPTO"
                     +" from (select t1.COD_TRANS_DETALLE,t1.ESTADO,((SELECT MIN(t.FECHA_ENVIO) AS FEC FROM TRANSACCION_ENVIO_FECHA t where t.COD_TRANS_DETALLE=t1.COD_TRANS_DETALLE and t.ESTADO not like 'B' and t.ESTADO not like 'PPTO' and t.ESTADO not like 'ADQ')) as f"
                     +" from TRANSACCION_ENVIO_FECHA t1) y1"
-                    +" INNER JOIN TRANSACCION_ENVIO_FECHA y2 ON y2.FECHA_ENVIO=y1.F and y1.COD_TRANS_DETALLE=y2.COD_TRANS_DETALLE and y2.FECHA_ENVIO between '"+fi+"' AND TO_DATE('"+ff+"','dd/mm/yy')-1"
+                    +" INNER JOIN TRANSACCION_ENVIO_FECHA y2 ON y2.FECHA_ENVIO=y1.F and y1.COD_TRANS_DETALLE=y2.COD_TRANS_DETALLE and y2.FECHA_ENVIO between '01/1/2015' AND TO_DATE('01/2/2015','dd/mm/yy')-1"
                     +" INNER JOIN TRANSACCION_DETALLE t1 ON t1.COD_TRANS_DETALLE=y1.COD_TRANS_DETALLE"
-                    +" INNER JOIN TRANSACCION_NRO t2 ON t2.COD_TRANSACCION=t1.COD_TRANSACCION and t2.NRO is not null and t2.COD_TRAMITE=2 and t2.COD_USUARIO="+user
+                    +" INNER JOIN TRANSACCION_NRO t2 ON t2.COD_TRANSACCION=t1.COD_TRANSACCION and t2.NRO is not null and t2.COD_TRAMITE=2 and t2.COD_USUARIO=135"
                     +" INNER JOIN PROPONENTES p1 ON p1.COD_TRANS_NRO=t2.COD_TRANS_NRO and p1.ESTADO='V'"
                     +" LEFT OUTER JOIN TRANSACCION_PREVENTIVO t6 ON t6.COD_TRANSACCION=t2.COD_TRANSACCION AND TO_NUMBER(t6.TOTAL,'9999999.999999') BETWEEN "+men+" and "+may
                     +" LEFT OUTER JOIN TRANSACCION_DET_COMPLEMENTO t5 ON t5.COD_TRANS_DETALLE=t1.COD_TRANS_DETALLE"
@@ -2815,4 +2806,4 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         return Consulta(sql1);
     }
 
-}  
+}
