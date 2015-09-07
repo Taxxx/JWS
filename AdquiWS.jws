@@ -1973,7 +1973,7 @@ public class AdquiWS{
         nro_resolucion++;
 
         String sql="insert into RESOLUCION (COD_RESOLUCION,COD_TRANSACCION,COD_TRANS_NRO,COD_TIPO_RESOLUCION,DET_RES_ADJ,DET_RES_ADM,FECHA_CC,DET_INF_DIV_ADQ,DET_CONC_PROP,MODO_EVAL,DESTINO,CARGO,ACTIVIDAD,DET_ADC,FECHA,DET_UNI_SOL,DET_AUT,NRO,GESTION,COD_USUARIO) values"
-          +"(ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans+","+cod_trans_nro+","+cod_tipo_resolucion+",'"+det_res_adj+"','"+det_res_adm+"','"+fecha_cc+"','"+det_inf_div_adq+"','"+det_conc_prop+"','"+modo_eval+"','"+destino+"','"+cargo+"','"+actividad+"','"+adc+"','"+aaa+"','"+bbb+"',sysdate,"+nro_resolucion+","+gestion+","+cod_usuario+")";
+          +"(ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans+","+cod_trans_nro+","+cod_tipo_resolucion+",'"+det_res_adj+"','"+det_res_adm+"','"+fecha_cc+"','"+det_inf_div_adq+"','"+det_conc_prop+"','"+modo_eval+"','"+destino+"','"+cargo+"','"+actividad+"','"+adc+"',sysdate,'"+aaa+"','"+bbb+"',"+nro_resolucion+","+gestion+","+cod_usuario+")";
         return Consulta(sql);
    }
    public Map[] genResAdjConsu(int cod_transaccion,int cod_trans_nro,int cod_tipo_resolucion,String det_res_adj,String det_res_adm,String fecha_cc,String det_inf_div_adq,String det_conc_prop,String modo_eval,String destino,String cargo,String actividad,int gestion,int cod_usuario) throws Exception {
