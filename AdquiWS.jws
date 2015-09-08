@@ -2077,9 +2077,9 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
             + " from tipo_doc t1 ";
             return Consulta(sql);
   }
-  public Map[] getConcursantes(int cod_transaccion) throws Exception {
+  public Map[] getConcursantes(int cod_trans_nro) throws Exception {
         String sql="select t1.COD_PROVEEDOR,t1.NOMBRE_COMERCIAL, t1.NOMBRE, t1.MONTO, t1.PLAZO, t1.OBSERVACION, t1.CUMPLE, t1.PTG_ECONOMICO, t1.PTG_TECNICO"
-            + " from proponentes t1 where t1.COD_TRANSACCION="+cod_transaccion;
+            + " from proponentes t1 where and t1.COD_TRANS_NRO="+cod_trans_nro;
             return Consulta(sql);
   }
   public Map[] existeReIni(int cod_transaccion) throws Exception {
