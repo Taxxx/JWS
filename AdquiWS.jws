@@ -2120,7 +2120,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         return Consulta(sql);
   }
   public Map[] getDatosAlmacen(int cod_trans_nro) throws Exception {
-    String sql="select t1.FACTURA,t1.FECHA_FACT,t1.FECHA_ING,t1.MEMO,t1.OBS"
+    String sql="select t1.FACTURA,t1.FECHA_FACT,t1.FECHA_ING,t1.MEMO,t1.OBS,t1.FECHA_NOTI"
         + " from TRANSACCION_NRO t1 where t1.COD_TRANS_NRO="+cod_trans_nro;
         return Consulta(sql);
   }
