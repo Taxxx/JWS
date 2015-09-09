@@ -1558,9 +1558,9 @@ public class AdquiWS{
     }
 
     //actualiza datos ingreso almacen
-    public Map[] setActualizaTransaccionIngresoAlm(int cod_trans_nro,String factura,String fecha_fact,String fecha_ing,String memo,String obs) throws Exception {
+    public Map[] setActualizaTransaccionIngresoAlm(int cod_trans_nro,String factura,String fecha_fact,String fecha_ing,String fecha_noti,String memo,String obs) throws Exception {
         String sql="update adquisiciones.transaccion_nro "
-                + " set factura="+factura+", fecha_fact=TO_DATE("+fecha_fact+",'DD/MM/YYYY'), fecha_ing=TO_DATE("+fecha_ing+",'DD/MM/YYYY'), memo="+memo+ ", obs='"+obs+"'"
+                + " set factura="+factura+", fecha_fact=TO_DATE("+fecha_fact+",'DD/MM/YYYY'), fecha_ing=TO_DATE("+fecha_ing+",'DD/MM/YYYY'), fecha_noti=TO_DATE("+fecha_noti+",'DD/MM/YYYY'), memo="+memo+ ", obs='"+obs+"'"
                 + " where cod_trans_nro="+cod_trans_nro;
         return Consulta(sql);
     }
