@@ -1177,7 +1177,7 @@ public class AdquiWS{
 
     // Reporte de la transaccion con items
     public Map[] getReporteIngresox(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
-       String sql="select distinct (t5.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,sysdate as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,t3.partida,t3.cod_trans_detalle,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t4.cod_complemento,t1.hoja_ruta,(CASE WHEN t1.cbte is not null THEN t1.cbte ELSE GET_PREVENTIVOS(t1.cod_transaccion)  END ) as cbte,t5.casa_comercial,t5.nit,t3.precio_unit,t1.nro_transaccion,t2.nro_orden_compra,to_char(t5.fec_orden_compra,'YYYY-MM-DD') as fec_orden_compra,t5.factura,to_char(t5.fecha_fact,'YYYY-MM-DD') as fecha_fact,t5.memo,t3.origen,t5.obs"
+       String sql="select distinct (t5.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,sysdate as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,t3.partida,t3.cod_trans_detalle,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t4.cod_complemento,t1.hoja_ruta,(CASE WHEN t1.cbte is not null THEN t1.cbte ELSE GET_PREVENTIVOS(t1.cod_transaccion)  END ) as cbte,t5.casa_comercial,t5.nit,t3.precio_unit,t1.nro_transaccion,t2.nro_orden_compra,to_char(t5.fec_orden_compra,'YYYY-MM-DD') as fec_orden_compra,t5.factura,to_char(t5.fecha_fact,'YYYY-MM-DD') as fecha_fact,t5.memo,t3.origen,t5.obs,to_char(t5.fecha_noti,'YYYY-MM-DD') as fecha_noti"
                     + " from adquisiciones.transaccion t1"
                     + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro as nro_orden_compra,t2.estado, t1.obs from adquisiciones.transaccion_nro t1 "
                     + "                inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
@@ -1191,7 +1191,7 @@ public class AdquiWS{
                     + "        inner join transaccion t6 on t1.COD_TRANSACCION=t6.COD_TRANSACCION"
                     + "        ) t3 on t3.cod_trans_nro=t2.cod_trans_nro"
                     + " left join adquisiciones.transaccion_det_complemento t4 on t3.cod_trans_detalle=t4.cod_trans_detalle"
-                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t1.FECHA_ING as fecha_envio ,t1.factura,t1.fecha_fact,t1.memo,T1.COD_TRANS_NRO_ANT,t4.NOMBRE_COMERCIAL as casa_comercial,t4.cod_proveedor as nit, t1.obs,t1.fecha as fec_orden_compra from adquisiciones.transaccion_nro t1"
+                    + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t1.FECHA_ING as fecha_envio ,t1.factura,t1.fecha_fact,t1.memo,T1.COD_TRANS_NRO_ANT,t4.NOMBRE_COMERCIAL as casa_comercial,t4.cod_proveedor as nit, t1.obs,t1.fecha as fec_orden_compra,t1.fecha_noti from adquisiciones.transaccion_nro t1"
                     + "                inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
                     + "                inner join adquisiciones.transaccion_envio_fecha t2 on t3.cod_trans_detalle=t2.cod_trans_detalle"
                     + "                inner join PROPONENTES t4 on t1.COD_TRANS_NRO_ANT=t4.COD_TRANS_NRO and t4.ESTADO='V' "
@@ -2120,7 +2120,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         return Consulta(sql);
   }
   public Map[] getDatosAlmacen(int cod_trans_nro) throws Exception {
-    String sql="select t1.FACTURA,t1.FECHA_FACT,t1.FECHA_ING,t1.MEMO,t1.OBS,t1.FECHA_NOTI"
+    String sql="select t1.FACTURA,to_char(t1.fecha_fact,'MM/DD/YYYY') as fecha_fact,to_char(t1.fecha_ing,'MM/DD/YYYY') as fecha_ing,t1.MEMO,t1.OBS,to_char(t1.fecha_noti,'MM/DD/YYYY') as fecha_noti"
         + " from TRANSACCION_NRO t1 where t1.COD_TRANS_NRO="+cod_trans_nro;
         return Consulta(sql);
   }
