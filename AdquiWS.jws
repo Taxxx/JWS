@@ -2816,6 +2816,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         return Consulta(sql1);
     }
 
+    /*
     public Map[] generainf_comicion(int gestion, int cod_trans, int cod_trans_nro, String detalle, String destino, String cargo, String modalidad, String notas, String nota_juridica,String citacion,String fec_cit,String fecha,String hora,String nro_informe,String fecha_inf,String presidente,String vocal1,String vocal2,String secretario,String nota_uni,String nota_ppto,String resolucion_adm) throws Exception
     {
         String sql="select (CASE WHEN MAX(t1.nro) is not null THEN MAX(t1.nro) ELSE 0 END )as nro"
@@ -2828,5 +2829,6 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                     +" values(SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans+","+cod_trans_nro+",5,sysdate,"+gestion+",'"+detalle+"','"+destino+"','"+cargo+"','"+modalidad+"','"+notas+"','"+nota_juridica+"','"+citacion+"','"+fec_cit+"','"+fecha+"','"+hora+"','"+nro_informe+"','"+fecha_inf+"','"+presidente+"','"+vocal1+"','"+vocal2+"','"+secretario+"','"+nota_uni+"','"nota_ppto"','"+resolucion_adm+"',"+nro_resolucion+")";
         return Consulta(sql1);
     }
+    */
 
 }  
