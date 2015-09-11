@@ -2360,6 +2360,16 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         }
         else return null;
     }
+
+    public Map[] updateArticulo(String tran, int cod_trans_detalle, String detalle) throws Exception {
+        if ("SET-updateArticulo".equals(tran)) { 
+            String sql="update adquisiciones.transaccion_detalle set detalle='"+detalle+"'"
+                      +" where cod_trans_detalle="+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
     public Map[] updateDetallex(String tran, int cod_complemento, String detalle) throws Exception {
         if ("SET-updateDetalle".equals(tran)) {
             String sql="update adquisiciones.transaccion_det_complemento set detalle_solicitud ='"+detalle+"'"+
