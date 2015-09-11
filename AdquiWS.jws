@@ -1718,6 +1718,7 @@ public class AdquiWS{
         }
         else return null;
    }
+
    //updateDetalle
     public Map[] updateDetalle(String tran,int cod_complemento,String detalle) throws Exception {
         if ("SET-updateDetalle".equals(tran)) {
@@ -1727,6 +1728,17 @@ public class AdquiWS{
         else return null;
    }
    //Almacen
+
+   //getItem
+    public String getItemMOD(String tran,int cod_trans_detalle) throws Exception {
+        if ("SET-getItemMOD".equals(tran)){
+            String sql = "select t1.detalle"
+            +" from adquisiciones.transaccion_detalle t1 where t1.cod_trans_detalle = "+cod_trans_detalle;
+            Map[] datos = Consulta(sql);
+            return datos[0].get("DETALLE").toString();     
+        }
+        else return null;
+    }
    //getDetalle
     public String getDetalleALM(String tran,int cod_complemento) throws Exception {
         if ("SET-getDetalle".equals(tran)){
