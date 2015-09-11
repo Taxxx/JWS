@@ -2856,4 +2856,9 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         String sql="select t1.* from RESOLUCION t1 where t1.COD_TRANSACCION="+cod_transaccion+" and t1.COD_TRANS_NRO="+cod_trans_nro+" and t1.COD_TIPO_RESOLUCION=5";
         return Consulta(sql);
     }
+    public Map[] updateInformeComision(int cod_transaccion,int cod_trans_nro,String destino, String cargo, String modalidad, String notas, String nota_juridica,String citacion,String fec_cit,String fecha,String hora,String nro_informe,String fecha_inf,String presidente,String vocal1,String vocal2,String secretario,String nota_uni,String nota_ppto,String resolucion_adm)throws Exception
+    {
+        String sql="update RESOLUCION SET DESTINO='"+destino+"', CARGO='"+cargo+"', MODO_EVAL='"+modalidad+"', NOTAS_ADQ='"+notas+"', NOTA_JUR='"+nota_juridica+"', NRO_CITA='"+citacion+"', FECHA_NOTA='"+fec_cit+"', FEC_APERT_SOBRE='"+fecha+"', HORA_APERT_S='"+hora+"', NRO_INFORME='"+nro_informe+"', FECHA_INF='"+fecha_inf+"', PRESIDENTE='"+presidente+"', VOCAL1='"+vocal1+"', VOCAL2='"+vocal2+"', SECRETARIO='"+secretario+"', NOTA_UNIDAD='"+nota_uni+"', NOTA_PPTO='"+nota_ppto+"', RES_ADM='"+resolucion_adm+"' WHERE COD_TRANSACCION="+cod_transaccion+" and COD_TRANS_NRO="+cod_trans_nro;
+        return Consulta(sql);
+    }
 }  
