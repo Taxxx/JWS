@@ -2392,6 +2392,13 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         }
         else return null;
     }
+    public Map[] setUnidadMedida(String tran, int cod_trans_detalle, int cod_unidad_medida) throws Exception {
+        if ("SET-setUnidadMedida".equals(tran)) {
+            String sql="update adquisiciones.transaccion_detalle set cod_unidad_medida="+cod_unidad_medida+" where cod_trans_detalle = "+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+    }
     public Map[] getItemClasificador(int gestion, int partida) throws Exception {
         String sql="select t1.COD_ITEM,t1.PARTIDA,t1.ARTICULO,t1.UNIDAD_MEDIDA,t1.COD_TIPO_ITEM"
             + " from clasificador_item t1"
