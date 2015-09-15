@@ -1476,6 +1476,15 @@ public class AdquiWS{
         else return null;
     }
 
+    //guarda el precio unitario2
+    public Map[] setDetallePrecioUnit2(String tran,int cod_trans_detalle,double precio_unit,int cod_user) throws Exception {
+        if ("SET-upDatedetPrecUnit".equals(tran)) {
+            String sql="update adquisiciones.transaccion_detalle set precio_unit="+precio_unit+",cod_user="+cod_user+" where cod_trans_detalle="+cod_trans_detalle;            
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
     //guarda el dbc
     public Map[] setDetalleDBC(String tran,int cod_trans_detalle,String dbc) throws Exception {
         if ("SET-upDatedetDBC".equals(tran)) {
@@ -1727,6 +1736,14 @@ public class AdquiWS{
         }
         else return null;
    }
+   //updateDetalle2
+    public Map[] updateDetalle2(String tran,int cod_complemento,String detalle,int cod_user) throws Exception {
+        if ("SET-updateDetalle".equals(tran)) {
+            String sql="update adquisiciones.transaccion_det_complemento set detalle_solicitud='"+detalle+"',cod_user="+cod_user+" where cod_complemento = "+cod_complemento;
+            return Consulta(sql);
+        }
+        else return null;
+   }
    //Almacen
 
    //getItem
@@ -1782,7 +1799,15 @@ public class AdquiWS{
             return Consulta(sql);
         }
         else return null;
-   }    
+   }
+   //updateCantidadItem2
+    public Map[] updateCantidadItem2(String tran,int cod_trans_detalle,int cantidad_pedido,int cod_user) throws Exception {
+        if ("SET-updateCantidadItem".equals(tran)) {
+            String sql="update adquisiciones.transaccion_detalle set cantidad_pedido = "+cantidad_pedido+",cod_user = "+cod_user+" where cod_trans_detalle = "+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+   }        
 
         /* ======================================================================
         Reporte 
@@ -2370,6 +2395,15 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         else return null;
     }
 
+    public Map[] updateArticulo2(String tran, int cod_trans_detalle, String detalle, int cod_user) throws Exception {
+        if ("SET-updateArticulo".equals(tran)) { 
+            String sql="update adquisiciones.transaccion_detalle set detalle='"+detalle+"', cod_user="+cod_user
+                      +" where cod_trans_detalle="+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
     public Map[] updateDetallex(String tran, int cod_complemento, String detalle) throws Exception {
         if ("SET-updateDetalle".equals(tran)) {
             String sql="update adquisiciones.transaccion_det_complemento set detalle_solicitud ='"+detalle+"'"+
@@ -2392,9 +2426,23 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         }
         else return null;
     }
+    public Map[] setPartida2(String tran, int cod_trans_detalle, String partida, int cod_user) throws Exception {
+        if ("SET-setPartida".equals(tran)) {
+            String sql="update adquisiciones.transaccion_detalle set partida='"+partida+"',cod_user="+cod_user+" where cod_trans_detalle = "+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+    }
     public Map[] setUnidadMedida(String tran, int cod_trans_detalle, int cod_unidad_medida) throws Exception {
         if ("SET-setUnidadMedida".equals(tran)) {
             String sql="update adquisiciones.transaccion_detalle set cod_unidad_medida="+cod_unidad_medida+" where cod_trans_detalle = "+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+    public Map[] setUnidadMedida2(String tran, int cod_trans_detalle, int cod_unidad_medida, int cod_user) throws Exception {
+        if ("SET-setUnidadMedida".equals(tran)) {
+            String sql="update adquisiciones.transaccion_detalle set cod_unidad_medida="+cod_unidad_medida+",cod_user="+cod_user+" where cod_trans_detalle = "+cod_trans_detalle;
             return Consulta(sql);
         }
         else return null;
@@ -2418,6 +2466,15 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         }
         else return null;
     }
+
+    public Map[] updateCodItem2(String tran,int cod_trans_detalle,int cod_item,int cod_user) throws Exception {
+        if ("SET-updateCodItem".equals(tran)) {
+            String sql="update TRANSACCION_DETALLE set COD_ITEM ="+cod_item+",cod_user="+cod_user+" where COD_TRANS_DETALLE ="+cod_trans_detalle;
+            return Consulta(sql);
+        }
+        else return null;
+    }
+
     public Map[] getBuscaItemsx(int gestion,String articulo) throws Exception {
         String sql ="select t1.COD_ITEM,t1.PARTIDA,t1.ARTICULO"
                 + " from CLASIFICADOR_ITEM t1"
