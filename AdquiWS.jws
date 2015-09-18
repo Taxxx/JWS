@@ -783,13 +783,14 @@ public class AdquiWS{
     public Map[] getTransaccionEstado(int cod_almacen,int cod_tramite,int gestion,int inicio,int fin) throws Exception {
         String sql="select * from ( "
                     + " select row_number() over(order by t1.nro desc) linenum,t1.* from ("
-                    + " select distinct t4.cod_trans_nro,t1.cod_transaccion,t7.codigo as cod_estado,t5.cod_tramite,t5.tipo_reporte as tramite,t4.nro,t1.de as unidad_sol,t1.a as unidad_des,t7.estado,t1.detalle "
+                    + " select distinct t4.cod_trans_nro,t1.cod_transaccion,t7.codigo as cod_estado,t5.cod_tramite,t5.tipo_reporte as tramite,t4.nro,t1.de as unidad_sol,t1.a as unidad_des,t7.estado,t1.detalle,t8.cuantia,t8.del,t8.hasta "
                     + " from adquisiciones.transaccion t1"
                     + " inner join adquisiciones.transaccion_detalle t2 on t1.cod_transaccion=t2.cod_transaccion"
                     + " inner join adquisiciones.transaccion_detalle_nro t3 on t2.cod_trans_detalle=t3.cod_trans_detalle"
                     + " inner join adquisiciones.transaccion_nro t4 on t3.cod_trans_nro=t4.cod_trans_nro"
                     + " inner join adquisiciones.tramites t5 on t4.cod_tramite=t5.cod_tramite"
                     + " inner join adquisiciones.estados t7 on T2.ESTADO=t7.codigo AND (t2.ESTADO='JUR' OR t2.ESTADO='ALM1' OR t2.ESTADO='C')"
+                    + " inner join adquisiciones.cuantia t8 on T8.cod_cuantia=T1.cod_cuantia"
                     + " where t4.nro is not null and t1.gestion="+gestion+" and t1.estado <> 'X' and t1.cod_almacen="+cod_almacen+" and (t5.cod_tramite="+cod_tramite+") ) t1 ) "
                     + " where linenum BETWEEN "+inicio+" AND "+fin;
         return Consulta(sql);
