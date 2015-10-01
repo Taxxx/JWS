@@ -783,13 +783,14 @@ public class AdquiWS{
     public Map[] getTransaccionEstado(int cod_almacen,int cod_tramite,int gestion,int inicio,int fin) throws Exception {
         String sql="select * from ( "
                     + " select row_number() over(order by t1.nro desc) linenum,t1.* from ("
-                    + " select distinct t4.cod_trans_nro,t1.cod_transaccion,t7.codigo as cod_estado,t5.cod_tramite,t5.tipo_reporte as tramite,t4.nro,t1.de as unidad_sol,t1.a as unidad_des,t7.estado,t1.detalle "
+                    + " select distinct t4.cod_trans_nro,t1.cod_transaccion,t7.codigo as cod_estado,t5.cod_tramite,t5.tipo_reporte as tramite,t4.nro,t1.de as unidad_sol,t1.a as unidad_des,t7.estado,t1.detalle,t8.cuantia,t8.del,t8.hasta "
                     + " from adquisiciones.transaccion t1"
                     + " inner join adquisiciones.transaccion_detalle t2 on t1.cod_transaccion=t2.cod_transaccion"
                     + " inner join adquisiciones.transaccion_detalle_nro t3 on t2.cod_trans_detalle=t3.cod_trans_detalle"
                     + " inner join adquisiciones.transaccion_nro t4 on t3.cod_trans_nro=t4.cod_trans_nro"
                     + " inner join adquisiciones.tramites t5 on t4.cod_tramite=t5.cod_tramite"
                     + " inner join adquisiciones.estados t7 on T2.ESTADO=t7.codigo AND (t2.ESTADO='JUR' OR t2.ESTADO='ALM1' OR t2.ESTADO='C')"
+                    + " inner join adquisiciones.cuantia t8 on T8.cod_cuantia=T1.cod_cuantia"
                     + " where t4.nro is not null and t1.gestion="+gestion+" and t1.estado <> 'X' and t1.cod_almacen="+cod_almacen+" and (t5.cod_tramite="+cod_tramite+") ) t1 ) "
                     + " where linenum BETWEEN "+inicio+" AND "+fin;
         return Consulta(sql);
@@ -1012,7 +1013,7 @@ public class AdquiWS{
     }
     // Reporte de pedidos de materiales
     public Map[] getReporteSolicitudx(int cod_transaccion,String estado,int cod_tramite) throws Exception {         
-        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,to_char(t2.fecha_envio,'YYYY-MM-DD') as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,t4.detalle_solicitud,t4.cod_complemento,t2.nro as nro_transaccion,t3.cod_trans_detalle,t1.user_maker"
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,to_char(t2.fecha_envio,'YYYY-MM-DD') as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,t4.detalle_solicitud,t4.cod_complemento,t2.nro as nro_transaccion,t3.cod_trans_detalle,t1.user_maker,t1.estado"
                         + " from adquisiciones.transaccion t1"
                         + " inner join (select distinct t1.cod_transaccion,t1.nro,t2.estado,t2.fecha_envio from adquisiciones.transaccion_nro t1 "
                         + "            inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
@@ -1094,7 +1095,7 @@ public class AdquiWS{
     }
     // Reporte de orden de compra
     public Map[] getReporteOrdenx(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
-        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,to_char(t2.fecha_envio,'YYYY-MM-DD') as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,(CASE WHEN t4.detalle_adqui is not null THEN T4.DETALLE_ADQUI ELSE t4.DETALLE_SOLICITUD  END ) as detalle_solicitud,t4.cod_complemento,t1.hoja_ruta,(CASE WHEN t1.cbte is not null THEN t1.cbte ELSE GET_PREVENTIVOS(t1.cod_transaccion)  END ) as cbte,t2.casa_comercial,t2.direccion,t2.telefono,t2.nit,t3.precio_unit,t2.nro as nro_transaccion,t3.cod_trans_detalle,t3.partida,t2.obs"
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,to_char(t2.fecha_envio,'YYYY-MM-DD') as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,(CASE WHEN t4.detalle_adqui is not null THEN T4.DETALLE_ADQUI ELSE t4.DETALLE_SOLICITUD  END ) as detalle_solicitud,t4.cod_complemento,t1.hoja_ruta,(CASE WHEN t1.cbte is not null THEN t1.cbte ELSE GET_PREVENTIVOS(t1.cod_transaccion)  END ) as cbte,t2.casa_comercial,t2.direccion,t2.telefono,t2.nit,t3.precio_unit,t2.nro as nro_transaccion,t3.cod_trans_detalle,t3.partida,t2.obs,t1.estado"
                     + " from adquisiciones.transaccion t1"
                     + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t2.estado,t2.fecha_envio,t4.nit,t4.telefono,t4.direccion,t4.casa_comercial,t1.obs from adquisiciones.transaccion_nro t1 "
                     + "                inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
@@ -1182,7 +1183,7 @@ public class AdquiWS{
 
     // Reporte de la transaccion con items
     public Map[] getReporteIngresox(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
-       String sql="select distinct (t5.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,sysdate as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,t3.partida,t3.cod_trans_detalle,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t4.cod_complemento,t1.hoja_ruta,(CASE WHEN t1.cbte is not null THEN t1.cbte ELSE GET_PREVENTIVOS(t1.cod_transaccion)  END ) as cbte,t5.casa_comercial,t5.nit,t3.precio_unit,t1.nro_transaccion,t2.nro_orden_compra,to_char(t5.fec_orden_compra,'YYYY-MM-DD') as fec_orden_compra,t5.factura,to_char(t5.fecha_fact,'YYYY-MM-DD') as fecha_fact,t5.memo,t3.origen,t5.obs,to_char(t5.fecha_noti,'YYYY-MM-DD') as fecha_noti"
+       String sql="select distinct (t5.nro||'-'||t1.gestion) as nro_gestion,to_char(t1.fecha,'YYYY-MM-DD') as fecha_creacion,sysdate as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t1.detalle,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,t3.partida,t3.cod_trans_detalle,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t4.cod_complemento,t1.hoja_ruta,(CASE WHEN t1.cbte is not null THEN t1.cbte ELSE GET_PREVENTIVOS(t1.cod_transaccion)  END ) as cbte,t5.casa_comercial,t5.nit,t3.precio_unit,t1.nro_transaccion,t2.nro_orden_compra,to_char(t5.fec_orden_compra,'YYYY-MM-DD') as fec_orden_compra,t5.factura,to_char(t5.fecha_fact,'YYYY-MM-DD') as fecha_fact,t5.memo,t3.origen,t5.obs,to_char(t5.fecha_noti,'YYYY-MM-DD') as fecha_noti,t1.estado"
                     + " from adquisiciones.transaccion t1"
                     + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro as nro_orden_compra,t2.estado, t1.obs from adquisiciones.transaccion_nro t1 "
                     + "                inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
@@ -1228,7 +1229,7 @@ public class AdquiWS{
 
     // Reporte de pedido de materiales
     public Map[] getReportePedidox(int cod_trans_nro,String estado,int cod_tramite) throws Exception {         
-        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t2.fecha,'YYYY-MM-DD') as fecha_creacion,t2.nro,t2.num_ing,sysdate as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t3.cod_trans_detalle,t4.cod_complemento,t3.precio_unit,t1.nro_transaccion,t1.detalle,(CASE WHEN t1.cbte is not null THEN t1.cbte ELSE GET_PREVENTIVOS(t1.cod_transaccion)  END ) as cbte"
+        String sql="select distinct (t2.nro||'-'||t1.gestion) as nro_gestion,to_char(t2.fecha,'YYYY-MM-DD') as fecha_creacion,t2.nro,t2.num_ing,sysdate as fecha_envio, t1.de as unidad_sol,t1.a as unidad_des,t1.usuario_sol,t3.unidad_medida,t3.cantidad_pedido,t3.articulo,(CASE WHEN t4.detalle_alm is not null THEN T4.DETALLE_ALM ELSE (CASE WHEN t4.detalle_adqui is not null then t4.detalle_adqui else t4.detalle_solicitud END)   END )  as detalle_solicitud,t3.cod_trans_detalle,t4.cod_complemento,t3.precio_unit,t1.nro_transaccion,t1.detalle,(CASE WHEN t1.cbte is not null THEN t1.cbte ELSE GET_PREVENTIVOS(t1.cod_transaccion)  END ) as cbte,t1.estado"
                     + " from adquisiciones.transaccion t1"
                     + " inner join (select distinct t1.cod_transaccion,t1.cod_trans_nro,t1.nro,t2.estado,t2.fecha_envio,GET_NRO(t1.COD_TRANS_NRO_ANT) as num_ing, fecha from adquisiciones.transaccion_nro t1 "
                     + "            inner join adquisiciones.transaccion_detalle_nro t3 on t3.cod_trans_nro=t1.cod_trans_nro"
@@ -2952,6 +2953,13 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     {
         String sql="update RESOLUCION SET DESTINO='"+destino+"', RES_ADM='"+res_inicio+"', FEC_APERT_SOBRE='"+fecha_apertura+"', NOTA_UNIDAD='"+informe_tecnico+"', NOTAS_ADQ='"+informe_adquisiciones+"', MODO_EVAL='"+modalidad+"', CONVOCATORIA='"+nro_convocatoria+"'"
                 +" WHERE COD_TRANSACCION="+cod_transaccion+" AND COD_TRANS_NRO="+cod_trans_nro;
+        return Consulta(sql);
+    }
+    //Cambia el estado de la transaccion en caso de modificacion
+    public Map[] setModificaEstado(int cod_transaccion,String estado) throws Exception
+    {
+        String sql="update transaccion SET estado='"+estado+"'"
+                +" WHERE COD_TRANSACCION="+cod_transaccion;
         return Consulta(sql);
     }
 }  
