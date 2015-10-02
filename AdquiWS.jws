@@ -2860,7 +2860,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     public Map[] getinvitacion(int cod_transaccion,int cod_trans_nro) throws Exception
     {
         String sql="select nro as nota, detalle, destino, fecha_cc as fecha, documentos as nro_p, objetivo as f_reunion, jefe_adqui as jefe_adq,MODO_EVAL"
-                +" from resolucion where cod_transaccion="+cod_transaccion+" and cod_trans_nro="+cod_trans_nro+" and cod_tramite=4";
+                +" from resolucion where cod_transaccion="+cod_transaccion+" and cod_trans_nro="+cod_trans_nro+" and COD_TIPO_RESOLUCION=4";
         return Consulta(sql);
     }
     public Map[] geninvitacion(int cod_transaccion,int cod_trans_nro,String a,String b,String c,String d,String e,String f,int gestion,String aaa) throws Exception
