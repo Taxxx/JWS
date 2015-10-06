@@ -1965,15 +1965,15 @@ public class AdquiWS{
         Map[] datos=Consulta(sql);
         int nro_resolucion= Integer.parseInt(datos[0].get("NRO").toString());
         nro_resolucion++;
-        sql="insert into RESOLUCION (COD_RESOLUCION,COD_TRANSACCION,COD_TIPO_RESOLUCION,FECHA,DETALLE,ENVIA,DETALLE_NOTA_SOLICITUD,DETALLE_NOTA_PRESUPUESTO,DESTINO,DIAS,GESTION,NRO,JEFE_ADQUI,DET_RECURSOS,DET_UNI_SOL,DET_AUT)"
+        sql="insert into RESOLUCION (COD_RESOLUCION,COD_TRANSACCION,COD_TIPO_RESOLUCION,FECHA,DETALLE,ENVIA,DETALLE_NOTA_SOLICITUD,DETALLE_NOTA_PRESUPUESTO,DESTINO,DIAS,GESTION,NRO,JEFE_ADQUI,DET_RECURSOS,DET_UNI_SOL,DET_AUT,ESTADO)"
            +" values (ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+cod_transaccion+","+cod_tipo_resolucion+",sysdate,'"+detalle+"','"+envia+"','"+detalle_nota_solicitud+"','"+detalle_nota_presupuesto+"','"+destino+"',"+xx+","+gestion+","+nro_resolucion+",'"
-            +jefe_adqui+"','"+det_recursos+"','"+det_uni_sol+"','"+det_aut+"')";
+            +jefe_adqui+"','"+det_recursos+"','"+det_uni_sol+"','"+det_aut+"','V')";
         return Consulta(sql);
    }
    public Map[] getResIni(int cod_transaccion) throws Exception {
       String sql="select t1.COD_RESOLUCION,t1.NRO||'/'||to_char(t1.FECHA,'YY') as NUM_RESOLUCION,t1.NRO,t1.COD_TRANSACCION,t1.FECHA,t1.cod_tipo_resolucion,t1.detalle,t1.envia,t1.detalle_nota_solicitud,t1.detalle_nota_presupuesto,t1.destino,t1.dias,t1.jefe_adqui,t1.det_recursos,t1.det_uni_sol,t1.det_aut"
           + " from RESOLUCION t1 inner join transaccion t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION"
-          + " where t1.COD_TRANSACCION = "+cod_transaccion;
+          + " where t1.COD_TRANSACCION = "+cod_transaccion+" and t1.ESTADO='V'";
           return Consulta(sql);
    }
    public Map[] updateResIni(int cod_resolucion,String envia,String dns,String dnp,String destino,int dias,String jefe_adqui,String det_recursos,String det_uni_sol,String det_aut) throws Exception {
@@ -1982,6 +1982,11 @@ public class AdquiWS{
             return Consulta(sql);
         //}
         //else return null;
+   }
+   public Map[] cambioEstado(int cod_resolucion) throws Exception
+   {
+        String sql="update adquisiciones.resolucion set ESTADO=X where cod_resolucion="+cod_resolucion;
+        return Consulta(sql);
    }
    public Map[] GeneraResAdj(int cod_trans_nro, String cod_proveedor, String detalle) throws Exception {
     
