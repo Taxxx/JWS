@@ -2965,9 +2965,14 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     }
 
     public Map[] getContrato2(int cod_transaccion) throws Exception {
-      String sql="select t1.cod_proveedor as ci, t1.nombre_comercial as proponente_adjudicado,t1.direccion as dir_proponente_adjudicado,t2.detalle,t2.cod_almacen,t2.cod_cuantia,t2.cod_w,t3.razon_social_contratante,t3.nit_contratante,t3.direccion_contratante,t3.ciudad_contratante,t3.rep_leg_contratante,t3.cargo_rep_leg_contratante,t3.ci_rep_leg_contratante,t3.desc_tipo_contrato,t3.ci_proponente_adjudicado,t3.deno_proponente_adjudicado,t3.asesor_juridico,t3.objeto_contratacion,t3.modalidad_contratacion,t3.denominacion_contratacion"
-          + " from proponentes t1 inner join transaccion t2 on t1.cod_transaccion=t2.cod_transaccion inner join contratos t3 on t2.cod_transaccion=t3.cod_transaccion"
-          + " where t1.cod_transaccion="+cod_transaccion+" and t1.estado='V'";
+      String sql="select t3.proponente_adjudicado,t3.dir_proponente_adjudicado"
+                + " ,t2.detalle,t2.cod_almacen,t2.cod_cuantia,t2.cod_w,t3.razon_social_contratante,t3.nit_contratante"
+                + " ,t3.direccion_contratante,t3.ciudad_contratante,t3.rep_leg_contratante,t3.cargo_rep_leg_contratante"
+                + " ,t3.ci_rep_leg_contratante,t3.desc_tipo_contrato,t3.ci_proponente_adjudicado,t3.deno_proponente_adjudicado"
+                + " ,t3.asesor_juridico,t3.objeto_contratacion,t3.modalidad_contratacion,t3.denominacion_contratacion"
+                + " from transaccion t2 inner join contratos t3 on t2.cod_transaccion=t3.cod_transaccion"
+                + " where t1.cod_transaccion="+cod_transaccion;
+
           return Consulta(sql);
     }
 
