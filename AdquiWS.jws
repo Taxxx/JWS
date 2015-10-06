@@ -2864,14 +2864,14 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                 +" values(ADQUISICIONES.SEC_COD_RESOLUCION.NEXTVAL,"+nro_resolucion+",'"+b+"','"+c+"','"+e+"',"+cod_transaccion+","+cod_trans_nro+",'"+f+"','"+d+"','"+c+"',4,'"+aaa+"')";
         return Consulta(sql1);
     }
-    public Map[] updateinvitacion(int cod_t,int codtn,String np,String fec,String fec_re,String jefe_adq,String aaa) throws Exception
+    public Map[] updateinvitacion(int cod_t,int codtn,String np,String fec,String fec_re,String jefe_adq,String aaa,int nro) throws Exception
     {
-        String sql="update resolucion set documentos='"+np+"', fecha_cc='"+fec+"', objetivo='"+fec_re+"', jefe_adqui='"+jefe_adq+"',MODO_EVAL='"+aaa+"'"
+        String sql="update resolucion set documentos='"+np+"', fecha_cc='"+fec+"', objetivo='"+fec_re+"', NRO="+nro+",jefe_adqui='"+jefe_adq+"',MODO_EVAL='"+aaa+"'"
                     +" where cod_transaccion="+cod_t+" and cod_trans_nro="+codtn;
                 return Consulta(sql);
     }
     public Map[] obtienetotal(int user,String fi,String ff,int men,int may) throws Exception
-    {
+    
         /*String sql="select sum(DISTINCT TO_NUMBER(t6.TOTAL, '99999.9999')) as TOTAL"+
           " from (select t1.COD_TRANS_DETALLE,t1.ESTADO,((SELECT MIN(t.FECHA_ENVIO) AS FEC FROM TRANSACCION_ENVIO_FECHA t where t.COD_TRANS_DETALLE=t1.COD_TRANS_DETALLE and t.ESTADO not like 'B' and t.ESTADO not like 'PPTO' and t.ESTADO not like 'ADQ')) as f"+
           " from TRANSACCION_ENVIO_FECHA t1) y1"+
@@ -2897,7 +2897,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                     +" LEFT OUTER JOIN TRANSACCION t4 ON t2.COD_TRANSACCION=t4.COD_TRANSACCION) ppp";
         return Consulta(sql);
     }
-    //una pequeña modificacion para ver si cambio javi OK 2 3 4 5
+    //una pequeÃ±a modificacion para ver si cambio javi OK 2 3 4 5
     public Map[] fechasTramite(String a,String b,int c) throws Exception
     {
         String sql="update TRANSACCION_NRO SET FECHA_INI_TRAM='"+a+"', FECHA_FIN_TRAM='"+b+"' WHERE COD_TRANS_NRO="+c;
