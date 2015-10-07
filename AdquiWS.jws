@@ -2976,14 +2976,23 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                 + " ,t3.ci_rep_leg_contratante,t3.desc_tipo_contrato,t3.ci_proponente_adjudicado,t3.deno_proponente_adjudicado"
                 + " ,t3.asesor_juridico,t3.objeto_contratacion,t3.modalidad_contratacion,t3.denominacion_contratacion"
                 + " from transaccion t2 inner join contratos t3 on t2.cod_transaccion=t3.cod_transaccion"
-                + " where t1.cod_transaccion="+cod_transaccion;
+                + " where t2.cod_transaccion="+cod_transaccion;
 
           return Consulta(sql);
     }
 
-    public Map[] updateContrato2(int cod_transaccion,String destino,String res_inicio,String fecha_apertura,String informe_tecnico,String informe_adquisiciones,String modalidad,String nro_convocatoria) throws Exception
+    public Map[] updateContrato2(int cod_transaccion,String proponente_adjudicado,String dir_proponente_adjudicado
+      ,String razon_social_contratante,String nit_contratante,String direccion_contratante,String ciudad_contratante
+      ,String rep_leg_contratante,String cargo_rep_leg_contratante,String ci_rep_leg_contratante,String desc_tipo_contrato
+      ,String ci_proponente_adjudicado,String deno_proponente_adjudicado,String asesor_juridico,String objeto_contratacion
+      ,String modalidad_contratacion,String denominacion_contratacion) throws Exception
     {
-        String sql="update CONTRATOS SET DESTINO='"+destino+"', RES_ADM='"+res_inicio+"', FEC_APERT_SOBRE='"+fecha_apertura+"', NOTA_UNIDAD='"+informe_tecnico+"', NOTAS_ADQ='"+informe_adquisiciones+"', MODO_EVAL='"+modalidad+"', CONVOCATORIA='"+nro_convocatoria+"'"
+        String sql="update CONTRATOS SET PROPONENTE_ADJUDICADO='"+proponente_adjudicado+"', DIR_PROPONENTE_ADJUDICADO='"+dir_proponente_adjudicado+"', RAZON_SOCIAL_CONTRATANTE='"+razon_social_contratante
+                +"', NIT_CONTRATANTE='"+nit_contratante+"', DIRECCION_CONTRATANTE='"+direccion_contratante+"', CIUDAD_CONTRATANTE='"+ciudad_contratante
+                +"', REP_LEG_CONTRATANTE='"+rep_leg_contratante+"', CARGO_REP_LEG_CONTRATANTE='"+cargo_rep_leg_contratante+"', CI_REP_LEG_CONTRATANTE='"+ci_rep_leg_contratante
+                +"', DESC_TIPO_CONTRATO='"+desc_tipo_contrato+"', CI_PROPONENTE_ADJUDICADO='"+ci_proponente_adjudicado+"', DENO_PROPONENTE_ADJUDICADO='"+deno_proponente_adjudicado
+                +"', ASESOR_JURIDICO='"+asesor_juridico+"', OBJETO_CONTRATACION='"+objeto_contratacion+"', MODALIDAD_CONTRATACION='"+modalidad_contratacion
+                +"', DENOMINACION_CONTRATACION='"+denominacion_contratacion+"'"
                 +" WHERE COD_TRANSACCION="+cod_transaccion;
         return Consulta(sql);
     }
