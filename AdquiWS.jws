@@ -2899,7 +2899,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                     +" (select t1.COD_TRANSACCION,t1.HOJA_RUTA, t1.DE, t1.DETALLE, t2.NRO, t3.NOMBRE_COMERCIAL, t2.OBS, (CASE WHEN t1.CBTE IS NULL THEN t6.COD_PREVENTIVO ELSE T1.CBTE END) AS CBTE,(CASE WHEN t1.MONTO_PPTO IS NULL THEN (CASE WHEN t6.TOTAL IS NULL THEN 0 ELSE to_number(t6.TOTAL,'9999999.9999999') END ) ELSE t1.MONTO_PPTO END) as MONTO_PPTO"
                     +" from (select t1.COD_TRANS_DETALLE,t1.ESTADO,((SELECT MIN(t.FECHA_ENVIO) AS FEC FROM TRANSACCION_ENVIO_FECHA t where t.COD_TRANS_DETALLE=t1.COD_TRANS_DETALLE and t.ESTADO not like 'B' and t.ESTADO not like 'PPTO' and t.ESTADO not like 'ADQ')) as f"
                     +" from TRANSACCION_ENVIO_FECHA t1) y1"
-                    +" INNER JOIN TRANSACCION_ENVIO_FECHA y2 ON y2.FECHA_ENVIO=y1.F and y1.COD_TRANS_DETALLE=y2.COD_TRANS_DETALLE and y2.FECHA_ENVIO between '"+fi+"' and '"+ff+"'"
+                    +" INNER JOIN TRANSACCION_ENVIO_FECHA y2 ON y2.FECHA_ENVIO=y1.F and y1.COD_TRANS_DETALLE=y2.COD_TRANS_DETALLE and y2.FECHA_ENVIO between '"+fi+"' and TO_DATE('"+ff+"','dd/mm/yy')-1"
                     +" INNER JOIN TRANSACCION_DETALLE t ON t.COD_TRANS_DETALLE=y1.COD_TRANS_DETALLE"
                     +" inner join  TRANSACCION t1 on t1.COD_TRANSACCION=t.COD_TRANSACCION"
                     +" INNER JOIN TRANSACCION_NRO t2 on t1.COD_TRANSACCION=t2.COD_TRANSACCION and t1.ESTADO='V' and t2.COD_TRAMITE=2 and t2.COD_USUARIO="+user
