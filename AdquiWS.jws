@@ -3005,5 +3005,6 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     {
         String sql="select * from TAREAS_ADICIONALES WHERE MES='"+mes+"' and COD_USUARIO="+cod_user;
         return Consulta(sql);
+        
     }
 }
