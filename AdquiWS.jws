@@ -3001,4 +3001,9 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                 +" WHERE COD_TRANSACCION="+cod_transaccion;
         return Consulta(sql);
     }
+    public Map[] mostrartareas(int cod_user,String mes) throws Exception
+    {
+        String sql="select * from TAREAS_ADICIONALES WHERE MES='"+mes+"' and COD_USUARIO="+cod_user;
+        return Consulta(sql);
+    }
 }
