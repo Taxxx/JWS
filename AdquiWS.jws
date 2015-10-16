@@ -3001,10 +3001,21 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                 +" WHERE COD_TRANSACCION="+cod_transaccion;
         return Consulta(sql);
     }
-    public Map[] mostrartareas(int cod_user,String mes) throws Exception
+    public Map[] mostrartareas(int cod_user,String mes,int gestion) throws Exception
     {
-        String sql="select * from TAREAS_ADICIONALES WHERE MES='"+mes+"' and COD_USUARIO="+cod_user;
+        String sql="select * from TAREAS_ADICIONALES WHERE MES='"+mes+"' and COD_USUARIO="+cod_user+" and GESTION="+gestion;
         return Consulta(sql);
-        
+
+    }
+    public Map[] insertartareas(int cod_user,String nes,String tarea,int gestion) throws Exception
+    {
+        String sql="select (CASE WHEN MAX(t1.id) is not null THEN MAX(t1.id) ELSE 0 END )as nro
+                from TAREAS_ADICIONALES t1
+                where t1.gestion="+gestion;
+        Map[] datos=Consulta(sql);
+        int nro_resolucion= Integer.parseInt(datos[0].get("NRO").toString());
+        nro_resolucion++;
+        String sql1="insert into TAREAS_ADICIONALES VALUES("+nro_resolucion+","+tarea+","+mes+","+cod_user+","+gestion+")";
+        return Consulta(sql1);
     }
 }
