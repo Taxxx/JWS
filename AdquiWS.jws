@@ -2974,6 +2974,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         return Consulta(sql);
     }
 
+    
     public Map[] getContrato2(int cod_transaccion) throws Exception {
       String sql="select t3.proponente_adjudicado,t3.dir_proponente_adjudicado"
                 + " ,t2.detalle,t2.cod_almacen,t2.cod_cuantia,t2.cod_w,t3.razon_social_contratante,t3.nit_contratante"
@@ -2986,6 +2987,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
           return Consulta(sql);
     }
 
+    
     public Map[] getContratoDocumentosIntegrantes(int cod_transaccion) throws Exception {
       String sql="select t3.nota_sol_adq,t3.fecha_nota_sol_adq"
                 + " ,t3.nro_cert_ppta,t3.fecha_cert_ppta,t3.cod_cuantia,t3.nro_res_ini,t3.fecha_res_ini,t3.nro_inf_com_calf"
@@ -3068,6 +3070,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                 +" WHERE COD_TRANSACCION="+cod_transaccion;
         return Consulta(sql);
     }
+    
 
     public Map[] mostrartareas(int cod_user,String mes,int gestion) throws Exception
     {
@@ -3075,6 +3078,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         return Consulta(sql);
 
     }
+    /*
     public Map[] insertartareas(int cod_user,String nes,String tarea,int gestion) throws Exception
     {
         String sql="select (CASE WHEN MAX(t1.id) is not null THEN MAX(t1.id) ELSE 0 END )as nro
@@ -3086,4 +3090,5 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         String sql1="insert into TAREAS_ADICIONALES VALUES("+nro_resolucion+","+tarea+","+mes+","+cod_user+","+gestion+")";
         return Consulta(sql1);
     }
+    */
 }
