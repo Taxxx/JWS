@@ -2986,21 +2986,89 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
           return Consulta(sql);
     }
 
-    public Map[] updateContrato2(int cod_transaccion,String proponente_adjudicado,String dir_proponente_adjudicado
-      ,String razon_social_contratante,String nit_contratante,String direccion_contratante,String ciudad_contratante
-      ,String rep_leg_contratante,String cargo_rep_leg_contratante,String ci_rep_leg_contratante,String desc_tipo_contrato
-      ,String ci_proponente_adjudicado,String deno_proponente_adjudicado,String asesor_juridico,String objeto_contratacion
-      ,String modalidad_contratacion,String denominacion_contratacion) throws Exception
+    public Map[] getContratoDocumentosIntegrantes(int cod_transaccion) throws Exception {
+      String sql="select t3.nota_sol_adq,t3.fecha_nota_sol_adq"
+                + " ,t3.nro_cert_ppta,t3.fecha_cert_ppta,t3.cod_cuantia,t3.nro_res_ini,t3.fecha_res_ini,t3.nro_inf_com_calf"
+                + " ,t3.fecha_inf_com_calf,t3.nro_res_adj,t3.fecha_res_adj,t3.nro_tpga"
+                + " ,t3.fecha_tpga,t3.nro_notfepub,t3.doc_notfepub,t3.nro_hoja_ruta"
+                + " ,t3.fecha_hoja_ruta,t3.nro_boleta_garantia,t3.fecha_boleta_garantia,t3.emit_boleta_garantia"
+                + " from transaccion t2 inner join contratos t3 on t2.cod_transaccion=t3.cod_transaccion"
+                + " where t2.cod_transaccion="+cod_transaccion;
+
+          return Consulta(sql);
+    }
+
+    public Map[] updateContratoDocumentosIntegrantes(int cod_transaccion
+      ,String nota_sol_adq,String fecha_nota_sol_adq
+      ,String nro_cert_ppta,String fecha_cert_ppta
+      ,String nro_res_ini,String fecha_res_ini
+      ,String nro_inf_com_calf,String fecha_inf_com_calf
+
+      ,String nro_res_adj,String fecha_res_adj
+
+      ,String nro_tpga,String fecha_tpga,String nro_notfepub,String doc_notfepub
+
+      ,String nro_hoja_ruta,String fecha_hoja_ruta
+      ,String nro_boleta_garantia, String fecha_boleta_garantia
+      ,String emit_boleta_garantia
+      
+      
+      
+      ) throws Exception
     {
-        String sql="update CONTRATOS SET PROPONENTE_ADJUDICADO='"+proponente_adjudicado+"', DIR_PROPONENTE_ADJUDICADO='"+dir_proponente_adjudicado+"', RAZON_SOCIAL_CONTRATANTE='"+razon_social_contratante
-                +"', NIT_CONTRATANTE='"+nit_contratante+"', DIRECCION_CONTRATANTE='"+direccion_contratante+"', CIUDAD_CONTRATANTE='"+ciudad_contratante
-                +"', REP_LEG_CONTRATANTE='"+rep_leg_contratante+"', CARGO_REP_LEG_CONTRATANTE='"+cargo_rep_leg_contratante+"', CI_REP_LEG_CONTRATANTE='"+ci_rep_leg_contratante
-                +"', DESC_TIPO_CONTRATO='"+desc_tipo_contrato+"', CI_PROPONENTE_ADJUDICADO='"+ci_proponente_adjudicado+"', DENO_PROPONENTE_ADJUDICADO='"+deno_proponente_adjudicado
-                +"', ASESOR_JURIDICO='"+asesor_juridico+"', OBJETO_CONTRATACION='"+objeto_contratacion+"', MODALIDAD_CONTRATACION='"+modalidad_contratacion
-                +"', DENOMINACION_CONTRATACION='"+denominacion_contratacion+"'"
+        String sql="update CONTRATOS SET NOTA_SOL_ADQ='"
+                +nota_sol_adq+"', FECHA_NOTA_SOL_ADQ='"+fecha_nota_sol_adq
+                +"', NRO_CERT_PPTA='"+nro_cert_ppta+"', FECHA_CERT_PPTA='"+fecha_cert_ppta
+                +"', NRO_HOJA_RUTA='"+nro_hoja_ruta+"', FECHA_HOJA_RUTA='"+fecha_hoja_ruta
+                +"', NRO_BOLETA_GARANTIA='"+nro_boleta_garantia+"', FECHA_BOLETA_GARANTIA='"+fecha_boleta_garantia
+                +"', EMIT_BOLETA_GARANTIA='"+emit_boleta_garantia
+                +"', NRO_INF_COM_CALF='"+nro_inf_com_calf+"', FECHA_INF_COM_CALF='"+fecha_inf_com_calf
+                +"', NRO_RES_INI='"+nro_res_ini+"', FECHA_RES_INI='"+fecha_res_ini
+                +"', NRO_RES_ADJ='"+nro_res_adj+"', DENO_PROPONENTE_ADJUDICADO='"+fecha_res_adj
+                +"', NRO_NOTFEPUB='"+nro_notfepub+"', DOC_NOTFEPUB='"+doc_notfepub
+                +"', NRO_TPGA='"+nro_tpga+"', FECHA_TPGA='"+fecha_tpga+"'"
                 +" WHERE COD_TRANSACCION="+cod_transaccion;
         return Consulta(sql);
     }
+
+    public Map[] getContratoContratante(int cod_transaccion) throws Exception {
+      String sql="select t3.razon_social_contratante,t3.nit_contratante"
+                + " ,t3.direccion_contratante,t3.ciudad_contratante,t3.rep_leg_contratante,t3.cargo_rep_leg_contratante,t3.ci_rep_leg_contratante"
+                + " from transaccion t2 inner join contratos t3 on t2.cod_transaccion=t3.cod_transaccion"
+                + " where t2.cod_transaccion="+cod_transaccion;
+
+          return Consulta(sql);
+    }
+
+    public Map[] updateContratoContratante(int cod_transaccion
+      ,String razon_social_contratante,String nit_contratante,String direccion_contratante,String ciudad_contratante
+      ,String rep_leg_contratante,String cargo_rep_leg_contratante,String ci_rep_leg_contratante) throws Exception
+    {
+        String sql="update CONTRATOS SET RAZON_SOCIAL_CONTRATANTE='"+razon_social_contratante
+                +"', NIT_CONTRATANTE='"+nit_contratante+"', DIRECCION_CONTRATANTE='"+direccion_contratante+"', CIUDAD_CONTRATANTE='"+ciudad_contratante
+                +"', REP_LEG_CONTRATANTE='"+rep_leg_contratante+"', CARGO_REP_LEG_CONTRATANTE='"+cargo_rep_leg_contratante+"', CI_REP_LEG_CONTRATANTE='"+ci_rep_leg_contratante+"'"
+                +" WHERE COD_TRANSACCION="+cod_transaccion;
+        return Consulta(sql);
+    }
+
+    public Map[] getContratoContratantado(int cod_transaccion) throws Exception {
+      String sql="select t3.proponente_adjudicado,t3.empresa_proponente_adjudicado"
+                + " ,t3.dir_proponente_adjudicado,t3.ci_proponente_adjudicado,t3.deno_proponente_adjudicado"
+                + " from transaccion t2 inner join contratos t3 on t2.cod_transaccion=t3.cod_transaccion"
+                + " where t2.cod_transaccion="+cod_transaccion;
+
+          return Consulta(sql);
+    }
+
+    public Map[] updateContratoContratado(int cod_transaccion,String proponente_adjudicado,String empresa_proponente_adjudicado,String dir_proponente_adjudicado
+      ,String ci_proponente_adjudicado,String deno_proponente_adjudicado) throws Exception
+    {
+        String sql="update CONTRATOS SET PROPONENTE_ADJUDICADO='"+proponente_adjudicado+"', DIR_PROPONENTE_ADJUDICADO='"+dir_proponente_adjudicado+"', EMPRESA_PROPONENTE_ADJUDICADO='"+empresa_proponente_adjudicado
+                +"', CI_PROPONENTE_ADJUDICADO='"+ci_proponente_adjudicado+"', DENO_PROPONENTE_ADJUDICADO='"+deno_proponente_adjudicado+"'"
+                +" WHERE COD_TRANSACCION="+cod_transaccion;
+        return Consulta(sql);
+    }
+
     public Map[] mostrartareas(int cod_user,String mes,int gestion) throws Exception
     {
         String sql="select * from TAREAS_ADICIONALES WHERE MES='"+mes+"' and COD_USUARIO="+cod_user+" and GESTION="+gestion;
