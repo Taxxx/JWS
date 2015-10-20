@@ -2976,7 +2976,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
 
     
     public Map[] getContrato2(int cod_transaccion) throws Exception {
-      String sql="select t3.proponente_adjudicado,t3.dir_proponente_adjudicado"
+      String sql="select t3.cuce_contratacion,t3.proponente_adjudicado,t3.dir_proponente_adjudicado"
                 + " ,t2.detalle,t2.cod_almacen,t2.cod_cuantia,t2.cod_w,t3.razon_social_contratante,t3.nit_contratante"
                 + " ,t3.direccion_contratante,t3.ciudad_contratante,t3.rep_leg_contratante,t3.cargo_rep_leg_contratante"
                 + " ,t3.ci_rep_leg_contratante,t3.desc_tipo_contrato,t3.ci_proponente_adjudicado,t3.deno_proponente_adjudicado"
@@ -2987,10 +2987,29 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
           return Consulta(sql);
     }
 
+    public Map[] getContratoInicio(int cod_transaccion) throws Exception {
+      String sql="select t3.cuce_contratacion"
+                + " ,t3.asesor_juridico,t3.sw_garantia_retencion,t3.sw_anticipo,t3.sw_garan_reten_func,t3.sw_tipo_consultoria"
+                + " from transaccion t2 inner join contratos t3 on t2.cod_transaccion=t3.cod_transaccion"
+                + " where t2.cod_transaccion="+cod_transaccion;
+
+          return Consulta(sql);
+    }
+
+    public Map[] updateContratoInicio(int cod_transaccion
+      ,String cuce_contratacion,String asesor_juridico,String sw_garantia_retencion,String sw_anticipo
+      ,String sw_garan_reten_func,String sw_tipo_consultoria) throws Exception
+    {
+        String sql="update CONTRATOS SET CUCE_CONTRATACION='"+cuce_contratacion
+                +"', ASESOR_JURIDICO='"+asesor_juridico+"', SW_GARANTIA_RETENCION='"+sw_garantia_retencion+"', SW_ANTICIPO='"+sw_anticipo
+                +"', SW_GARAN_RETEN_FUNC='"+sw_garan_reten_func+"', SW_TIPO_CONSULTORIA='"+sw_tipo_consultoria+"'"
+                +" WHERE COD_TRANSACCION="+cod_transaccion;
+        return Consulta(sql);
+    }
     
     public Map[] getContratoDocumentosIntegrantes(int cod_transaccion) throws Exception {
       String sql="select t3.nota_sol_adq,t3.fecha_nota_sol_adq"
-                + " ,t3.nro_cert_ppta,t3.fecha_cert_ppta,t3.cod_cuantia,t3.nro_res_ini,t3.fecha_res_ini,t3.nro_inf_com_calf"
+                + " ,t3.nro_cert_ppta,t3.fecha_cert_ppta,t3.nro_res_ini,t3.fecha_res_ini,t3.nro_inf_com_calf"
                 + " ,t3.fecha_inf_com_calf,t3.nro_res_adj,t3.fecha_res_adj,t3.nro_tpga"
                 + " ,t3.fecha_tpga,t3.nro_notfepub,t3.doc_notfepub,t3.nro_hoja_ruta"
                 + " ,t3.fecha_hoja_ruta,t3.nro_boleta_garantia,t3.fecha_boleta_garantia,t3.emit_boleta_garantia"
@@ -3018,18 +3037,45 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
       
       ) throws Exception
     {
-        String sql="update CONTRATOS SET NOTA_SOL_ADQ='"
+        /*String sql="update CONTRATOS SET NOTA_SOL_ADQ='"
                 +nota_sol_adq+"', FECHA_NOTA_SOL_ADQ='"+fecha_nota_sol_adq
-                +"', NRO_CERT_PPTA='"+nro_cert_ppta+"', FECHA_CERT_PPTA='"+fecha_cert_ppta
-                +"', NRO_HOJA_RUTA='"+nro_hoja_ruta+"', FECHA_HOJA_RUTA='"+fecha_hoja_ruta
-                +"', NRO_BOLETA_GARANTIA='"+nro_boleta_garantia+"', FECHA_BOLETA_GARANTIA='"+fecha_boleta_garantia
-                +"', EMIT_BOLETA_GARANTIA='"+emit_boleta_garantia
-                +"', NRO_INF_COM_CALF='"+nro_inf_com_calf+"', FECHA_INF_COM_CALF='"+fecha_inf_com_calf
-                +"', NRO_RES_INI='"+nro_res_ini+"', FECHA_RES_INI='"+fecha_res_ini
-                +"', NRO_RES_ADJ='"+nro_res_adj+"', DENO_PROPONENTE_ADJUDICADO='"+fecha_res_adj
-                +"', NRO_NOTFEPUB='"+nro_notfepub+"', DOC_NOTFEPUB='"+doc_notfepub
-                +"', NRO_TPGA='"+nro_tpga+"', FECHA_TPGA='"+fecha_tpga+"'"
+                +"', NRO_CERT_PPTA='"+nro_cert_ppta+"', FECHA_CERT_PPTA=TO_DATE('"+fecha_cert_ppta+"','DD/MM/YYYY)'"
+                +", NRO_HOJA_RUTA='"+nro_hoja_ruta+"', FECHA_HOJA_RUTA=TO_DATE('"+fecha_hoja_ruta+"','DD/MM/YYYY)'"
+                +", NRO_BOLETA_GARANTIA='"+nro_boleta_garantia+"', FECHA_BOLETA_GARANTIA=TO_DATE('"+fecha_boleta_garantia+"','DD/MM/YYYY')"
+                +", EMIT_BOLETA_GARANTIA='"+emit_boleta_garantia
+                +"', NRO_INF_COM_CALF='"+nro_inf_com_calf+"', FECHA_INF_COM_CALF=TO_DATE('"+fecha_inf_com_calf+"','DD/MM/YYYY')"
+                +", NRO_RES_INI='"+nro_res_ini+"', FECHA_RES_INI=TO_DATE('"+fecha_res_ini+"','DD/MM/YYYY')"
+                +", NRO_RES_ADJ='"+nro_res_adj+"', FECHA_RES_ADJ=TO_DATE('"+fecha_res_adj+"','DD/MM/YYYY')"
+                +", NRO_NOTFEPUB='"+nro_notfepub+"', DOC_NOTFEPUB='"+doc_notfepub
+                +"', NRO_TPGA='"+nro_tpga+"', FECHA_TPGA=TO_DATE('"+fecha_tpga+"','DD/MM/YYYY')"
+                +" WHERE COD_TRANSACCION="+cod_transaccion;*/
+
+
+                /*String sql="update CONTRATOS SET NOTA_SOL_ADQ='"+nota_sol_adq+"', FECHA_NOTA_SOL_ADQ='"+fecha_nota_sol_adq
+                +" ', NRO_CERT_PPTA='"+nro_cert_ppta+"', FECHA_CERT_PPTA='"+fecha_cert_ppta
+                +" ', NRO_HOJA_RUTA='"+nro_hoja_ruta+"', FECHA_HOJA_RUTA='"+fecha_hoja_ruta
+                +" ', NRO_BOLETA_GARANTIA='"+nro_boleta_garantia+"', FECHA_BOLETA_GARANTIA='"+fecha_boleta_garantia
+                +" ', EMIT_BOLETA_GARANTIA='"+emit_boleta_garantia
+                +" ', NRO_INF_COM_CALF='"+nro_inf_com_calf+"', FECHA_INF_COM_CALF='"+fecha_inf_com_calf
+                +" ', NRO_RES_INI='"+nro_res_ini+"', FECHA_RES_INI='"+fecha_res_ini
+                +" ', NRO_RES_ADJ='"+nro_res_adj+"', FECHA_RES_ADJ='"+fecha_res_adj
+                +" ', NRO_NOTFEPUB='"+nro_notfepub+"', DOC_NOTFEPUB='"+doc_notfepub
+                +" ', NRO_TPGA='"+nro_tpga+"', FECHA_TPGA='"+fecha_tpga
+                +" 'WHERE COD_TRANSACCION="+cod_transaccion;*/
+
+
+                String sql="update CONTRATOS SET NOTA_SOL_ADQ='"+nota_sol_adq+"', FECHA_NOTA_SOL_ADQ=TO_DATE('"+fecha_nota_sol_adq+"','DD/MM/YY')"
+                +" , NRO_CERT_PPTA='"+nro_cert_ppta+"', FECHA_CERT_PPTA=TO_DATE('"+fecha_cert_ppta+"','DD/MM/YY')"
+                +" , NRO_HOJA_RUTA='"+nro_hoja_ruta+"', FECHA_HOJA_RUTA=TO_DATE('"+fecha_hoja_ruta+"','DD/MM/YY')"
+                +" , NRO_BOLETA_GARANTIA='"+nro_boleta_garantia+"', FECHA_BOLETA_GARANTIA=TO_DATE('"+fecha_boleta_garantia+"','DD/MM/YY')"
+                +" , EMIT_BOLETA_GARANTIA='"+emit_boleta_garantia
+                +"' , NRO_INF_COM_CALF='"+nro_inf_com_calf+"', FECHA_INF_COM_CALF=TO_DATE('"+fecha_inf_com_calf+"','DD/MM/YY')"
+                +" , NRO_RES_INI='"+nro_res_ini+"', FECHA_RES_INI=TO_DATE('"+fecha_res_ini+"','DD/MM/YY')"
+                +" , NRO_RES_ADJ='"+nro_res_adj+"', FECHA_RES_ADJ=TO_DATE('"+fecha_res_adj+"','DD/MM/YY')"
+                +" , NRO_NOTFEPUB='"+nro_notfepub+"', DOC_NOTFEPUB='"+doc_notfepub
+                +"' , NRO_TPGA='"+nro_tpga+"', FECHA_TPGA=TO_DATE('"+fecha_tpga+"','DD/MM/YY')"
                 +" WHERE COD_TRANSACCION="+cod_transaccion;
+
         return Consulta(sql);
     }
 
