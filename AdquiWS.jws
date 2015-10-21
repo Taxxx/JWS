@@ -2998,11 +2998,11 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
 
     public Map[] updateContratoInicio(int cod_transaccion
       ,String cuce_contratacion,String asesor_juridico,String sw_garantia_retencion,String sw_anticipo
-      ,String sw_garan_reten_func,String sw_tipo_consultoria) throws Exception
+      ,String sw_garan_reten_func,String sw_tipo_consultoria,String sw_tipo_servicio) throws Exception
     {
         String sql="update CONTRATOS SET CUCE_CONTRATACION='"+cuce_contratacion
                 +"', ASESOR_JURIDICO='"+asesor_juridico+"', SW_GARANTIA_RETENCION='"+sw_garantia_retencion+"', SW_ANTICIPO='"+sw_anticipo
-                +"', SW_GARAN_RETEN_FUNC='"+sw_garan_reten_func+"', SW_TIPO_CONSULTORIA='"+sw_tipo_consultoria+"'"
+                +"', SW_GARAN_RETEN_FUNC='"+sw_garan_reten_func+"', SW_TIPO_CONSULTORIA='"+sw_tipo_consultoria+"', SW_TIPO_SERVICIO='"+sw_tipo_servicio+"'"
                 +" WHERE COD_TRANSACCION="+cod_transaccion;
         return Consulta(sql);
     }
@@ -3143,12 +3143,12 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     public Map[] ConstruyeContrato(String tran,int cod_transaccion) throws Exception {
         if ("SET-ConstruyeContrato".equals(tran)) {
             String sql="insert into contratos ("
-                      +" cod_transaccion,razon_social_contratante,nit_contratante,proponente_adjudicado"
-                      +" ,empresa_proponente_adjudicado,direccion_contratante,ci_proponente_adjudicado"
-                      +" ,rep_leg_contratante,ci_rep_leg_contratante,cargo_rep_leg_contratante,nro_cert_ppta,nro_hoja_ruta)"
-                      +" select t2.cod_transaccion,('UNIVERSIDAD MAYOR DE SAN ANDRES') as razon_social_contratante,('1102007') as nit_contratante,t1.nombre as proponente_adjudicado,t1.nombre_comercial as empresa_proponente_adjudicado"
-                      +" ,t1.direccion as direccion_contratante,t1.cod_proveedor as ci_proponente_adjudicado"
-                      +" ,t4.RPA as rep_leg_contratante,t4.CI_RPA as ci_rep_leg_contratante,t4.CARGO_RPA ,GET_PREVENTIVOS(t1.cod_transaccion) as nro_cert_ppta,t2.hoja_ruta as nro_hoja_ruta"
+                      +" cod_contrato,cod_transaccion,razon_social_contratante,nit_contratante,proponente_adjudicado"
+                      +" ,empresa_proponente_adjudicado,dir_proponente_adjudicado,ci_proponente_adjudicado"
+                      +" ,rep_leg_contratante,ci_rep_leg_contratante,cargo_rep_leg_contratante,nro_cert_ppta,nro_hoja_ruta,direccion_contratante,ciudad_contratante)"
+                      +" select SEC_COD_CONTRATO.NEXTVAL,t2.cod_transaccion,('UNIVERSIDAD MAYOR DE SAN ANDRES') as razon_social_contratante,('1102007') as nit_contratante,t1.nombre as proponente_adjudicado,t1.nombre_comercial as empresa_proponente_adjudicado"
+                      +" ,t1.direccion as dir_proponente_adjudicado,t1.cod_proveedor as ci_proponente_adjudicado"
+                      +" ,t4.RPA as rep_leg_contratante,t4.CI_RPA as ci_rep_leg_contratante,t4.CARGO_RPA ,GET_PREVENTIVOS(t1.cod_transaccion) as nro_cert_ppta,t2.hoja_ruta as nro_hoja_ruta,('Avenida 6 de Agosto No 2170, Edificio Hoy, Piso 11') as direccion_contratante,('La Paz') as ciudad_contratante"
                       +" from proponentes t1 inner join transaccion t2 on t1.cod_transaccion=t2.cod_transaccion"
                       +" inner join almacen t3 on t2.cod_almacen=t3.cod_almacen"
                       +" inner join unidad_ejecutora t4 on t3.facultad=t4.cod_faculty"
