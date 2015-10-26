@@ -1670,11 +1670,11 @@ public class AdquiWS{
         //else return null;
     }
    //anula la transaccion
-    public Map[] setAnulaTransaccionAdq(String tran,int cod_transaccion) throws Exception {
+    public Map[] setAnulaTransaccionAdq(String tran,int cod_trans_detalle) throws Exception {
         if ("SET-upDateAnulTransAdq".equals(tran)) {
-            String sql="update adquisiciones.transaccion "
-                    + "set estado='A' "
-                    + "where cod_transaccion="+cod_transaccion;
+            String sql="UPDATE TRANSACCION_DETALLE"
+                    + " set estado='A' "
+                    + " WHERE COD_TRANS_DETALLE="+cod_trans_detalle;
             return Consulta(sql);
         }
         else return null;
@@ -2273,9 +2273,12 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     }
     public Map[] getresmay(int cod,int cod_t_n) throws Exception
     {
-        String sql="SELECT NRO,CITE,DESTINO,COTIZACION,OBJETIVO,DOCUMENTOS,FECHA_INICIO_CON,CARGO"
+          String sql="SELECT *"
                     +" FROM RESOLUCION"
                     +" WHERE COD_TRANSACCION="+cod+" and COD_TRANS_NRO="+cod_t_n+" and COD_TIPO_RESOLUCION=3";
+        /*String sql="SELECT NRO,CITE,DESTINO,COTIZACION,OBJETIVO,DOCUMENTOS,FECHA_INICIO_CON,CARGO"
+                    +" FROM RESOLUCION"
+                    +" WHERE COD_TRANSACCION="+cod+" and COD_TRANS_NRO="+cod_t_n+" and COD_TIPO_RESOLUCION=3";*/
         return Consulta(sql);
     }
     public Map[] updateRes15(int cod,int cod_t_n,String cite,String destino,String objetivo,String cotizacion,String doc,String f,String cargo) throws Exception
