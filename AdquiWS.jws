@@ -2993,6 +2993,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     public Map[] getContratoInicio(int cod_transaccion) throws Exception {
       String sql="select t3.cuce_contratacion"
                 + " ,t3.asesor_juridico,t3.sw_garantia_retencion,t3.sw_anticipo,t3.sw_garan_reten_func,t3.sw_tipo_consultoria"
+                + " ,t3.objeto_contratacion,t3.convocatoria_adc_anpe,t3.fecha_conv_anpe,t3.fecha_contrato"
                 + " from transaccion t2 inner join contratos t3 on t2.cod_transaccion=t3.cod_transaccion"
                 + " where t2.cod_transaccion="+cod_transaccion;
 
@@ -3001,11 +3002,14 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
 
     public Map[] updateContratoInicio(int cod_transaccion
       ,String cuce_contratacion,String asesor_juridico,String sw_garantia_retencion,String sw_anticipo
-      ,String sw_garan_reten_func,String sw_tipo_consultoria,String sw_tipo_servicio) throws Exception
+      ,String sw_garan_reten_func,String sw_tipo_consultoria,String sw_tipo_servicio,String objeto_contratacion
+      ,String convocatoria_adc_anpe,String fecha_conv_anpe,String fecha_contrato) throws Exception
     {
         String sql="update CONTRATOS SET CUCE_CONTRATACION='"+cuce_contratacion
                 +"', ASESOR_JURIDICO='"+asesor_juridico+"', SW_GARANTIA_RETENCION='"+sw_garantia_retencion+"', SW_ANTICIPO='"+sw_anticipo
-                +"', SW_GARAN_RETEN_FUNC='"+sw_garan_reten_func+"', SW_TIPO_CONSULTORIA='"+sw_tipo_consultoria+"', SW_TIPO_SERVICIO='"+sw_tipo_servicio+"'"
+                +"', SW_GARAN_RETEN_FUNC='"+sw_garan_reten_func+"', SW_TIPO_CONSULTORIA='"+sw_tipo_consultoria+"', SW_TIPO_SERVICIO='"+sw_tipo_servicio
+                +"', objeto_contratacion = '"+objeto_contratacion+"', convocatoria_adc_anpe='"+convocatoria_adc_anpe
+                +"', fecha_conv_anpe=TO_DATE('"+fecha_conv_anpe+"','DD/MM/YY') ,fecha_contrato=TO_DATE('"+fecha_contrato+"','DD/MM/YY') "
                 +" WHERE COD_TRANSACCION="+cod_transaccion;
         return Consulta(sql);
     }
@@ -3153,10 +3157,11 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
             String sql="insert into contratos ("
                       +" cod_contrato,cod_transaccion,razon_social_contratante,nit_contratante,proponente_adjudicado"
                       +" ,empresa_proponente_adjudicado,dir_proponente_adjudicado,ci_proponente_adjudicado"
-                      +" ,rep_leg_contratante,ci_rep_leg_contratante,cargo_rep_leg_contratante,nro_cert_ppta,nro_hoja_ruta,direccion_contratante,ciudad_contratante)"
+                      +" ,rep_leg_contratante,ci_rep_leg_contratante,cargo_rep_leg_contratante,nro_cert_ppta,nro_hoja_ruta,direccion_contratante,ciudad_contratante,objeto_contratacion)"
                       +" select SEC_COD_CONTRATO.NEXTVAL,t2.cod_transaccion,('UNIVERSIDAD MAYOR DE SAN ANDRES') as razon_social_contratante,('1102007') as nit_contratante,t1.nombre as proponente_adjudicado,t1.nombre_comercial as empresa_proponente_adjudicado"
                       +" ,t1.direccion as dir_proponente_adjudicado,t1.cod_proveedor as ci_proponente_adjudicado"
                       +" ,t4.RPA as rep_leg_contratante,t4.CI_RPA as ci_rep_leg_contratante,t4.CARGO_RPA ,GET_PREVENTIVOS(t1.cod_transaccion) as nro_cert_ppta,t2.hoja_ruta as nro_hoja_ruta,('Avenida 6 de Agosto No 2170, Edificio Hoy, Piso 11') as direccion_contratante,('La Paz') as ciudad_contratante"
+                      +" ,t2.detalle"
                       +" from proponentes t1 inner join transaccion t2 on t1.cod_transaccion=t2.cod_transaccion"
                       +" inner join almacen t3 on t2.cod_almacen=t3.cod_almacen"
                       +" inner join unidad_ejecutora t4 on t3.facultad=t4.cod_faculty"
