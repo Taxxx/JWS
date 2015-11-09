@@ -2296,7 +2296,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
         int nro_resolucion= Integer.parseInt(datos[0].get("NRO").toString());
         nro_resolucion++;
         String sql1="insert into RESOLUCION (COD_RESOLUCION,COD_TRANSACCION,COD_TRANS_NRO,COD_TIPO_RESOLUCION,FECHA,GESTION,DETALLE,ENVIA,DESTINO,DIAS,CARGO,CITE,COTIZACION,OBJETIVO,NRO,DOCUMENTOS,FECHA_INICIO_CON,DETALLE_NOTA_SOLICITUD,DETALLE_NOTA_PRESUPUESTO)"
-                    +" values(SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans+","+cod_trans_nro+",3,sysdate,"+gestion+",'"+detalle+"','"+enviado+"','"+destino+"','"+dias+"','"+cargo+"','"+cite+"','"+cotizacion+"','"+objetivo+"',"+nro_resolucion+",'"+doc+"','"+f+"','"+dns+"','"+dnp+"')";
+                    +" values(SEC_COD_RESOLUCION.NEXTVAL,"+cod_trans+","+cod_trans_nro+",3,sysdate,"+gestion+",'"+detalle+"','"+enviado+"','"+destino+"','"+dias+"','"+cargo+"','"+cite+"','"+cotizacion+"','"+objetivo+"',"+nro_resolucion+",'"+doc+"',TO_DATE('"+f+"','YYYY-MM-DD HH24:MI:SS'),'"+dns+"','"+dnp+"')";
         return Consulta(sql1);
     }
     public Map[] getProgramaticApertGestion(int gestion, int cod_almacen) throws Exception {        
