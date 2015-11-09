@@ -2992,8 +2992,9 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
 
     public Map[] getContratoInicio(int cod_transaccion) throws Exception {
       String sql="select t3.cuce_contratacion"
-                + " ,t3.asesor_juridico,t3.sw_garantia_retencion,t3.sw_anticipo,t3.sw_garan_reten_func,t3.sw_tipo_consultoria"
-                + " ,t3.objeto_contratacion,t3.convocatoria_adc_anpe,t3.fecha_conv_anpe,t3.fecha_contrato"
+                + " ,t3.asesor_juridico,t3.sw_garantia_retencion,t3.sw_anticipo,t3.sw_garan_reten_func,t3.sw_tipo_consultoria,sw_tipo_servicio"
+                + " ,t3.objeto_contratacion,t3.convocatoria_adc_anpe,t3.fecha_conv_anpe,t3.fecha_contrato,t3.nro_contrato,t3.destino_contratacion"
+                + " ,get_monto_total(t2.cod_transaccion) as total"
                 + " from transaccion t2 inner join contratos t3 on t2.cod_transaccion=t3.cod_transaccion"
                 + " where t2.cod_transaccion="+cod_transaccion;
 
@@ -3003,13 +3004,13 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     public Map[] updateContratoInicio(int cod_transaccion
       ,String cuce_contratacion,String asesor_juridico,String sw_garantia_retencion,String sw_anticipo
       ,String sw_garan_reten_func,String sw_tipo_consultoria,String sw_tipo_servicio,String objeto_contratacion
-      ,String convocatoria_adc_anpe,String fecha_conv_anpe,String fecha_contrato) throws Exception
+      ,String convocatoria_adc_anpe,String fecha_conv_anpe,String fecha_contrato,String nro_contrato,String destino_contratacion) throws Exception
     {
         String sql="update CONTRATOS SET CUCE_CONTRATACION='"+cuce_contratacion
                 +"', ASESOR_JURIDICO='"+asesor_juridico+"', SW_GARANTIA_RETENCION='"+sw_garantia_retencion+"', SW_ANTICIPO='"+sw_anticipo
                 +"', SW_GARAN_RETEN_FUNC='"+sw_garan_reten_func+"', SW_TIPO_CONSULTORIA='"+sw_tipo_consultoria+"', SW_TIPO_SERVICIO='"+sw_tipo_servicio
                 +"', objeto_contratacion = '"+objeto_contratacion+"', convocatoria_adc_anpe='"+convocatoria_adc_anpe
-                +"', fecha_conv_anpe=TO_DATE('"+fecha_conv_anpe+"','DD/MM/YY') ,fecha_contrato=TO_DATE('"+fecha_contrato+"','DD/MM/YY') "
+                +"', fecha_conv_anpe=TO_DATE('"+fecha_conv_anpe+"','DD/MM/YY') ,fecha_contrato=TO_DATE('"+fecha_contrato+"','DD/MM/YY'), nro_contrato='"+nro_contrato+"', destino_contratacion='"+destino_contratacion+"' "
                 +" WHERE COD_TRANSACCION="+cod_transaccion;
         return Consulta(sql);
     }
@@ -3083,6 +3084,40 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
                 +"' , NRO_TPGA='"+nro_tpga+"', FECHA_TPGA=TO_DATE('"+fecha_tpga+"','DD/MM/YY')"
                 +" WHERE COD_TRANSACCION="+cod_transaccion;
 
+        return Consulta(sql);
+    }
+
+    public Map[] getContratoPlazos(int cod_transaccion) throws Exception {
+      String sql="select t3.plazo_prestacion,t3.plazo_observaciones,t3.sw_tipo_plazo_prestacion"
+                + " from transaccion t2 inner join contratos t3 on t2.cod_transaccion=t3.cod_transaccion"
+                + " where t2.cod_transaccion="+cod_transaccion;
+
+          return Consulta(sql);
+    }
+
+    public Map[] updateContratoPlazos(int cod_transaccion
+      ,String plazo_prestacion,String plazo_observaciones,String sw_tipo_plazo_prestacion) throws Exception
+    {
+        String sql="update CONTRATOS SET plazo_prestacion='"+plazo_prestacion
+                +"', plazo_observaciones='"+plazo_observaciones+"', sw_tipo_plazo_prestacion='"+sw_tipo_plazo_prestacion+"'"
+                +" WHERE COD_TRANSACCION="+cod_transaccion;
+        return Consulta(sql);
+    }
+
+    public Map[] getContratoPago(int cod_transaccion) throws Exception {
+      String sql="select t3.nro_cuotas,t3.poa_ppto,t3.aprobado,t3.cargo"
+                + " from transaccion t2 inner join contratos t3 on t2.cod_transaccion=t3.cod_transaccion"
+                + " where t2.cod_transaccion="+cod_transaccion;
+
+          return Consulta(sql);
+    }
+
+    public Map[] updateContratoPago(int cod_transaccion
+      ,String nro_cuotas,String poa_ppto,String aprobado,String cargo) throws Exception
+    {
+        String sql="update CONTRATOS SET nro_cuotas='"+nro_cuotas
+                +"', poa_ppto='"+poa_ppto+"', aprobado='"+aprobado+"', cargo='"+cargo+"'"
+                +" WHERE COD_TRANSACCION="+cod_transaccion;
         return Consulta(sql);
     }
 
