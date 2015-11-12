@@ -2993,7 +2993,7 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     public Map[] getContratoInicio(int cod_transaccion) throws Exception {
       String sql="select t3.cuce_contratacion"
                 + " ,t3.asesor_juridico,t3.sw_garantia_retencion,t3.sw_anticipo,t3.sw_garan_reten_func,t3.sw_tipo_consultoria,sw_tipo_servicio"
-                + " ,t3.objeto_contratacion,t3.convocatoria_adc_anpe,t3.fecha_conv_anpe,t3.fecha_contrato,t3.nro_contrato,t3.destino_contratacion"
+                + " ,t3.objeto_contratacion,t3.convocatoria_adc_anpe,t3.fecha_conv_anpe,t3.fecha_contrato,t3.nro_contrato,t3.destino_contratacion,t3.lugar_servicio_entrega"
                 + " ,get_monto_total(t2.cod_transaccion) as total"
                 + " from transaccion t2 inner join contratos t3 on t2.cod_transaccion=t3.cod_transaccion"
                 + " where t2.cod_transaccion="+cod_transaccion;
@@ -3004,10 +3004,10 @@ public Map[] updatetabla1(String n1, String n2, int cod_trans_nro)throws Excepti
     public Map[] updateContratoInicio(int cod_transaccion
       ,String cuce_contratacion,String asesor_juridico,String sw_garantia_retencion,String sw_anticipo
       ,String sw_garan_reten_func,String sw_tipo_consultoria,String sw_tipo_servicio,String objeto_contratacion
-      ,String convocatoria_adc_anpe,String fecha_conv_anpe,String fecha_contrato,String nro_contrato,String destino_contratacion) throws Exception
+      ,String convocatoria_adc_anpe,String fecha_conv_anpe,String fecha_contrato,String nro_contrato,String destino_contratacion, String lugar_servicio_entrega) throws Exception
     {
         String sql="update CONTRATOS SET CUCE_CONTRATACION='"+cuce_contratacion
-                +"', ASESOR_JURIDICO='"+asesor_juridico+"', SW_GARANTIA_RETENCION='"+sw_garantia_retencion+"', SW_ANTICIPO='"+sw_anticipo
+                +"', ASESOR_JURIDICO='"+asesor_juridico+"', SW_GARANTIA_RETENCION='"+sw_garantia_retencion+"', SW_ANTICIPO='"+sw_anticipo+"', lugar_servicio_entrega='"+lugar_servicio_entrega
                 +"', SW_GARAN_RETEN_FUNC='"+sw_garan_reten_func+"', SW_TIPO_CONSULTORIA='"+sw_tipo_consultoria+"', SW_TIPO_SERVICIO='"+sw_tipo_servicio
                 +"', objeto_contratacion = '"+objeto_contratacion+"', convocatoria_adc_anpe='"+convocatoria_adc_anpe
                 +"', fecha_conv_anpe=TO_DATE('"+fecha_conv_anpe+"','DD/MM/YY') ,fecha_contrato=TO_DATE('"+fecha_contrato+"','DD/MM/YY'), nro_contrato='"+nro_contrato+"', destino_contratacion='"+destino_contratacion+"' "
